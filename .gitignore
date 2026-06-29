@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+*.log
+
+# Dependencies
+node_modules/
+vendor/
+
+# Large files (GitHub 100MB limit)
+*.zip
+
+# Sub-app folders (deployed separately via aaPanel, too large for GitHub)
+public/quo/
+public/jadwal/
+public/service/
+public/sales/
+public/ssll/
