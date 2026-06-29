@@ -51,7 +51,13 @@ $my_av = ($me['avatar'] && file_exists("assets/img/avatars/" . $me['avatar'])) ?
 $sapa = date('H')<11?"Selamat Pagi": (date('H')<15?"Selamat Siang": (date('H')<18?"Selamat Sore":"Selamat Malam"));
 
 function time_ago($datetime) { return tgl_indo($datetime); }
-function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class="text-primary fw-bold">@$1</span>', htmlspecialchars($text))); }
+function format_text($text) { 
+    $t = htmlspecialchars($text);
+    $t = preg_replace('/\*([^*]+)\*/', '<strong>$1</strong>', $t); // *bold* → bold
+    $t = preg_replace('/_([^_]+)_/', '<em>$1</em>', $t); // _italic_ → italic
+    $t = preg_replace('/@(\w+)/', '<span class="text-primary fw-bold">@$1</span>', $t);
+    return nl2br($t);
+}
 ?>
 
 <style>
@@ -676,7 +682,14 @@ function showProgressForm(){
     new bootstrap.Modal('#progressModal').show(); 
 }
 
-function formatText(t){ return t?t.replace(/@(\w+)/g, '<span class="text-primary fw-bold">@$1</span>').replace(/\n/g, '<br>'):''; }
+function formatText(t){ 
+    if(!t) return '';
+    t = t.replace(/\*([^*]+)\*/g, '<strong>$1</strong>'); // *bold*
+    t = t.replace(/_([^_]+)_/g, '<em>$1</em>'); // _italic_
+    t = t.replace(/@(\w+)/g, '<span class="text-primary fw-bold">@$1</span>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
+}
 
 function setupMentions(sel) {
     $(document).on('input', sel, function() {
@@ -866,7 +879,18 @@ function insertFormat(type) {
     let insert = '';
     
     if (type === 'bold') {
-        insert = '**' + (selected || 'teks bold') + '**';
+        if (selected) {
+            // Wrap selected text with *
+            insert = '*' + selected + '*';
+        } else {
+            insert = '*teks bold*';
+        }
+    } else if (type === 'italic') {
+        if (selected) {
+            insert = '_' + selected + '_';
+        } else {
+            insert = '_teks italic_';
+        }
     } else if (type === 'list') {
         let lines = selected ? selected.split('\n') : ['Item 1', 'Item 2', 'Item 3'];
         insert = lines.map((l, i) => (i+1) + '. ' + l.replace(/^\d+\.\s*/, '')).join('\n');
@@ -876,7 +900,9 @@ function insertFormat(type) {
     }
     
     ta.value = text.substring(0, start) + insert + text.substring(end);
-    ta.setSelectionRange(start, start + insert.length);
+    // Place cursor after the inserted text
+    let newPos = start + insert.length;
+    ta.setSelectionRange(newPos, newPos);
     ta.focus();
     autoResizeTextarea(ta);
 }
@@ -897,6 +923,18 @@ $(document).ready(()=>{
     
     // Auto-resize on input
     $(document).on('input', '#inpDesc', function() { autoResizeTextarea(this); });
+    
+    // Ctrl+B = Bold, Ctrl+I = Italic shortcuts
+    $(document).on('keydown', '#inpDesc', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            insertFormat('bold');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+            e.preventDefault();
+            insertFormat('italic');
+        }
+    });
     
     $('#createModal').on('hidden.bs.modal', function(){ $('#formJob')[0].reset(); $('#modalTitle').text('Buat Pekerjaan Baru'); $('#formAction').val('create_post'); selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); });
 });
