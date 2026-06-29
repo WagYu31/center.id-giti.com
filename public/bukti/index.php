@@ -205,39 +205,47 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
                 $avatarSrc = ($uAvatar && file_exists("assets/img/avatars/".$uAvatar)) ? "assets/img/avatars/".$uAvatar : "https://ui-avatars.com/api/?name=".urlencode($uName);
             ?>
                 <div class="col-12">
-                    <div class="card-custom p-0" id="post-<?php echo $job['id']; ?>">
+                    <div class="card-custom p-0" id="post-<?php echo $job['id']; ?>" data-status="<?php echo $job['status']; ?>">
                         <div class="p-3 d-flex justify-content-between align-items-start">
-                            <div class="d-flex gap-3">
-                                <img src="<?php echo $avatarSrc; ?>" class="rounded-circle" width="45" height="45" style="object-fit:cover;">
+                            <div class="d-flex gap-3 align-items-center">
+                                <img src="<?php echo $avatarSrc; ?>" class="rounded-3 shadow-sm" width="46" height="46" style="object-fit:cover; border: 2px solid rgba(234,179,8,0.15);">
                                 <div>
-                                    <div class="fw-bold text-dark"><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></div>
-                                    <div class="small text-muted"><?php echo time_ago($job['created_at']); ?><?php if($job['is_edited']): ?><span class="fst-italic ms-1" style="font-size:0.7rem">• Diedit</span><?php endif; ?></div>
+                                    <div class="fw-bold" style="color: #111827; font-size: 0.92rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></div>
+                                    <div style="font-size: 0.76rem; color: #6b7280;"><?php echo time_ago($job['created_at']); ?><?php if($job['is_edited']): ?><span class="fst-italic ms-1" style="font-size:0.68rem; color: #9ca3af;">• Diedit</span><?php endif; ?></div>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-<?php echo ($job['status']=='done'?'success':($job['status']=='in_progress'?'primary':'secondary')); ?> bg-opacity-10 text-<?php echo ($job['status']=='done'?'success':($job['status']=='in_progress'?'primary':'secondary')); ?> px-3 py-2 rounded-pill">
-                                    <?php if($job['status']=='in_progress') echo '<i class="bi bi-play-circle-fill me-1"></i> ON PROGRESS'; elseif($job['status']=='done') echo '<i class="bi bi-check-circle-fill me-1"></i> SELESAI'; else echo '<i class="bi bi-circle me-1"></i> BELUM MULAI'; ?>
+                                <?php 
+                                    $statusConfig = [
+                                        'done' => ['bg' => '#f0fdf4', 'color' => '#15803d', 'icon' => 'check-circle-fill', 'label' => 'SELESAI'],
+                                        'in_progress' => ['bg' => '#fefce8', 'color' => '#a16207', 'icon' => 'play-circle-fill', 'label' => 'ON PROGRESS'],
+                                        'todo' => ['bg' => '#f1f5f9', 'color' => '#475569', 'icon' => 'circle', 'label' => 'BELUM MULAI']
+                                    ];
+                                    $sc = $statusConfig[$job['status']] ?? $statusConfig['todo'];
+                                ?>
+                                <span class="px-3 py-2 rounded-pill fw-bold" style="background: <?php echo $sc['bg']; ?>; color: <?php echo $sc['color']; ?>; font-size: 0.72rem; letter-spacing: 0.3px;">
+                                    <i class="bi bi-<?php echo $sc['icon']; ?> me-1"></i><?php echo $sc['label']; ?>
                                 </span>
                                 <?php if($job['user_id'] == $current_user_id): ?>
                                 <div class="dropdown">
-                                    <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                        <li><a class="dropdown-item" href="#" onclick="openEditModal(<?php echo $job['id']; ?>)"><i class="bi bi-pencil me-2"></i> Edit</a></li>
-                                        <li><a class="dropdown-item text-danger" href="#" onclick="deletePost(<?php echo $job['id']; ?>)"><i class="bi bi-trash me-2"></i> Hapus</a></li>
+                                    <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-three-dots-vertical" style="color:#6b7280;"></i></button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3" style="min-width: 160px;">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="openEditModal(<?php echo $job['id']; ?>)" style="font-size:0.88rem; color:#374151;"><i class="bi bi-pencil me-2" style="color:#eab308;"></i> Edit</a></li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="deletePost(<?php echo $job['id']; ?>)" style="font-size:0.88rem; color:#dc2626;"><i class="bi bi-trash me-2"></i> Hapus</a></li>
                                     </ul>
                                 </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                         <div class="px-3 pb-2 cursor-pointer" onclick="openDetail(<?php echo $job['id']; ?>)">
-                            <h5 class="fw-bold mb-2"><?php echo htmlspecialchars($job['title']); ?></h5>
-                            <p class="text-secondary" style="white-space: pre-wrap;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
+                            <h5 class="fw-bold mb-2" style="color: #111827; font-size: 1rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['title']); ?></h5>
+                            <p style="color: #374151; white-space: pre-wrap; line-height: 1.65; font-size: 0.9rem;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
                         </div>
-                        <div class="px-3 py-2 border-top d-flex gap-3">
-                            <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn btn-sm <?php echo $job['is_liked']?'btn-primary text-white':'btn-light text-muted'; ?> fw-bold px-3 rounded-pill">
+                        <div class="px-3 py-2 border-top d-flex gap-2" style="border-color: rgba(0,0,0,0.04) !important;">
+                            <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn btn-sm <?php echo $job['is_liked']?'text-white':''; ?> fw-bold px-3 rounded-pill" style="<?php echo $job['is_liked'] ? 'background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;' : 'background: #f9fafb; color: #4b5563;'; ?> font-size: 0.82rem;">
                                 <i class="bi bi-hand-thumbs-up-fill me-1"></i> <span class="count"><?php echo $job['l_count']; ?></span> Suka
                             </button>
-                            <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn btn-sm btn-light text-muted fw-bold px-3 rounded-pill">
+                            <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn btn-sm fw-bold px-3 rounded-pill" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem;">
                                 <i class="bi bi-chat-dots me-1"></i> <?php echo $job['c_count']; ?> Komentar
                             </button>
                         </div>
