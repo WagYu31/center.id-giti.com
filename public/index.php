@@ -119,21 +119,57 @@ $tanggal = date('d M Y');
             </div>
         </div>
         
-        <div class="col-lg-4">
-            <div class="card-notes">
-                <div class="notes-header">
+        <div class="col-lg-4 d-flex flex-column gap-3">
+            <!-- Pengumuman Widget -->
+            <div class="card-notes d-flex flex-column" style="flex: 1;">
+                <div class="notes-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 12px; margin-bottom: 0;">
                     <div class="notes-title">
                         <div class="icon-note-yellow">
-                            <i class="bi bi-journal-text"></i>
+                            <i class="bi bi-megaphone"></i>
                         </div>
-                        <span>Quick Notes</span>
+                        <span>Pengumuman</span>
                     </div>
-                    <div id="saveStatus" class="save-status">
-                        <i class="bi bi-check-circle-fill me-1"></i> Saved
-                    </div>
+                    <?php if($user['role'] === 'admin'): ?>
+                    <button class="btn btn-sm px-2 py-0" style="background: linear-gradient(135deg,#d97706,#f59e0b); color:white; border:none; border-radius:6px; font-size:0.7rem; font-weight:600;" onclick="showCreateAnnouncement()">
+                        <i class="bi bi-plus"></i> Buat
+                    </button>
+                    <?php endif; ?>
                 </div>
-                <textarea id="noteInput" class="notes-area" placeholder="Tulis catatan harianmu di sini..."><?= htmlspecialchars($user['notes'] ?? '') ?></textarea>
-                <button id="btnSaveNote" class="btn-save-note" onclick="saveNote()">Simpan</button>
+                <div id="announcementList" style="flex:1; overflow-y:auto; max-height: 200px; padding: 8px 0;">
+                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+                </div>
+            </div>
+            
+            <!-- Target Bulanan Widget -->
+            <?php
+            // Calculate monthly target
+            $month = date('m'); $year = date('Y');
+            $monthlyDone = 0; $monthlyTotal = 0;
+            try {
+                $monthlyDone = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE user_id={$user['id']} AND status='done' AND deleted_at IS NULL AND MONTH(created_at)=$month AND YEAR(created_at)=$year")->fetchColumn();
+                $monthlyTotal = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE user_id={$user['id']} AND deleted_at IS NULL AND MONTH(created_at)=$month AND YEAR(created_at)=$year")->fetchColumn();
+            } catch(Exception $e) {}
+            $target = 30; // Default target per bulan
+            $pct = $target > 0 ? min(100, round(($monthlyDone / $target) * 100)) : 0;
+            $bulanNama = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][(int)$month];
+            ?>
+            <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid rgba(0,0,0,0.06);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-trophy-fill" style="color:white;font-size:0.75rem;"></i>
+                        </div>
+                        <span style="font-weight:700;font-size:0.88rem;color:#0f172a;">Target <?= $bulanNama ?> <?= $year ?></span>
+                    </div>
+                    <span style="font-size:0.75rem;font-weight:700;color:<?= $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#64748b') ?>;"><?= $pct ?>%</span>
+                </div>
+                <div style="background:#f1f5f9;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px;">
+                    <div style="width:<?= $pct ?>%;height:100%;border-radius:8px;background:linear-gradient(90deg,#059669,#10b981);transition:width 1s ease;"></div>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:0.75rem;color:#64748b;">
+                    <span><strong style="color:#0f172a;"><?= $monthlyDone ?></strong> selesai dari <strong><?= $target ?></strong> target</span>
+                    <span><?= $monthlyTotal ?> total tugas</span>
+                </div>
             </div>
         </div>
     </div>
@@ -300,56 +336,141 @@ $tanggal = date('d M Y');
     }
     setInterval(updateClock, 1000);
     updateClock();
-    
-    const noteInput = document.getElementById('noteInput');
-    const btnSave = document.getElementById('btnSaveNote');
-    const statusText = document.getElementById('saveStatus');
-    let originalContent = noteInput.value; 
 
-    noteInput.addEventListener('input', function() {
-        if (this.value !== originalContent) {
-            btnSave.classList.add('show');
-            statusText.classList.remove('show');
-        } else {
-            btnSave.classList.remove('show');
+    // === ANNOUNCEMENT SYSTEM ===
+    const isAdmin = <?= $user['role'] === 'admin' ? 'true' : 'false' ?>;
+
+    function timeAgo(dateStr) {
+        const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+        if (diff < 60) return 'Baru saja';
+        if (diff < 3600) return Math.floor(diff/60) + 'm lalu';
+        if (diff < 86400) return Math.floor(diff/3600) + 'j lalu';
+        if (diff < 604800) return Math.floor(diff/86400) + 'h lalu';
+        return new Date(dateStr).toLocaleDateString('id-ID', {day:'numeric',month:'short'});
+    }
+
+    function loadAnnouncements() {
+        fetch('api_announcement.php?action=fetch')
+            .then(r => r.json())
+            .then(res => {
+                const el = document.getElementById('announcementList');
+                if (!res.data || res.data.length === 0) {
+                    el.innerHTML = `<div class="text-center py-4" style="color:#94a3b8;">
+                        <i class="bi bi-megaphone" style="font-size:1.5rem;opacity:0.3;"></i>
+                        <p style="font-size:0.8rem;margin:6px 0 0;">Belum ada pengumuman</p>
+                    </div>`;
+                    return;
+                }
+                let html = '';
+                res.data.forEach(a => {
+                    const pColors = {urgent:'#ef4444',important:'#d97706',normal:'#64748b'};
+                    const pLabels = {urgent:'URGENT',important:'PENTING',normal:''};
+                    const pBg = {urgent:'#fef2f2',important:'#fffbeb',normal:'transparent'};
+                    html += `<div style="padding:10px 16px;border-bottom:1px solid rgba(0,0,0,0.03);cursor:default;transition:background 0.15s;" 
+                                onmouseenter="this.style.background='#fafbfc'" onmouseleave="this.style.background='transparent'">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex:1;min-width:0;">
+                                <div class="d-flex align-items-center gap-1 mb-1">
+                                    ${a.priority!=='normal'?`<span style="font-size:0.6rem;font-weight:700;color:${pColors[a.priority]};background:${pBg[a.priority]};padding:1px 6px;border-radius:4px;letter-spacing:0.5px;">${pLabels[a.priority]}</span>`:''}
+                                    <span style="font-weight:700;font-size:0.82rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.title}</span>
+                                </div>
+                                <p style="font-size:0.75rem;color:#64748b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.content}</p>
+                                <div style="font-size:0.65rem;color:#94a3b8;margin-top:3px;">${a.author_name} · ${timeAgo(a.created_at)}</div>
+                            </div>
+                            ${isAdmin?`<button onclick="deleteAnnouncement(${a.id})" class="btn btn-sm p-0 ms-2" style="color:#cbd5e1;font-size:0.7rem;border:none;background:none;" title="Hapus"><i class="bi bi-x-lg"></i></button>`:''}
+                        </div>
+                    </div>`;
+                });
+                el.innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('announcementList').innerHTML = '<div class="text-center py-3" style="color:#94a3b8;font-size:0.8rem;">Gagal memuat</div>';
+            });
+    }
+    loadAnnouncements();
+
+    function deleteAnnouncement(id) {
+        if (!confirm('Hapus pengumuman ini?')) return;
+        const fd = new FormData();
+        fd.append('action', 'delete');
+        fd.append('id', id);
+        fetch('api_announcement.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(() => loadAnnouncements());
+    }
+
+    function showCreateAnnouncement() {
+        // Create modal dynamically
+        let modal = document.getElementById('createAnnouncementModal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.innerHTML = `
+            <div class="modal fade" id="createAnnouncementModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                        <div class="modal-header border-0 px-4 pt-4 pb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0" style="color:#0f172a;"><i class="bi bi-megaphone me-2" style="color:#d97706;"></i>Buat Pengumuman</h6>
+                                <small style="color:#94a3b8;">Akan tampil di dashboard semua karyawan</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body px-4 pb-4">
+                            <div class="mb-3">
+                                <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Judul</label>
+                                <input type="text" id="annTitle" class="form-control" placeholder="Judul pengumuman..." style="border-radius:10px;border-color:#e2e8f0;font-size:0.88rem;">
+                            </div>
+                            <div class="mb-3">
+                                <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Isi</label>
+                                <textarea id="annContent" class="form-control" rows="3" placeholder="Detail pengumuman..." style="border-radius:10px;border-color:#e2e8f0;font-size:0.88rem;"></textarea>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Prioritas</label>
+                                    <select id="annPriority" class="form-select" style="border-radius:10px;border-color:#e2e8f0;font-size:0.85rem;">
+                                        <option value="normal">Normal</option>
+                                        <option value="important">Penting</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Kedaluwarsa</label>
+                                    <input type="date" id="annExpires" class="form-control" style="border-radius:10px;border-color:#e2e8f0;font-size:0.85rem;">
+                                </div>
+                            </div>
+                            <button onclick="submitAnnouncement()" class="btn w-100 fw-bold" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:10px;padding:10px;">
+                                <i class="bi bi-send me-1"></i>Kirim Pengumuman
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.appendChild(div);
+            modal = document.getElementById('createAnnouncementModal');
         }
-    });
+        new bootstrap.Modal(modal).show();
+    }
 
-    function saveNote() {
-        const content = noteInput.value;
-        const btnIcon = btnSave.innerHTML;
+    function submitAnnouncement() {
+        const fd = new FormData();
+        fd.append('action', 'create');
+        fd.append('title', document.getElementById('annTitle').value);
+        fd.append('content', document.getElementById('annContent').value);
+        fd.append('priority', document.getElementById('annPriority').value);
+        fd.append('expires_at', document.getElementById('annExpires').value);
 
-        btnSave.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-        btnSave.disabled = true;
-
-        const formData = new FormData();
-        formData.append('notes', content);
-
-        fetch('save_note.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => {
-            if(data.trim() === "success") {
-                originalContent = content;
-                btnSave.classList.remove('show');
-                statusText.classList.add('show');
-                setTimeout(() => {
-                    statusText.classList.remove('show');
-                }, 3000);
-            } else {
-                alert("Gagal menyimpan catatan: " + data);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("Terjadi kesalahan koneksi.");
-        })
-        .finally(() => {
-            btnSave.innerHTML = 'Simpan';
-            btnSave.disabled = false;
-        });
+        fetch('api_announcement.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('createAnnouncementModal')).hide();
+                    document.getElementById('annTitle').value = '';
+                    document.getElementById('annContent').value = '';
+                    loadAnnouncements();
+                } else {
+                    alert(res.message);
+                }
+            });
     }
 </script>
 
