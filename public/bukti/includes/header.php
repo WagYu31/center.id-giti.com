@@ -10,21 +10,22 @@
     
     <style>
         :root {
-            --sidebar-bg: linear-gradient(180deg, #fffdf5 0%, #fef9e7 50%, #fdf3cd 100%);
-            --sidebar-text: #78716c;
-            --sidebar-hover: #1a1a1a;
-            --body-bg: #f5f3ef;
+            /* ISO 9241-151: Neutral cool palette - reduces eye strain */
+            --sidebar-bg: #ffffff;
+            --sidebar-text: #64748b;
+            --sidebar-hover: #1e293b;
+            --body-bg: #f1f5f9;
             --card-bg: #ffffff;
-            --primary: #eab308;
-            --primary-light: #facc15;
-            --primary-glow: rgba(234, 179, 8, 0.15);
-            --text-dark: #1a1a1a;
-            --text-muted: #6b7280;
-            --border-color: rgba(0,0,0,0.06);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-            --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
-            --radius: 16px;
+            --primary: #d97706;
+            --primary-light: #f59e0b;
+            --primary-glow: rgba(217, 119, 6, 0.08);
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 14px;
             --radius-sm: 10px;
         }
         
@@ -35,10 +36,11 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
             color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
         }
         
         /* ═══════════════════════════════════════════
-           SIDEBAR - Bright Gold Premium
+           SIDEBAR - ISO 9241-151 Clean White + Amber Accent
            ═══════════════════════════════════════════ */
         .sidebar {
             width: 260px;
@@ -50,12 +52,12 @@
             z-index: 1000;
             border-radius: 20px;
             padding-top: 28px;
-            box-shadow: 0 10px 40px rgba(234,179,8,0.12), 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
             transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            border: 1px solid rgba(234,179,8,0.15);
+            border: 1px solid var(--border-color);
         }
         
         .sidebar::before {
@@ -75,7 +77,7 @@
         
         .sidebar-brand {
             padding: 0 28px 28px;
-            color: #1a1a1a;
+            color: var(--text-dark);
             font-weight: 700;
             font-size: 1.3rem;
             display: flex;
@@ -91,9 +93,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #1a1a1a;
+            color: white;
             font-size: 1rem;
-            box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
         }
         
         .nav-link {
@@ -103,8 +105,8 @@
             align-items: center;
             gap: 14px;
             font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.25s ease;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
             text-decoration: none;
             position: relative;
             margin: 2px 12px;
@@ -114,13 +116,13 @@
         .nav-link i { font-size: 1.1rem; }
         
         .nav-link:hover {
-            color: #92400e;
-            background: rgba(234,179,8,0.1);
+            color: var(--text-dark);
+            background: #f8fafc;
         }
         
         .nav-link.active {
             color: #92400e;
-            background: linear-gradient(135deg, rgba(234,179,8,0.18), rgba(250,204,21,0.12));
+            background: #fffbeb;
             font-weight: 600;
         }
         
@@ -143,30 +145,30 @@
             font-size: 0.65rem;
             font-weight: 700;
             letter-spacing: 1.2px;
-            color: #b8a070;
+            color: #94a3b8;
         }
         
         .sidebar .btn-center {
             margin: 12px;
             padding: 10px;
             border-radius: var(--radius-sm);
-            border: 1px solid rgba(234,179,8,0.2);
-            color: #78716c;
+            border: 1px solid var(--border-color);
+            color: var(--sidebar-text);
             font-size: 0.85rem;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: rgba(255,255,255,0.5);
+            background: #f8fafc;
         }
         
         .sidebar .btn-center:hover {
             border-color: var(--primary);
             color: #92400e;
-            background: rgba(234, 179, 8, 0.1);
+            background: #fffbeb;
         }
         
         /* ═══════════════════════════════════════════
