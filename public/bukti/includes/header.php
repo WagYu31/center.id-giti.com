@@ -10,9 +10,9 @@
     
     <style>
         :root {
-            --sidebar-bg: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
-            --sidebar-text: rgba(255,255,255,0.45);
-            --sidebar-hover: rgba(255,255,255,0.85);
+            --sidebar-bg: linear-gradient(180deg, #fffdf5 0%, #fef9e7 50%, #fdf3cd 100%);
+            --sidebar-text: #78716c;
+            --sidebar-hover: #1a1a1a;
             --body-bg: #f5f3ef;
             --card-bg: #ffffff;
             --primary: #eab308;
@@ -38,7 +38,7 @@
         }
         
         /* ═══════════════════════════════════════════
-           SIDEBAR - Premium Dark with Gold Accents
+           SIDEBAR - Bright Gold Premium
            ═══════════════════════════════════════════ */
         .sidebar {
             width: 260px;
@@ -50,11 +50,12 @@
             z-index: 1000;
             border-radius: 20px;
             padding-top: 28px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            box-shadow: 0 10px 40px rgba(234,179,8,0.12), 0 2px 8px rgba(0,0,0,0.06);
             display: flex;
             flex-direction: column;
             transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
+            border: 1px solid rgba(234,179,8,0.15);
         }
         
         .sidebar::before {
@@ -74,7 +75,7 @@
         
         .sidebar-brand {
             padding: 0 28px 28px;
-            color: white;
+            color: #1a1a1a;
             font-weight: 700;
             font-size: 1.3rem;
             display: flex;
@@ -113,13 +114,13 @@
         .nav-link i { font-size: 1.1rem; }
         
         .nav-link:hover {
-            color: var(--sidebar-hover);
-            background: rgba(255,255,255,0.06);
+            color: #92400e;
+            background: rgba(234,179,8,0.1);
         }
         
         .nav-link.active {
-            color: var(--primary-light);
-            background: rgba(234, 179, 8, 0.1);
+            color: #92400e;
+            background: linear-gradient(135deg, rgba(234,179,8,0.18), rgba(250,204,21,0.12));
             font-weight: 600;
         }
         
@@ -142,15 +143,15 @@
             font-size: 0.65rem;
             font-weight: 700;
             letter-spacing: 1.2px;
-            color: rgba(255,255,255,0.2);
+            color: #b8a070;
         }
         
         .sidebar .btn-center {
             margin: 12px;
             padding: 10px;
             border-radius: var(--radius-sm);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(234,179,8,0.2);
+            color: #78716c;
             font-size: 0.85rem;
             font-weight: 500;
             transition: all 0.3s ease;
@@ -159,12 +160,13 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            background: rgba(255,255,255,0.5);
         }
         
         .sidebar .btn-center:hover {
             border-color: var(--primary);
-            color: var(--primary-light);
-            background: rgba(234, 179, 8, 0.08);
+            color: #92400e;
+            background: rgba(234, 179, 8, 0.1);
         }
         
         /* ═══════════════════════════════════════════
