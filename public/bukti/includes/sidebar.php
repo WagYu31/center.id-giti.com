@@ -1,6 +1,6 @@
 <nav class="sidebar">
     <div class="sidebar-brand">
-        <div class="bg-white text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+        <div class="brand-icon">
             <i class="bi bi-check2-square"></i>
         </div>
         <span>Bukti</span>
@@ -11,14 +11,12 @@
         <a href="notifikasi.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'notifikasi.php' ? 'active' : ''; ?>"><i class="bi bi-bell"></i> Notifikasi</a>
         <a href="log.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'log.php' ? 'active' : ''; ?>"><i class="bi bi-clock-history"></i> Riwayat Log</a>
         
-        <div class="px-4 mt-4 mb-2 text-uppercase small fw-bold text-muted opacity-50" style="font-size: 0.7rem;">Filter Cepat</div>
+        <div class="section-label">Filter Cepat</div>
         <a href="index.php?status=todo" class="nav-link"><i class="bi bi-circle"></i> Belum Mulai</a>
         <a href="index.php?status=in_progress" class="nav-link"><i class="bi bi-play-circle"></i> Dalam Proses</a>
         <a href="index.php?status=done" class="nav-link"><i class="bi bi-check-circle"></i> Selesai</a>
     </div>
-    <div class="px-4 pb-4">
-        <a href="../index.php" class="btn btn-outline-light w-100 border-secondary text-secondary btn-sm"><i class="bi bi-grid me-2"></i> Center</a>
-    </div>
+    <a href="../index.php" class="btn-center"><i class="bi bi-grid"></i> Center</a>
 </nav>
 <div class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-lg-none" style="z-index: 999; display: none;" onclick="document.querySelector('.sidebar').classList.remove('show')" id="sidebarOverlay"></div>
 <script>
