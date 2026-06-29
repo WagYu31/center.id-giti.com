@@ -177,6 +177,87 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
         color: #9ca3af;
         margin-top: 4px;
     }
+
+    /* Description Editor */
+    .desc-editor {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #fafafa;
+    }
+    .desc-editor:focus-within {
+        border-color: #eab308;
+        box-shadow: 0 0 0 3px rgba(234,179,8,0.12);
+        background: white;
+    }
+    .desc-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 10px;
+        background: #f9fafb;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .desc-tool {
+        background: none;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    .desc-tool:hover {
+        background: rgba(234,179,8,0.1);
+        color: #eab308;
+    }
+    .desc-divider {
+        width: 1px;
+        height: 18px;
+        background: #e5e7eb;
+        margin: 0 6px;
+    }
+    .desc-hint {
+        font-size: 0.68rem;
+        color: #9ca3af;
+        margin-left: auto;
+    }
+    .desc-editor textarea {
+        background: transparent !important;
+        resize: vertical;
+        min-height: 100px;
+        max-height: 400px;
+        font-size: 0.9rem !important;
+        line-height: 1.65;
+        color: #374151;
+    }
+    .desc-editor textarea::placeholder {
+        color: #9ca3af;
+    }
+    /* Paste toast notification */
+    .paste-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #1a1a1a;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        z-index: 99999;
+        animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .paste-toast i { color: #eab308; margin-right: 6px; }
+    @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
 </style>
 
 <div id="loading-overlay">
@@ -388,7 +469,18 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
                         <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-primary w-auto"><option value="todo">Todo</option><option value="in_progress">On Progress</option><option value="done">Done</option></select>
                     </div>
                     <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-2" placeholder="Judul Pekerjaan..." required>
-                    <textarea name="description" id="inpDesc" class="form-control border-0 px-0 fs-6" rows="4" placeholder="Deskripsi... Gunakan @ untuk tag"></textarea>
+                    <div class="desc-editor">
+                        <div class="desc-toolbar">
+                            <button type="button" class="desc-tool" onclick="insertFormat('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
+                            <button type="button" class="desc-tool" onclick="insertFormat('list')" title="Daftar"><i class="bi bi-list-ol"></i></button>
+                            <button type="button" class="desc-tool" onclick="insertFormat('bullet')" title="Bullet"><i class="bi bi-list-ul"></i></button>
+                            <span class="desc-divider"></span>
+                            <button type="button" class="desc-tool" onclick="cleanupDesc()" title="Bersihkan Format"><i class="bi bi-eraser"></i></button>
+                            <span class="desc-hint">Paste dari WA/Google otomatis dirapikan ✨</span>
+                        </div>
+                        <textarea name="description" id="inpDesc" class="form-control border-0 px-3 fs-6" rows="5" placeholder="Deskripsi... Gunakan @ untuk tag
+Tips: Copy-paste dari WhatsApp/Google akan otomatis dirapikan!"></textarea>
+                    </div>
                     <div class="bg-light p-3 rounded-4 mt-3 row g-2">
                         <div class="col-6"><label class="small text-muted fw-bold">Mulai</label><input type="date" name="start_date" id="inpStart" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
                         <div class="col-6"><label class="small text-muted fw-bold">Selesai</label><input type="date" name="end_date" id="inpEnd" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
@@ -656,10 +748,156 @@ function setupDropZone(zoneId, fileInputId, fileArray, arrayName, containerId) {
     });
 }
 
+// --- SMART PASTE HANDLER ---
+function cleanPastedText(html, plain) {
+    // If we have HTML, convert it smartly
+    if (html && html !== plain) {
+        let temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        // Convert <br> and block elements to newlines
+        temp.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
+        temp.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, tr').forEach(el => {
+            el.insertAdjacentText('afterend', '\n');
+        });
+        
+        // Convert <li> to bullet points
+        temp.querySelectorAll('li').forEach(el => {
+            let parent = el.parentElement;
+            let isOrdered = parent && parent.tagName === 'OL';
+            let index = Array.from(parent ? parent.children : []).indexOf(el) + 1;
+            let prefix = isOrdered ? index + '. ' : '• ';
+            el.innerHTML = prefix + el.innerHTML;
+            el.insertAdjacentText('afterend', '\n');
+        });
+        
+        // Get plain text
+        plain = temp.textContent || temp.innerText || '';
+    }
+    
+    // Clean up the text
+    let text = plain || '';
+    
+    // Normalize various unicode dashes/bullets to standard ones
+    text = text.replace(/[\u2022\u2023\u25E6\u2043\u2219]/g, '•');
+    text = text.replace(/[\u2013\u2014]/g, '-');
+    text = text.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+    text = text.replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+    text = text.replace(/\u00A0/g, ' '); // non-breaking space → regular space
+    text = text.replace(/\u200B/g, '');  // zero-width space → remove
+    text = text.replace(/\u200C/g, '');  // zero-width non-joiner → remove
+    text = text.replace(/\u200D/g, '');  // zero-width joiner → remove
+    text = text.replace(/\uFEFF/g, '');  // BOM → remove
+    
+    // Fix excessive whitespace
+    text = text.replace(/[ \t]+/g, ' ');           // multiple spaces → single
+    text = text.replace(/\n\s*\n\s*\n/g, '\n\n');  // max 2 newlines
+    text = text.replace(/^\s+|\s+$/gm, function(match) { // trim each line
+        return match.includes('\n') ? '\n' : match.trim() ? ' ' : '';
+    });
+    
+    // Trim leading/trailing whitespace per line
+    text = text.split('\n').map(line => line.trim()).join('\n');
+    
+    // Remove leading/trailing blank lines
+    text = text.replace(/^\n+|\n+$/g, '');
+    
+    return text;
+}
+
+function setupSmartPaste(selector) {
+    $(document).on('paste', selector, function(e) {
+        e.preventDefault();
+        
+        let cd = (e.originalEvent || e).clipboardData;
+        let html = cd.getData('text/html');
+        let plain = cd.getData('text/plain');
+        
+        let cleaned = cleanPastedText(html, plain);
+        
+        // Insert at cursor position
+        let ta = this;
+        let start = ta.selectionStart;
+        let end = ta.selectionEnd;
+        let before = ta.value.substring(0, start);
+        let after = ta.value.substring(end);
+        
+        ta.value = before + cleaned + after;
+        
+        // Move cursor to end of pasted text
+        let newPos = start + cleaned.length;
+        ta.setSelectionRange(newPos, newPos);
+        
+        // Auto-resize
+        autoResizeTextarea(ta);
+        
+        // Show toast notification
+        if (html && html !== plain) {
+            showPasteToast();
+        }
+        
+        // Trigger input event for mentions
+        $(ta).trigger('input');
+    });
+}
+
+function showPasteToast() {
+    let existing = document.querySelector('.paste-toast');
+    if (existing) existing.remove();
+    
+    let toast = document.createElement('div');
+    toast.className = 'paste-toast';
+    toast.innerHTML = '<i class="bi bi-magic"></i> Teks berhasil dirapikan!';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+function autoResizeTextarea(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 400) + 'px';
+}
+
+function insertFormat(type) {
+    let ta = document.getElementById('inpDesc');
+    let start = ta.selectionStart;
+    let end = ta.selectionEnd;
+    let text = ta.value;
+    let selected = text.substring(start, end);
+    let insert = '';
+    
+    if (type === 'bold') {
+        insert = '**' + (selected || 'teks bold') + '**';
+    } else if (type === 'list') {
+        let lines = selected ? selected.split('\n') : ['Item 1', 'Item 2', 'Item 3'];
+        insert = lines.map((l, i) => (i+1) + '. ' + l.replace(/^\d+\.\s*/, '')).join('\n');
+    } else if (type === 'bullet') {
+        let lines = selected ? selected.split('\n') : ['Item 1', 'Item 2', 'Item 3'];
+        insert = lines.map(l => '• ' + l.replace(/^[•\-\*]\s*/, '')).join('\n');
+    }
+    
+    ta.value = text.substring(0, start) + insert + text.substring(end);
+    ta.setSelectionRange(start, start + insert.length);
+    ta.focus();
+    autoResizeTextarea(ta);
+}
+
+function cleanupDesc() {
+    let ta = document.getElementById('inpDesc');
+    ta.value = cleanPastedText('', ta.value);
+    autoResizeTextarea(ta);
+    showPasteToast();
+}
+
 $(document).ready(()=>{ 
     setupMentions('#inpDesc'); setupMentions('#d-input'); 
     setupDropZone('dropZone', 'fileInput', selectedFiles, 'selectedFiles', 'file-preview-container');
     setupDropZone('progressDropZone', 'progressFileInput', progressFiles, 'progressFiles', 'progress-preview-container');
+    setupSmartPaste('#inpDesc');
+    setupSmartPaste('#create-desc');
+    
+    // Auto-resize on input
+    $(document).on('input', '#inpDesc', function() { autoResizeTextarea(this); });
+    
     $('#createModal').on('hidden.bs.modal', function(){ $('#formJob')[0].reset(); $('#modalTitle').text('Buat Pekerjaan Baru'); $('#formAction').val('create_post'); selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); });
 });
 </script>
