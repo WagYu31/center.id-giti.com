@@ -377,7 +377,7 @@ function format_text($text) {
                                     <i class="bi bi-chat-dots me-1"></i> <?php echo $job['c_count']; ?> Komentar
                                 </button>
                             </div>
-                            <div class="d-flex align-items-center gap-1" title="<?php echo $job['v_count']; ?> orang melihat">
+                            <div class="d-flex align-items-center gap-1" style="cursor:pointer;" onclick="showViewers(<?php echo $job['id']; ?>)" title="Klik untuk lihat siapa saja">
                                 <?php if(!empty($job['viewers'])): ?>
                                 <div class="d-flex" style="margin-right: 4px;">
                                     <?php foreach(array_slice($job['viewers'], 0, 3) as $vi => $viewer): ?>
@@ -606,6 +606,24 @@ function format_text($text) {
     </div>
 </div>
 
+<!-- Viewers Modal -->
+<div class="modal fade" id="viewersModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <div>
+                    <h6 class="fw-bold mb-0" style="color: #111827; font-size: 0.95rem;"><i class="bi bi-eye me-2" style="color: #eab308;"></i>Dilihat oleh</h6>
+                    <small id="viewers-count" style="color: #9ca3af; font-size: 0.75rem;"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="font-size: 0.7rem;"></button>
+            </div>
+            <div class="modal-body px-4 py-3" id="viewers-list" style="max-height: 350px;">
+                <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php require_once 'includes/footer.php'; ?>
 
 <script>
@@ -816,6 +834,38 @@ function showMedia(p,t){
     let fp='assets/uploads/bukti/'+p; 
     let c = t=='image' ? `<img src="${fp}" style="max-height:90vh; max-width:100%">` : `<video src="${fp}" controls autoplay style="max-height:90vh; max-width:100%"></video>`;
     $('#media-container').html(c); new bootstrap.Modal('#mediaModal').show();
+}
+
+function showViewers(jobId) {
+    // Show modal with loading
+    $('#viewers-list').html('<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>');
+    $('#viewers-count').text('');
+    new bootstrap.Modal('#viewersModal').show();
+    
+    // Fetch viewers via detail endpoint
+    $.post('ajax_action.php', {action:'fetch_detail', job_id: jobId}, function(res) {
+        if(res.status == 'success') {
+            let count = res.view_count || 0;
+            $('#viewers-count').text(count + ' orang');
+            
+            if(res.viewers && res.viewers.length > 0) {
+                let html = '';
+                res.viewers.forEach(v => {
+                    html += `<div class="d-flex align-items-center gap-3 py-2" style="border-bottom: 1px solid rgba(0,0,0,0.03);">
+                        <img src="${v.avatar}" class="rounded-circle" width="36" height="36" style="object-fit:cover; border: 2px solid rgba(234,179,8,0.15);">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold" style="font-size:0.85rem; color:#111827;">${v.name}</div>
+                            <div style="font-size:0.7rem; color:#9ca3af;">${v.viewed_at_fmt}</div>
+                        </div>
+                        <i class="bi bi-eye-fill" style="color: #d1d5db; font-size: 0.8rem;"></i>
+                    </div>`;
+                });
+                $('#viewers-list').html(html);
+            } else {
+                $('#viewers-list').html('<div class="text-center py-4"><i class="bi bi-eye-slash" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada yang melihat</p></div>');
+            }
+        }
+    }, 'json');
 }
 
 function showProgressForm(){ 
