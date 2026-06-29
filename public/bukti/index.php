@@ -37,21 +37,31 @@ $stmt_count = $conn->prepare("SELECT COUNT(*) FROM bukti_jobs j WHERE $where");
 $stmt_count->execute($param);
 $total_pages = ceil($stmt_count->fetchColumn() / $limit);
 
+// Check if views table exists
+$has_views_table = false;
+try { $conn->query("SELECT 1 FROM bukti_post_views LIMIT 1"); $has_views_table = true; } catch(Exception $e) {}
+
+$v_count_sql = $has_views_table ? "(SELECT COUNT(*) FROM bukti_post_views WHERE job_id = j.id)" : "0";
 $sql = "SELECT j.*, u.name as user_name, u.avatar as user_avatar, u.nickname, u.jabatan, 
         (SELECT COUNT(*) FROM bukti_comments WHERE job_id = j.id AND deleted_at IS NULL) as c_count, 
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND type='like') as l_count, 
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id=$current_user_id AND type='like') as is_liked,
-        (SELECT COUNT(*) FROM bukti_post_views WHERE job_id = j.id) as v_count
+        $v_count_sql as v_count
         FROM bukti_jobs j JOIN users u ON j.user_id = u.id WHERE $where ORDER BY j.created_at DESC LIMIT $limit OFFSET $offset";
 $stmt = $conn->prepare($sql); $stmt->execute($param); $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch viewer avatars for each job
+// Fetch viewer avatars for each job (safe)
 foreach($jobs as &$jb) {
-    $vs = $conn->prepare("SELECT u.name, u.avatar FROM bukti_post_views v JOIN users u ON v.user_id = u.id WHERE v.job_id = ? ORDER BY v.viewed_at DESC LIMIT 5");
-    $vs->execute([$jb['id']]);
-    $jb['viewers'] = $vs->fetchAll(PDO::FETCH_ASSOC);
-    foreach($jb['viewers'] as &$vw) {
-        $vw['avatar'] = $vw['avatar'] && file_exists("assets/img/avatars/".$vw['avatar']) ? "assets/img/avatars/".$vw['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($vw['name']);
+    $jb['viewers'] = [];
+    if($has_views_table) {
+        try {
+            $vs = $conn->prepare("SELECT u.name, u.avatar FROM bukti_post_views v JOIN users u ON v.user_id = u.id WHERE v.job_id = ? ORDER BY v.viewed_at DESC LIMIT 5");
+            $vs->execute([$jb['id']]);
+            $jb['viewers'] = $vs->fetchAll(PDO::FETCH_ASSOC);
+            foreach($jb['viewers'] as &$vw) {
+                $vw['avatar'] = $vw['avatar'] && file_exists("assets/img/avatars/".$vw['avatar']) ? "assets/img/avatars/".$vw['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($vw['name']);
+            }
+        } catch(Exception $e) {}
     }
 }
 
