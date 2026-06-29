@@ -437,40 +437,52 @@ function format_text($text) {
 
 <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 overflow-hidden" style="height: 85vh;">
+        <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg" style="height: 85vh;">
             <div class="modal-body p-0 h-100">
                 <div class="row g-0 h-100">
-                    <div class="col-lg-8 h-100 bg-white border-end d-flex flex-column">
-                        <div class="p-4 border-bottom flex-shrink-0">
+                    <!-- Left Panel: Content -->
+                    <div class="col-lg-8 h-100 d-flex flex-column" style="background: #fafafa;">
+                        <!-- Header -->
+                        <div class="p-4 flex-shrink-0" style="background: white; border-bottom: 1px solid rgba(0,0,0,0.04);">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex gap-3 align-items-center"><img src="" id="d-avatar" class="rounded-circle shadow-sm" width="50" height="50" style="object-fit: cover;"><div><h6 class="fw-bold mb-0 text-dark" id="d-name"></h6><small class="text-muted" id="d-date"></small></div></div>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <img src="" id="d-avatar" class="rounded-3 shadow-sm" width="50" height="50" style="object-fit: cover; border: 2px solid rgba(234,179,8,0.2);">
+                                    <div>
+                                        <h6 class="fw-bold mb-0" id="d-name" style="color: #111827; font-size: 0.95rem; letter-spacing: -0.01em;"></h6>
+                                        <small id="d-date" style="color: #6b7280; font-size: 0.78rem;"></small>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center gap-3"><div id="d-status-badge"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                             </div>
                         </div>
+                        <!-- Body -->
                         <div class="p-4 overflow-auto custom-scroll flex-grow-1" style="min-height: 0;">
-                            <h3 class="fw-bold mb-3 text-dark" id="d-title"></h3>
-                            <div id="d-desc" class="text-secondary mb-4" style="white-space: pre-wrap; font-size: 1rem; line-height: 1.6;"></div>
+                            <h3 class="fw-bold mb-3" id="d-title" style="color: #111827; letter-spacing: -0.02em; font-size: 1.5rem; line-height: 1.3;"></h3>
+                            <div id="d-desc" class="mb-4" style="white-space: pre-wrap; font-size: 0.92rem; line-height: 1.7; color: #374151;"></div>
                             <div id="d-att" class="row g-2 mb-4"></div>
-                            <div class="card bg-light border-0 rounded-4">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3"><h6 class="fw-bold m-0 text-primary"><i class="bi bi-activity me-2"></i>Timeline Progress</h6><button class="btn btn-sm btn-primary rounded-pill px-3" id="btn-update-progress" style="display:none;" onclick="showProgressForm()"><i class="bi bi-plus-lg me-1"></i> Update</button></div>
-                                    <div id="d-timeline" class="ps-2"></div>
+                            <!-- Timeline Section -->
+                            <div style="background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; overflow: hidden;">
+                                <div class="d-flex justify-content-between align-items-center p-3 px-4" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
+                                    <h6 class="fw-bold m-0" style="color: #111827; font-size: 0.92rem;"><i class="bi bi-activity me-2" style="color: #eab308;"></i>Timeline Progress</h6>
+                                    <button class="btn btn-sm rounded-pill px-3 fw-bold" id="btn-update-progress" style="display:none; background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a; font-size: 0.78rem;" onclick="showProgressForm()"><i class="bi bi-plus-lg me-1"></i> Update</button>
                                 </div>
+                                <div id="d-timeline" class="p-4"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 h-100 bg-light d-flex flex-column">
-                        <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0" style="height: 83px;">
-                            <h6 class="fw-bold m-0">Diskusi</h6>
-                            <button class="btn btn-sm btn-light border rounded-pill fw-bold text-muted" id="d-like-btn" onclick="toggleLikeInModal()"><i class="bi bi-hand-thumbs-up-fill"></i>
+                    <!-- Right Panel: Discussion -->
+                    <div class="col-lg-4 h-100 d-flex flex-column" style="background: #f9fafb; border-left: 1px solid rgba(0,0,0,0.04);">
+                        <div class="p-3 px-4 d-flex justify-content-between align-items-center flex-shrink-0" style="background: white; border-bottom: 1px solid rgba(0,0,0,0.04); height: 83px;">
+                            <h6 class="fw-bold m-0" style="color: #111827; font-size: 0.95rem;"><i class="bi bi-chat-dots me-2" style="color: #eab308;"></i>Diskusi</h6>
+                            <button class="btn btn-sm rounded-pill fw-bold px-3" id="d-like-btn" onclick="toggleLikeInModal()" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem; border: 1px solid #e5e7eb;"><i class="bi bi-hand-thumbs-up-fill"></i>
                             <!--<span id="d-like-count">0</span>-->
                             </button>
                         </div>
                         <div id="d-comments" class="flex-grow-1 p-3 overflow-auto custom-scroll" style="min-height: 0;"></div>
-                        <div class="p-3 bg-white border-top flex-shrink-0">
+                        <div class="p-3 flex-shrink-0" style="background: white; border-top: 1px solid rgba(0,0,0,0.04);">
                             <div class="position-relative">
-                                <input id="d-input" class="form-control rounded-pill pe-5 bg-light border-0" placeholder="Ketik @ untuk tag..." style="padding-right: 50px;">
-                                <button class="btn btn-primary rounded-circle position-absolute top-50 end-0 translate-middle-y me-2" style="width:35px;height:35px; display: flex; align-items: center; justify-content: center;" onclick="sendComment()"><i class="bi bi-send-fill" style="font-size: 0.9rem;"></i></button>
+                                <input id="d-input" class="form-control rounded-pill bg-light border-0 pe-5" placeholder="Ketik @ untuk tag..." style="padding: 10px 50px 10px 16px; font-size: 0.88rem; color: #374151;">
+                                <button class="btn rounded-circle position-absolute top-50 end-0 translate-middle-y me-2" style="width:36px;height:36px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;" onclick="sendComment()"><i class="bi bi-send-fill" style="font-size: 0.85rem;"></i></button>
                             </div>
                         </div>
                     </div>
@@ -608,19 +620,60 @@ function openDetail(id){
             let j=res.job;
             $('#d-title').text(j.title); $('#d-desc').html(formatText(j.description));
             $('#d-name').text(j.nickname||j.name); $('#d-date').text(j.date_fmt); $('#d-avatar').attr('src',j.avatar_url);
-            let b={todo:'secondary', in_progress:'primary', done:'success'};
-            let l={todo:'Belum Mulai', in_progress:'Dalam Proses', done:'Selesai'};
-            $('#d-status-badge').html(`<span class="badge bg-${b[j.status]} px-3 py-2 rounded-pill">${l[j.status]}</span>`);
             
-            let th=''; if(res.history.length){ res.history.forEach(h=>{ th+=`<div class="timeline-box"><div class="timeline-item"><div class="fw-bold small">${h.name} <span class="badge bg-light text-dark border ms-1 uppercase">${h.status_after}</span></div><div class="timeline-date">${h.date}</div><div class="timeline-content">${h.notes}</div></div></div>`; }); } else { th='<div class="text-muted small ps-3 fst-italic">Belum ada progress.</div>'; }
+            // Premium status badges
+            let sc = {
+                todo: {bg:'#f1f5f9', color:'#475569', icon:'circle', label:'Belum Mulai'},
+                in_progress: {bg:'#fefce8', color:'#a16207', icon:'play-circle-fill', label:'Dalam Proses'},
+                done: {bg:'#f0fdf4', color:'#15803d', icon:'check-circle-fill', label:'Selesai'}
+            };
+            let s = sc[j.status] || sc.todo;
+            $('#d-status-badge').html(`<span class="px-3 py-2 rounded-pill fw-bold" style="background:${s.bg}; color:${s.color}; font-size:0.75rem; letter-spacing:0.3px;"><i class="bi bi-${s.icon} me-1"></i>${s.label}</span>`);
+            
+            // Timeline with premium cards
+            let th=''; 
+            if(res.history.length){ 
+                res.history.forEach((h,i)=>{ 
+                    let sColor = h.status_after === 'done' ? '#15803d' : (h.status_after === 'in_progress' ? '#a16207' : '#475569');
+                    th+=`<div class="d-flex gap-3 mb-3 ${i > 0 ? 'pt-3' : ''}" ${i > 0 ? 'style="border-top: 1px solid rgba(0,0,0,0.04);"' : ''}>
+                        <div style="width:8px; height:8px; border-radius:50%; background:${sColor}; margin-top:6px; flex-shrink:0; box-shadow: 0 0 0 3px ${sColor}22;"></div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="fw-bold" style="font-size:0.85rem; color:#111827;">${h.name}</span>
+                                <small style="font-size:0.7rem; color:#9ca3af;">${h.date}</small>
+                            </div>
+                            <span class="px-2 py-1 rounded-pill d-inline-block mt-1" style="font-size:0.68rem; font-weight:600; background:${sColor}10; color:${sColor}; text-transform:uppercase; letter-spacing:0.5px;">${h.status_after}</span>
+                            ${h.notes ? `<p class="mt-2 mb-0" style="font-size:0.85rem; color:#4b5563; line-height:1.55;">${h.notes}</p>` : ''}
+                        </div>
+                    </div>`; 
+                }); 
+            } else { 
+                th='<div class="text-center py-3"><i class="bi bi-clock-history" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada progress</p></div>'; 
+            }
             $('#d-timeline').html(th);
             
-            let ah=''; res.attachments.forEach(a=>{ let p='assets/uploads/bukti/'+a.file_path; if(a.file_type=='image') ah+=`<div class="col-4"><img src="${p}" class="img-fluid rounded cursor-pointer" onclick="showMedia('${a.file_path}','image')"></div>`; else if(a.file_type=='video') ah+=`<div class="col-12"><video src="${p}" controls class="w-100 rounded"></video></div>`; else ah+=`<div class="col-12"><a href="${p}" target="_blank" class="btn btn-light w-100 text-start border"><i class="bi bi-file-earmark"></i> ${a.file_name}</a></div>`; });
+            // Premium attachment gallery
+            let ah=''; 
+            res.attachments.forEach(a=>{ 
+                let p='assets/uploads/bukti/'+a.file_path; 
+                if(a.file_type=='image') {
+                    ah+=`<div class="col-4"><div style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,0.3));opacity:0;transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><i class="bi bi-zoom-in position-absolute bottom-0 end-0 m-2 text-white"></i></div></div></div>`; 
+                } else if(a.file_type=='video') {
+                    ah+=`<div class="col-12"><video src="${p}" controls class="w-100" style="border-radius:12px; max-height:300px; background:#000;"></video></div>`; 
+                } else {
+                    ah+=`<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:white; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s;" onmouseover="this.style.borderColor='#eab308'" onmouseout="this.style.borderColor='#e5e7eb'"><div style="width:40px;height:40px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;"><i class="bi bi-file-earmark-text" style="color:#eab308; font-size:1.1rem;"></i></div><div><div style="font-size:0.85rem; font-weight:600; color:#111827;">${a.file_name}</div><div style="font-size:0.7rem; color:#9ca3af;">Klik untuk download</div></div></a></div>`; 
+                }
+            });
             $('#d-att').html(ah);
 
             renderComments(res.comments);
             $('#d-like-count').text(j.like_count);
-            let btn=$('#d-like-btn'); j.is_liked?btn.removeClass('btn-light text-muted').addClass('btn-primary text-white'):btn.removeClass('btn-primary text-white').addClass('btn-light text-muted');
+            let btn=$('#d-like-btn'); 
+            if(j.is_liked) {
+                btn.css({'background':'linear-gradient(135deg, #eab308, #facc15)', 'color':'#1a1a1a', 'border-color':'transparent'});
+            } else {
+                btn.css({'background':'#f9fafb', 'color':'#4b5563', 'border-color':'#e5e7eb'});
+            }
             
             $('#btn-update-progress').toggle(res.is_owner);
             $('#p-job-id').val(id);
@@ -630,10 +683,27 @@ function openDetail(id){
 }
 
 function renderComments(arr){
-    let h=''; arr.forEach(c=>{
-        let delBtn = c.is_mine ? `<div class="mt-1"><button class="btn btn-link p-0 text-muted" style="font-size:0.7rem" onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">Edit</button> <button class="btn btn-link p-0 text-danger ms-2" style="font-size:0.7rem" onclick="delComment(${c.id})">Hapus</button></div>` : '';
-        h+=`<div class="d-flex gap-2 mb-3"><img src="${c.avatar}" class="rounded-circle" width="32" height="32"><div class="w-100"><div class="bg-white border rounded-3 p-2 px-3 shadow-sm"><div class="d-flex justify-content-between"><span class="fw-bold small">${c.name}</span><small class="text-muted" style="font-size:0.6rem">${c.date}</small></div><div class="small text-dark mt-1">${formatText(c.content)}</div></div>${delBtn}</div></div>`;
-    });
+    let h=''; 
+    if(arr.length === 0) {
+        h = '<div class="text-center py-4"><i class="bi bi-chat-text" style="font-size:2rem; color:#e5e7eb;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada komentar</p></div>';
+    } else {
+        arr.forEach(c=>{
+            let delBtn = c.is_mine ? `<div class="mt-1 d-flex gap-2"><button class="btn btn-link p-0 text-decoration-none" style="font-size:0.7rem; color:#eab308;" onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">Edit</button><button class="btn btn-link p-0 text-decoration-none" style="font-size:0.7rem; color:#dc2626;" onclick="delComment(${c.id})">Hapus</button></div>` : '';
+            h+=`<div class="d-flex gap-2 mb-3">
+                <img src="${c.avatar}" class="rounded-circle" width="30" height="30" style="object-fit:cover; flex-shrink:0;">
+                <div class="w-100">
+                    <div style="background:white; border:1px solid rgba(0,0,0,0.04); border-radius:12px; padding:10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="font-size:0.82rem; color:#111827;">${c.name}</span>
+                            <small style="font-size:0.62rem; color:#9ca3af;">${c.date}</small>
+                        </div>
+                        <div style="font-size:0.85rem; color:#374151; margin-top:4px; line-height:1.5;">${formatText(c.content)}</div>
+                    </div>
+                    ${delBtn}
+                </div>
+            </div>`;
+        });
+    }
     $('#d-comments').html(h);
 }
 
