@@ -159,39 +159,160 @@ require_once 'includes/sidebar.php';
 ?>
 
 <style>
-    .profile-header { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.03); margin-bottom: 30px; display: flex; align-items: center; gap: 30px; }
-    .avatar-wrapper { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
-    .profile-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #f8f9fa; }
-    .btn-upload { position: absolute; bottom: 0; right: 0; background: #000; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; border: 2px solid #fff; z-index: 2; }
-    .btn-upload:hover { background: #333; transform: scale(1.1); }
-    .btn-delete-av { position: absolute; bottom: 0; left: 0; background: #dc3545; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; border: 2px solid #fff; z-index: 2; }
-    .btn-delete-av:hover { background: #bb2d3b; transform: scale(1.1); }
-    .badge-role { background: #000; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-left: 10px; vertical-align: middle; }
-    .stats-row { display: flex; gap: 40px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-    .stat-val { font-size: 1.2rem; font-weight: 800; color: #000; }
-    .stat-lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-    .settings-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.03); overflow: hidden; }
-    .settings-nav { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; display: flex; gap: 10px; }
-    .nav-btn { border: none; background: transparent; padding: 10px 20px; border-radius: 8px; font-weight: 600; color: #666; transition: 0.2s; cursor: pointer; }
-    .nav-btn:hover { color: #000; background: rgba(0,0,0,0.05); }
-    .nav-btn.active { background: #000; color: #fff; }
-    .form-section { padding: 40px; display: none; }
+    /* ═══════════════════════════════════════════════════
+       PROFILE PAGE - ISO 9241-151 Ergonomic Design
+       ═══════════════════════════════════════════════════ */
+    .profile-header {
+        background: #fff;
+        padding: 32px 36px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+    }
+    .avatar-wrapper { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+    .profile-avatar {
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .btn-upload {
+        position: absolute; bottom: 2px; right: 2px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; width: 30px; height: 30px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s;
+        border: 2px solid #fff; z-index: 2; font-size: 0.75rem;
+        box-shadow: 0 2px 8px rgba(217,119,6,0.25);
+    }
+    .btn-upload:hover { transform: scale(1.1); }
+    .btn-delete-av {
+        position: absolute; bottom: 2px; left: 2px;
+        background: #ef4444; color: #fff; width: 30px; height: 30px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s;
+        border: 2px solid #fff; z-index: 2; font-size: 0.75rem;
+    }
+    .btn-delete-av:hover { background: #dc2626; transform: scale(1.1); }
+
+    .user-info h2 { font-size: 1.35rem; font-weight: 700; color: var(--text-dark); margin: 0; }
+    .badge-role {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; padding: 3px 10px; border-radius: 6px;
+        font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+        margin-left: 10px; vertical-align: middle; letter-spacing: 0.5px;
+    }
+    .user-meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
+    .stats-row {
+        display: flex; gap: 32px; margin-top: 14px;
+        border-top: 1px solid var(--border-color); padding-top: 14px;
+    }
+    .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+    .stat-lbl {
+        font-size: 0.65rem; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700;
+    }
+    .stat-val.stat-done { color: #059669; }
+    .stat-lbl.stat-done { color: #059669; }
+
+    /* Settings Card */
+    .settings-card {
+        background: #fff; border-radius: var(--radius);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .settings-nav {
+        background: #f8fafc; padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex; gap: 8px;
+    }
+    .nav-btn {
+        border: none; background: transparent;
+        padding: 9px 18px; border-radius: 8px;
+        font-weight: 600; font-size: 0.85rem;
+        color: var(--text-muted); transition: 0.2s; cursor: pointer;
+    }
+    .nav-btn:hover { color: var(--text-dark); background: white; }
+    .nav-btn.active {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; box-shadow: 0 2px 8px rgba(217,119,6,0.2);
+    }
+
+    /* Form Sections */
+    .form-section { padding: 32px 36px; display: none; }
     .form-section.active { display: block; animation: fadeIn 0.3s ease; }
-    .form-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #888; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
-    .form-control-clean { width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.95rem; color: #333; background: #fff; transition: 0.2s; }
-    .form-control-clean:focus { border-color: #000; outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
-    .form-control-clean[readonly] { background: #f9f9f9; color: #666; border-color: #eee; }
-    .btn-save { background: #000; color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-save:hover { background: #333; transform: translateY(-2px); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .form-label {
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        color: var(--text-muted); margin-bottom: 7px; display: block;
+        letter-spacing: 0.6px;
+    }
+    .form-control-clean {
+        width: 100%; padding: 11px 14px;
+        border: 1px solid var(--border-color); border-radius: 10px;
+        font-size: 0.88rem; color: var(--text-dark);
+        background: #fff; transition: 0.2s;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .form-control-clean:focus {
+        border-color: var(--primary); outline: none;
+        box-shadow: 0 0 0 3px rgba(217,119,6,0.08);
+    }
+    .form-control-clean[readonly] {
+        background: #f8fafc; color: var(--text-muted);
+        border-color: var(--border-color);
+    }
+    select.form-control-clean {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+    textarea.form-control-clean { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; border: none; padding: 11px 28px; border-radius: 10px;
+        font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: 0.2s;
+        box-shadow: 0 2px 8px rgba(217,119,6,0.2);
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
+
+    /* Security Tab */
+    .security-section h5 {
+        font-size: 1rem; font-weight: 700; color: var(--text-dark);
+        margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .security-section h5 i { color: var(--primary); }
+    .email-current {
+        padding: 14px 16px; background: #f8fafc; border-radius: 10px;
+        margin-bottom: 20px; border: 1px solid var(--border-color);
+    }
+    .email-current small { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+    .email-current .email-val { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; margin-top: 2px; }
+    .btn-outline-save {
+        width: 100%; padding: 11px; border-radius: 10px;
+        border: 1px solid var(--border-color); background: white;
+        color: var(--text-dark); font-weight: 600; font-size: 0.85rem;
+        cursor: pointer; transition: 0.2s;
+    }
+    .btn-outline-save:hover { border-color: var(--primary); color: #92400e; background: #fffbeb; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <div class="main-wrapper">
     <div class="content-area" style="max-width: 900px; margin: 0 auto;">
         
         <div class="mb-4">
-            <h3 class="fw-bold mb-1">Profil Saya</h3>
-            <p class="text-muted mb-0">Kelola informasi profil dan keamanan akun Anda.</p>
+            <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin: 0 0 4px;"><i class="bi bi-person-circle me-2" style="color: var(--primary);"></i>Profil Saya</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">Kelola informasi profil dan keamanan akun Anda.</p>
         </div>
 
         <?php if($msg): ?>
@@ -220,11 +341,11 @@ require_once 'includes/sidebar.php';
                     <h2 class="fw-bold m-0"><?php echo htmlspecialchars($u['name']); ?></h2>
                     <span class="badge-role"><?php echo htmlspecialchars($u['jabatan']); ?></span>
                 </div>
-                <div class="text-muted mt-1">@<?php echo htmlspecialchars($u['nickname'] ?: str_replace(' ','',$u['name'])); ?> &bull; <?php echo htmlspecialchars($u['email']); ?></div>
+                <div class="user-meta">@<?php echo htmlspecialchars($u['nickname'] ?: str_replace(' ','',$u['name'])); ?> &bull; <?php echo htmlspecialchars($u['email']); ?></div>
                 <div class="stats-row">
                     <div class="stat-item"><div class="stat-val"><?php echo $stats['todo']??0; ?></div><div class="stat-lbl">Todo</div></div>
                     <div class="stat-item"><div class="stat-val"><?php echo $stats['in_progress']??0; ?></div><div class="stat-lbl">Proses</div></div>
-                    <div class="stat-item"><div class="stat-val text-success"><?php echo $stats['done']??0; ?></div><div class="stat-lbl text-success">Selesai</div></div>
+                    <div class="stat-item"><div class="stat-val stat-done"><?php echo $stats['done']??0; ?></div><div class="stat-lbl stat-done">Selesai</div></div>
                 </div>
             </div>
         </div>
@@ -258,24 +379,28 @@ require_once 'includes/sidebar.php';
 
             <div id="tab-security" class="form-section">
                 <div class="row">
-                    <div class="col-md-6 border-end pe-4">
-                        <h5 class="fw-bold mb-4">Ubah Password</h5>
-                        <form method="POST">
-                            <input type="hidden" name="action" value="change_password">
-                            <div class="mb-3"><label class="form-label">Password Lama</label><input type="password" name="old_password" class="form-control-clean" required></div>
-                            <div class="mb-3"><label class="form-label">Password Baru</label><input type="password" name="new_password" class="form-control-clean" required></div>
-                            <div class="mb-4"><label class="form-label">Konfirmasi Password</label><input type="password" name="confirm_password" class="form-control-clean" required></div>
-                            <button type="submit" class="btn-save w-100">Update Password</button>
-                        </form>
+                    <div class="col-md-6 pe-4" style="border-right: 1px solid var(--border-color);">
+                        <div class="security-section">
+                            <h5><i class="bi bi-key"></i>Ubah Password</h5>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="change_password">
+                                <div class="mb-3"><label class="form-label">Password Lama</label><input type="password" name="old_password" class="form-control-clean" required></div>
+                                <div class="mb-3"><label class="form-label">Password Baru</label><input type="password" name="new_password" class="form-control-clean" required></div>
+                                <div class="mb-4"><label class="form-label">Konfirmasi Password</label><input type="password" name="confirm_password" class="form-control-clean" required></div>
+                                <button type="submit" class="btn-save w-100">Update Password</button>
+                            </form>
+                        </div>
                     </div>
                     <div class="col-md-6 ps-4">
-                        <h5 class="fw-bold mb-4">Ubah Email</h5>
-                        <div class="p-3 bg-light rounded mb-4 border"><small class="text-muted d-block">EMAIL SAAT INI</small><div class="fw-bold text-dark"><?php echo htmlspecialchars($u['email']); ?></div></div>
-                        <form method="POST">
-                            <input type="hidden" name="action" value="request_email_change">
-                            <div class="mb-4"><label class="form-label">Email Baru</label><input type="email" name="new_email" class="form-control-clean" required placeholder="nama@perusahaan.com"></div>
-                            <button type="submit" class="btn-save w-100 bg-white text-dark border">Kirim Kode OTP</button>
-                        </form>
+                        <div class="security-section">
+                            <h5><i class="bi bi-envelope"></i>Ubah Email</h5>
+                            <div class="email-current"><small>EMAIL SAAT INI</small><div class="email-val"><?php echo htmlspecialchars($u['email']); ?></div></div>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="request_email_change">
+                                <div class="mb-4"><label class="form-label">Email Baru</label><input type="email" name="new_email" class="form-control-clean" required placeholder="nama@perusahaan.com"></div>
+                                <button type="submit" class="btn-outline-save"><i class="bi bi-send me-1"></i>Kirim Kode OTP</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
