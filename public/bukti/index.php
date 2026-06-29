@@ -466,7 +466,7 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
                     <div class="d-flex gap-2 mb-3 align-items-center">
                         <img src="<?php echo $my_av; ?>" class="rounded-circle" width="40">
                         <div class="fw-bold"><?php echo $myName; ?></div>
-                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-primary w-auto"><option value="todo">Todo List</option><option value="in_progress">On Progress</option><option value="done">Done</option></select>
+                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-primary w-auto"><option value="todo">To Do List</option><option value="in_progress">On Progress</option><option value="done">Done</option></select>
                     </div>
                     <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-2" placeholder="Judul Pekerjaan..." required>
                     <div class="desc-editor">
