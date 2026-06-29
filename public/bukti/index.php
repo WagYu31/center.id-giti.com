@@ -55,40 +55,41 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
 ?>
 
 <style>
-    /* Loading Overlay */
-    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
-    .loader { width: 48px; height: 48px; border: 5px solid #0d6efd; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+    /* Loading Overlay - Premium Gold */
+    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(245,243,239,0.92); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .loader { width: 48px; height: 48px; border: 4px solid rgba(234,179,8,0.2); border-top-color: #eab308; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 0.8s linear infinite; }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* Preview Files Grid */
     .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px; }
-    .preview-item { position: relative; width: 100%; padding-top: 100%; background: #f8f9fa; border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6; }
+    .preview-item { position: relative; width: 100%; padding-top: 100%; background: #fefce8; border-radius: 12px; overflow: hidden; border: 1px solid rgba(234,179,8,0.15); transition: transform 0.2s ease; }
+    .preview-item:hover { transform: scale(1.03); }
     .preview-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
     .preview-content img, .preview-content video { width: 100%; height: 100%; object-fit: cover; }
-    .preview-content i { font-size: 2rem; color: #6c757d; }
-    .btn-remove-file { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: 0.2s; }
-    .btn-remove-file:hover { background: rgba(220, 53, 69, 0.9); }
-    .file-name-small { font-size: 0.6rem; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .preview-content i { font-size: 2rem; color: #eab308; }
+    .btn-remove-file { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all 0.2s ease; }
+    .btn-remove-file:hover { background: #ef4444; transform: scale(1.15); }
+    .file-name-small { font-size: 0.6rem; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; color: #6b7280; }
     
-    /* Scrollbar */
-    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    /* Custom Scrollbar */
+    .custom-scroll::-webkit-scrollbar { width: 5px; }
     .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-    .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 10px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,0.2); }
+    .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(234,179,8,0.25); border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(234,179,8,0.45); }
 
-    /* Mention Autocomplete Styles (FIXED) */
+    /* Mention Autocomplete - Gold Theme */
     .mention-list {
         position: absolute;
         background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        max-height: 200px;
+        border: 1px solid rgba(0,0,0,0.06);
+        border-radius: 14px;
+        max-height: 220px;
         overflow-y: auto;
         width: 280px;
         z-index: 9999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.12);
         display: none;
-        padding: 5px 0;
+        padding: 6px 0;
     }
     .mention-item {
         display: flex;
@@ -96,27 +97,45 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
         gap: 12px;
         padding: 10px 15px;
         cursor: pointer;
-        transition: background 0.1s;
-        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.15s ease;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
     }
-    .mention-item:hover { background-color: #f0f5ff; }
+    .mention-item:hover { background: rgba(234,179,8,0.08); }
     .mention-item:last-child { border-bottom: none; }
     .mention-avatar {
-        width: 36px;        /* Ukuran Fix */
-        height: 36px;       /* Ukuran Fix */
-        border-radius: 50%; /* Bulat Sempurna */
-        object-fit: cover;  /* Auto Crop / Tidak Gepeng */
-        flex-shrink: 0;     /* Mencegah gambar mengecil */
-        border: 1px solid #eee;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid rgba(234,179,8,0.2);
     }
     .mention-info { display: flex; flex-direction: column; justify-content: center; }
-    .mention-name { font-size: 0.9rem; font-weight: 600; color: #333; line-height: 1.2; }
-    .mention-nick { font-size: 0.75rem; color: #888; }
+    .mention-name { font-size: 0.88rem; font-weight: 600; color: #1a1a1a; line-height: 1.2; }
+    .mention-nick { font-size: 0.73rem; color: #9ca3af; }
+
+    /* Premium Page-Level Overrides */
+    .text-primary { color: #eab308 !important; }
+    .bg-primary { background-color: #eab308 !important; }
+    .btn-primary { background: linear-gradient(135deg, #eab308, #facc15) !important; border: none !important; color: #1a1a1a !important; font-weight: 600 !important; }
+    .btn-primary:hover { box-shadow: 0 4px 16px rgba(234,179,8,0.35) !important; transform: translateY(-1px); }
+    .btn-outline-primary { border-color: #eab308 !important; color: #eab308 !important; }
+    .btn-outline-primary:hover { background: #eab308 !important; color: #1a1a1a !important; }
+    .page-link { color: #eab308; }
+    .page-item.active .page-link { background: #eab308; border-color: #eab308; color: #1a1a1a; }
+    .badge.bg-success { background: #16a34a !important; }
+    .badge.bg-primary { background: linear-gradient(135deg, #eab308, #facc15) !important; color: #1a1a1a !important; }
+    .form-control:focus, .form-select:focus { border-color: #eab308; box-shadow: 0 0 0 3px rgba(234,179,8,0.15); }
+    .cursor-pointer { cursor: pointer; }
+    
+    /* Greeting section */
+    .greeting-emoji { font-size: 1.8rem; animation: wave 1.5s ease-in-out infinite; display: inline-block; }
+    @keyframes wave { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-10deg); } }
 </style>
 
 <div id="loading-overlay">
     <span class="loader"></span>
-    <p class="mt-3 fw-bold text-primary">Sedang memproses data...</p>
+    <p class="mt-3 fw-bold" style="color: #eab308;">Sedang memproses data...</p>
 </div>
 
 <div class="main-wrapper">
