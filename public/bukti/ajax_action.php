@@ -214,6 +214,11 @@ if ($action == 'like') {
 // Fetch Logic (Detail, Search Users) sama seperti sebelumnya...
 if ($action == 'fetch_detail') {
     $job_id = $_POST['job_id'];
+    
+    // Track view (INSERT IGNORE = skip if already viewed)
+    $conn->prepare("INSERT IGNORE INTO bukti_post_views (job_id, user_id) VALUES (?, ?)")
+         ->execute([$job_id, $user_id]);
+    
     $stmt = $conn->prepare("SELECT j.*, u.name, u.avatar, u.jabatan,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id) as like_count,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id = ?) as is_liked
@@ -241,13 +246,28 @@ if ($action == 'fetch_detail') {
     $att = $conn->prepare("SELECT * FROM bukti_job_attachments WHERE job_id = ?");
     $att->execute([$job_id]);
     
+    // Fetch viewers
+    $viewers_stmt = $conn->prepare("SELECT u.name, u.avatar, u.nickname, v.viewed_at 
+        FROM bukti_post_views v JOIN users u ON v.user_id = u.id 
+        WHERE v.job_id = ? ORDER BY v.viewed_at DESC LIMIT 20");
+    $viewers_stmt->execute([$job_id]);
+    $viewers = $viewers_stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach($viewers as &$v) {
+        $v['avatar'] = $v['avatar'] && file_exists("assets/img/avatars/".$v['avatar']) ? "assets/img/avatars/".$v['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($v['name']);
+        $v['viewed_at_fmt'] = tgl_indo($v['viewed_at'], 'j M Y H:i');
+    }
+    $view_count = $conn->prepare("SELECT COUNT(*) FROM bukti_post_views WHERE job_id = ?");
+    $view_count->execute([$job_id]);
+    
     echo json_encode([
         'status' => 'success',
         'job' => $job,
         'history' => $history,
         'comments' => $com_res,
         'attachments' => $att->fetchAll(PDO::FETCH_ASSOC),
-        'is_owner' => ($job['user_id'] == $user_id)
+        'is_owner' => ($job['user_id'] == $user_id),
+        'viewers' => $viewers,
+        'view_count' => (int)$view_count->fetchColumn()
     ]);
     exit;
 }

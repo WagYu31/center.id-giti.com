@@ -40,9 +40,20 @@ $total_pages = ceil($stmt_count->fetchColumn() / $limit);
 $sql = "SELECT j.*, u.name as user_name, u.avatar as user_avatar, u.nickname, u.jabatan, 
         (SELECT COUNT(*) FROM bukti_comments WHERE job_id = j.id AND deleted_at IS NULL) as c_count, 
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND type='like') as l_count, 
-        (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id=$current_user_id AND type='like') as is_liked 
+        (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id=$current_user_id AND type='like') as is_liked,
+        (SELECT COUNT(*) FROM bukti_post_views WHERE job_id = j.id) as v_count
         FROM bukti_jobs j JOIN users u ON j.user_id = u.id WHERE $where ORDER BY j.created_at DESC LIMIT $limit OFFSET $offset";
 $stmt = $conn->prepare($sql); $stmt->execute($param); $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch viewer avatars for each job
+foreach($jobs as &$jb) {
+    $vs = $conn->prepare("SELECT u.name, u.avatar FROM bukti_post_views v JOIN users u ON v.user_id = u.id WHERE v.job_id = ? ORDER BY v.viewed_at DESC LIMIT 5");
+    $vs->execute([$jb['id']]);
+    $jb['viewers'] = $vs->fetchAll(PDO::FETCH_ASSOC);
+    foreach($jb['viewers'] as &$vw) {
+        $vw['avatar'] = $vw['avatar'] && file_exists("assets/img/avatars/".$vw['avatar']) ? "assets/img/avatars/".$vw['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($vw['name']);
+    }
+}
 
 $users_list = $conn->query("SELECT id, name FROM users ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 $stmt_me = $conn->prepare("SELECT avatar, name FROM users WHERE id=?"); $stmt_me->execute([$current_user_id]); $me = $stmt_me->fetch();
@@ -347,13 +358,25 @@ function format_text($text) {
                             <h5 class="fw-bold mb-2" style="color: #111827; font-size: 1rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['title']); ?></h5>
                             <p style="color: #374151; white-space: pre-wrap; line-height: 1.65; font-size: 0.9rem;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
                         </div>
-                        <div class="px-3 py-2 border-top d-flex gap-2" style="border-color: rgba(0,0,0,0.04) !important;">
-                            <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn btn-sm <?php echo $job['is_liked']?'text-white':''; ?> fw-bold px-3 rounded-pill" style="<?php echo $job['is_liked'] ? 'background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;' : 'background: #f9fafb; color: #4b5563;'; ?> font-size: 0.82rem;">
-                                <i class="bi bi-hand-thumbs-up-fill me-1"></i> <span class="count"><?php echo $job['l_count']; ?></span> Suka
-                            </button>
-                            <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn btn-sm fw-bold px-3 rounded-pill" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem;">
-                                <i class="bi bi-chat-dots me-1"></i> <?php echo $job['c_count']; ?> Komentar
-                            </button>
+                        <div class="px-3 py-2 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(0,0,0,0.04) !important;">
+                            <div class="d-flex gap-2">
+                                <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn btn-sm <?php echo $job['is_liked']?'text-white':''; ?> fw-bold px-3 rounded-pill" style="<?php echo $job['is_liked'] ? 'background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;' : 'background: #f9fafb; color: #4b5563;'; ?> font-size: 0.82rem;">
+                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> <span class="count"><?php echo $job['l_count']; ?></span> Suka
+                                </button>
+                                <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn btn-sm fw-bold px-3 rounded-pill" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem;">
+                                    <i class="bi bi-chat-dots me-1"></i> <?php echo $job['c_count']; ?> Komentar
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center gap-1" title="<?php echo $job['v_count']; ?> orang melihat">
+                                <?php if(!empty($job['viewers'])): ?>
+                                <div class="d-flex" style="margin-right: 4px;">
+                                    <?php foreach(array_slice($job['viewers'], 0, 3) as $vi => $viewer): ?>
+                                    <img src="<?php echo $viewer['avatar']; ?>" class="rounded-circle" width="20" height="20" style="object-fit:cover; border: 2px solid white; margin-left: <?php echo $vi > 0 ? '-6px' : '0'; ?>; position:relative; z-index:<?php echo 5-$vi; ?>;" title="<?php echo htmlspecialchars($viewer['name']); ?>">
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+                                <span style="font-size: 0.72rem; color: #9ca3af;"><i class="bi bi-eye me-1"></i><?php echo $job['v_count']; ?></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -454,6 +477,7 @@ function format_text($text) {
                                 </div>
                                 <div class="d-flex align-items-center gap-3"><div id="d-status-badge"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                             </div>
+                            <div id="d-viewers"></div>
                         </div>
                         <!-- Body -->
                         <div class="p-4 overflow-auto custom-scroll flex-grow-1" style="min-height: 0;">
@@ -677,6 +701,21 @@ function openDetail(id){
             
             $('#btn-update-progress').toggle(res.is_owner);
             $('#p-job-id').val(id);
+            
+            // Render viewers section
+            let vh = '';
+            if(res.viewers && res.viewers.length > 0) {
+                let avatars = res.viewers.slice(0, 5).map((v, i) => 
+                    `<img src="${v.avatar}" class="rounded-circle" width="24" height="24" style="object-fit:cover; border:2px solid white; margin-left:${i > 0 ? '-8px' : '0'}; position:relative; z-index:${10-i};" title="${v.name} • ${v.viewed_at_fmt}">`
+                ).join('');
+                let extra = res.view_count > 5 ? `<span style="margin-left:-4px; width:24px; height:24px; border-radius:50%; background:#f3f4f6; display:inline-flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:700; color:#6b7280; border:2px solid white; position:relative; z-index:1;">+${res.view_count - 5}</span>` : '';
+                vh = `<div class="d-flex align-items-center gap-2 mt-2">
+                    <div class="d-flex align-items-center">${avatars}${extra}</div>
+                    <span style="font-size:0.75rem; color:#6b7280;">${res.view_count} orang melihat</span>
+                </div>`;
+            }
+            $('#d-viewers').html(vh);
+            
             new bootstrap.Modal('#detailModal').show();
         }
     },'json');

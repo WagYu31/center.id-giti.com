@@ -14,6 +14,16 @@ try {
 date_default_timezone_set('Asia/Jakarta');
 $conn->query("SET time_zone = '+07:00'");
 
+// Auto-create views table
+$conn->exec("CREATE TABLE IF NOT EXISTS bukti_post_views (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    job_id INT NOT NULL,
+    user_id INT NOT NULL,
+    viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_view (job_id, user_id),
+    INDEX idx_job (job_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
 if (session_status() === PHP_SESSION_NONE) {
     session_name('BUKTI_SESSION');
     session_set_cookie_params([
