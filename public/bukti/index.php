@@ -246,6 +246,25 @@ function format_text($text) {
     .desc-editor textarea::placeholder {
         color: #9ca3af;
     }
+    /* Contenteditable rich editor */
+    .rich-editor {
+        min-height: 120px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        line-height: 1.65;
+        color: #374151;
+        outline: none;
+        background: transparent;
+    }
+    .rich-editor:empty::before {
+        content: 'Deskripsi... Gunakan @ untuk tag';
+        color: #9ca3af;
+        pointer-events: none;
+    }
+    .rich-editor b, .rich-editor strong { font-weight: 700; color: #111827; }
+    .rich-editor i, .rich-editor em { font-style: italic; }
     /* Paste toast notification */
     .paste-toast {
         position: fixed;
@@ -477,15 +496,16 @@ function format_text($text) {
                     <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-2" placeholder="Judul Pekerjaan..." required>
                     <div class="desc-editor">
                         <div class="desc-toolbar">
-                            <button type="button" class="desc-tool" onclick="insertFormat('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                            <button type="button" class="desc-tool" onclick="insertFormat('list')" title="Daftar"><i class="bi bi-list-ol"></i></button>
-                            <button type="button" class="desc-tool" onclick="insertFormat('bullet')" title="Bullet"><i class="bi bi-list-ul"></i></button>
+                            <button type="button" class="desc-tool" onclick="execFmt('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
+                            <button type="button" class="desc-tool" onclick="execFmt('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
+                            <button type="button" class="desc-tool" onclick="execFmt('insertUnorderedList')" title="Bullet"><i class="bi bi-list-ul"></i></button>
+                            <button type="button" class="desc-tool" onclick="execFmt('insertOrderedList')" title="Daftar"><i class="bi bi-list-ol"></i></button>
                             <span class="desc-divider"></span>
-                            <button type="button" class="desc-tool" onclick="cleanupDesc()" title="Bersihkan Format"><i class="bi bi-eraser"></i></button>
-                            <span class="desc-hint">Paste dari WA/Google otomatis dirapikan ✨</span>
+                            <button type="button" class="desc-tool" onclick="execFmt('removeFormat')" title="Hapus Format"><i class="bi bi-eraser"></i></button>
+                            <span class="desc-hint">Ctrl+B = Bold ✨</span>
                         </div>
-                        <textarea name="description" id="inpDesc" class="form-control border-0 px-3 fs-6" rows="5" placeholder="Deskripsi... Gunakan @ untuk tag
-Tips: Copy-paste dari WhatsApp/Google akan otomatis dirapikan!"></textarea>
+                        <div contenteditable="true" id="richDesc" class="rich-editor"></div>
+                        <textarea name="description" id="inpDesc" hidden></textarea>
                     </div>
                     <div class="bg-light p-3 rounded-4 mt-3 row g-2">
                         <div class="col-6"><label class="small text-muted fw-bold">Mulai</label><input type="date" name="start_date" id="inpStart" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
@@ -638,6 +658,7 @@ function saveProgress(){
 }
 
 function submitJob(){
+    syncDesc(); // Sync rich editor → hidden textarea
     let form = document.getElementById('formJob'); let fd = new FormData(form);
     if(!fd.get('title')) { alert('Judul wajib diisi!'); return; }
     fd.delete('files[]'); selectedFiles.forEach((file) => { fd.append('files[]', file); });
@@ -651,6 +672,8 @@ function openEditModal(id){
             let j=res.job;
             $('#modalTitle').text('Edit Pekerjaan'); $('#formAction').val('edit_post'); $('#formJobId').val(j.id);
             $('#inpTitle').val(j.title); $('#inpDesc').val(j.description); $('#inpStatus').val(j.status);
+            // Load description into rich editor
+            document.getElementById('richDesc').innerHTML = plainToRich(j.description);
             $('#inpStart').val(j.start_date); $('#inpEnd').val(j.end_date);
             selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles');
             new bootstrap.Modal('#createModal').show();
@@ -870,72 +893,103 @@ function autoResizeTextarea(ta) {
     ta.style.height = Math.min(ta.scrollHeight, 400) + 'px';
 }
 
-function insertFormat(type) {
-    let ta = document.getElementById('inpDesc');
-    let start = ta.selectionStart;
-    let end = ta.selectionEnd;
-    let text = ta.value;
-    let selected = text.substring(start, end);
-    let insert = '';
-    
-    if (type === 'bold') {
-        if (selected) {
-            // Wrap selected text with *
-            insert = '*' + selected + '*';
-        } else {
-            insert = '*teks bold*';
-        }
-    } else if (type === 'italic') {
-        if (selected) {
-            insert = '_' + selected + '_';
-        } else {
-            insert = '_teks italic_';
-        }
-    } else if (type === 'list') {
-        let lines = selected ? selected.split('\n') : ['Item 1', 'Item 2', 'Item 3'];
-        insert = lines.map((l, i) => (i+1) + '. ' + l.replace(/^\d+\.\s*/, '')).join('\n');
-    } else if (type === 'bullet') {
-        let lines = selected ? selected.split('\n') : ['Item 1', 'Item 2', 'Item 3'];
-        insert = lines.map(l => '• ' + l.replace(/^[•\-\*]\s*/, '')).join('\n');
-    }
-    
-    ta.value = text.substring(0, start) + insert + text.substring(end);
-    // Place cursor after the inserted text
-    let newPos = start + insert.length;
-    ta.setSelectionRange(newPos, newPos);
-    ta.focus();
-    autoResizeTextarea(ta);
+// --- WYSIWYG EDITOR ---
+function execFmt(cmd) {
+    document.execCommand(cmd, false, null);
+    document.getElementById('richDesc').focus();
 }
 
-function cleanupDesc() {
-    let ta = document.getElementById('inpDesc');
-    ta.value = cleanPastedText('', ta.value);
-    autoResizeTextarea(ta);
-    showPasteToast();
+// Convert rich HTML to plain text with *bold* markers for storage
+function richToPlain(html) {
+    let div = document.createElement('div');
+    div.innerHTML = html;
+    
+    // Convert <b>/<strong> to *text*
+    div.querySelectorAll('b, strong').forEach(el => {
+        el.replaceWith('*' + el.textContent + '*');
+    });
+    // Convert <i>/<em> to _text_
+    div.querySelectorAll('i, em').forEach(el => {
+        el.replaceWith('_' + el.textContent + '_');
+    });
+    // Convert <li> to bullets
+    div.querySelectorAll('li').forEach(el => {
+        let parent = el.parentElement;
+        let isOl = parent && parent.tagName === 'OL';
+        let idx = Array.from(parent ? parent.children : []).indexOf(el) + 1;
+        el.replaceWith((isOl ? idx + '. ' : '• ') + el.textContent + '\n');
+    });
+    // Convert <br> and block elements to newlines
+    div.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
+    div.querySelectorAll('p, div, ul, ol').forEach(el => {
+        el.insertAdjacentText('afterend', '\n');
+    });
+    
+    let text = div.textContent || '';
+    // Clean up
+    text = text.replace(/\n{3,}/g, '\n\n');
+    text = text.replace(/^\n+|\n+$/g, '');
+    return text;
+}
+
+// Convert plain text with markers back to HTML for editing
+function plainToRich(text) {
+    if (!text) return '';
+    let t = text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
+        .replace(/_([^_]+)_/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    return t;
+}
+
+// Sync richDesc → hidden textarea before submit
+function syncDesc() {
+    let editor = document.getElementById('richDesc');
+    let hidden = document.getElementById('inpDesc');
+    if (editor && hidden) {
+        hidden.value = richToPlain(editor.innerHTML);
+    }
+}
+
+// Smart paste for contenteditable
+function setupRichPaste() {
+    let editor = document.getElementById('richDesc');
+    if (!editor) return;
+    
+    editor.addEventListener('paste', function(e) {
+        e.preventDefault();
+        let cd = e.clipboardData;
+        let plain = cd.getData('text/plain');
+        
+        // Clean the text
+        plain = plain.replace(/\u00A0/g, ' ');
+        plain = plain.replace(/\u200B|\u200C|\u200D|\uFEFF/g, '');
+        plain = plain.replace(/[ \t]+/g, ' ');
+        plain = plain.split('\n').map(l => l.trim()).join('\n');
+        plain = plain.replace(/\n{3,}/g, '\n\n');
+        
+        // Insert as plain text (clean)
+        document.execCommand('insertText', false, plain);
+    });
 }
 
 $(document).ready(()=>{ 
-    setupMentions('#inpDesc'); setupMentions('#d-input'); 
+    setupMentions('#inpDesc'); setupMentions('#d-input');
     setupDropZone('dropZone', 'fileInput', selectedFiles, 'selectedFiles', 'file-preview-container');
     setupDropZone('progressDropZone', 'progressFileInput', progressFiles, 'progressFiles', 'progress-preview-container');
-    setupSmartPaste('#inpDesc');
-    setupSmartPaste('#create-desc');
+    setupRichPaste();
     
-    // Auto-resize on input
-    $(document).on('input', '#inpDesc', function() { autoResizeTextarea(this); });
+    // Sync before any submit
+    $(document).on('click', '[onclick*="submitJob"]', function() { syncDesc(); });
     
-    // Ctrl+B = Bold, Ctrl+I = Italic shortcuts
-    $(document).on('keydown', '#inpDesc', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-            e.preventDefault();
-            insertFormat('bold');
-        }
-        if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
-            e.preventDefault();
-            insertFormat('italic');
-        }
+    $('#createModal').on('hidden.bs.modal', function(){ 
+        $('#formJob')[0].reset(); 
+        $('#modalTitle').text('Buat Pekerjaan Baru'); 
+        $('#formAction').val('create_post'); 
+        document.getElementById('richDesc').innerHTML = '';
+        selectedFiles = []; 
+        updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); 
     });
-    
-    $('#createModal').on('hidden.bs.modal', function(){ $('#formJob')[0].reset(); $('#modalTitle').text('Buat Pekerjaan Baru'); $('#formAction').val('create_post'); selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); });
 });
 </script>
