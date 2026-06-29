@@ -131,6 +131,52 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
     /* Greeting section */
     .greeting-emoji { font-size: 1.8rem; animation: wave 1.5s ease-in-out infinite; display: inline-block; }
     @keyframes wave { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-10deg); } }
+
+    /* Drag & Drop Zone */
+    .drop-zone {
+        border: 2px dashed rgba(234,179,8,0.3);
+        border-radius: 16px;
+        padding: 28px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fffef5;
+        position: relative;
+    }
+    .drop-zone:hover {
+        border-color: #eab308;
+        background: #fefce8;
+    }
+    .drop-zone.drag-over {
+        border-color: #eab308;
+        background: rgba(234,179,8,0.08);
+        transform: scale(1.01);
+        box-shadow: 0 0 0 4px rgba(234,179,8,0.1);
+    }
+    .drop-zone .drop-icon {
+        font-size: 2.2rem;
+        color: #eab308;
+        margin-bottom: 8px;
+        transition: transform 0.3s ease;
+    }
+    .drop-zone:hover .drop-icon,
+    .drop-zone.drag-over .drop-icon {
+        transform: translateY(-4px) scale(1.1);
+    }
+    .drop-zone .drop-text {
+        font-size: 0.88rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    .drop-zone .drop-text strong {
+        color: #eab308;
+        cursor: pointer;
+    }
+    .drop-zone .drop-hint {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
 </style>
 
 <div id="loading-overlay">
@@ -340,7 +386,12 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
                         <div class="col-6"><label class="small text-muted fw-bold">Selesai</label><input type="date" name="end_date" id="inpEnd" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
                     </div>
                     <div class="mt-3">
-                        <label class="btn btn-light w-100 text-start border rounded-pill text-muted"><i class="bi bi-paperclip me-2"></i> Tambah Lampiran (Foto/Video/Dokumen) <input type="file" id="fileInput" name="files[]" multiple hidden></label>
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" name="files[]" multiple hidden>
+                            <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                            <div class="drop-text">Drag & drop file di sini, atau <strong onclick="document.getElementById('fileInput').click()">pilih file</strong></div>
+                            <div class="drop-hint">Foto, Video, PDF, Dokumen (maks. 10MB per file)</div>
+                        </div>
                         <div id="file-preview-container" class="preview-grid"></div>
                     </div>
                 </form>
@@ -360,7 +411,11 @@ function format_text($text) { return nl2br(preg_replace('/@(\w+)/', '<span class
                     <div class="mb-3"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
                     <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan</label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3"></textarea></div>
                     <div class="mb-3">
-                        <label class="btn btn-sm btn-light w-100 border text-start rounded-pill"><i class="bi bi-paperclip"></i> Bukti/File <input type="file" id="progressFileInput" name="files[]" multiple hidden></label>
+                        <div class="drop-zone" id="progressDropZone" style="padding: 18px 15px;">
+                            <input type="file" id="progressFileInput" name="files[]" multiple hidden>
+                            <div class="drop-icon" style="font-size: 1.5rem; margin-bottom: 4px;"><i class="bi bi-cloud-arrow-up"></i></div>
+                            <div class="drop-text" style="font-size: 0.8rem;">Drop file atau <strong onclick="document.getElementById('progressFileInput').click()">pilih</strong></div>
+                        </div>
                         <div id="progress-preview-container" class="preview-grid mt-2"></div>
                     </div>
                 </form>
@@ -550,8 +605,53 @@ function setupMentions(sel) {
 }
 function insertTag(n,s,e,sel){ let i=$(sel); i.val(i.val().substring(0,s)+'@'+n+' '+i.val().substring(e)).focus(); $('#mention-box').hide(); }
 
+// --- DRAG & DROP ---
+function setupDropZone(zoneId, fileInputId, fileArray, arrayName, containerId) {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    
+    // Click to open file picker
+    zone.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'STRONG') document.getElementById(fileInputId).click();
+    });
+    
+    // Drag events
+    ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, function(e) {
+            e.preventDefault(); e.stopPropagation();
+            zone.classList.add('drag-over');
+        });
+    });
+    
+    ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, function(e) {
+            e.preventDefault(); e.stopPropagation();
+            zone.classList.remove('drag-over');
+        });
+    });
+    
+    zone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = Array.from(dt.files);
+        if (arrayName === 'selectedFiles') {
+            selectedFiles = selectedFiles.concat(files);
+            updatePreviews(containerId, selectedFiles, 'selectedFiles');
+        } else {
+            progressFiles = progressFiles.concat(files);
+            updatePreviews(containerId, progressFiles, 'progressFiles');
+        }
+    });
+    
+    // Prevent default on body to avoid browser opening the file
+    ['dragover', 'drop'].forEach(evt => {
+        document.body.addEventListener(evt, function(e) { e.preventDefault(); });
+    });
+}
+
 $(document).ready(()=>{ 
     setupMentions('#inpDesc'); setupMentions('#d-input'); 
+    setupDropZone('dropZone', 'fileInput', selectedFiles, 'selectedFiles', 'file-preview-container');
+    setupDropZone('progressDropZone', 'progressFileInput', progressFiles, 'progressFiles', 'progress-preview-container');
     $('#createModal').on('hidden.bs.modal', function(){ $('#formJob')[0].reset(); $('#modalTitle').text('Buat Pekerjaan Baru'); $('#formAction').val('create_post'); selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); });
 });
 </script>
