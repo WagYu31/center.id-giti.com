@@ -893,7 +893,7 @@ function setupMentions(sel) {
             $.get('ajax_action.php', {action:'search_users', term:q}, function(res){
                 let h=''; if(res.length){ 
                     res.forEach(u=>{ 
-                        h+=`<div class="mention-item" onclick="insertTag('${u.nickname}', ${lastAt}, ${cp}, '${sel}')">
+                        h+=`<div class="mention-item" onmousedown="event.preventDefault(); insertTag('${u.nickname}', ${lastAt}, ${cp}, '${sel}')">
                                 <img src="${u.avatar}" class="mention-avatar">
                                 <div class="mention-info">
                                     <span class="mention-name">${u.name}</span>
@@ -984,62 +984,89 @@ function setupRichMentions(editorId) {
 }
 
 function insertRichTag(nickname, name, editorId) {
-    const editor = document.getElementById(editorId);
-    const sel = window.getSelection();
-    
-    // Restore saved range if editor lost focus
-    let range = null;
-    if (savedRange) {
-        range = savedRange;
-    } else if (sel.rangeCount) {
-        range = sel.getRangeAt(0);
+    try {
+        const sel = window.getSelection();
+        let range = savedRange || (sel.rangeCount ? sel.getRangeAt(0) : null);
+        if (!range) return;
+
+        let textNode = range.startContainer;
+        if (textNode.nodeType !== Node.TEXT_NODE) {
+            if (textNode.hasChildNodes() && range.startOffset < textNode.childNodes.length) {
+                textNode = textNode.childNodes[range.startOffset];
+            }
+            if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+                // Fallback: just insert the span at current range
+                const mentionSpan = document.createElement('span');
+                mentionSpan.className = 'mention-tag';
+                mentionSpan.contentEditable = 'false';
+                mentionSpan.style.cssText = 'background:rgba(217,119,6,0.12);color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.85em;cursor:default;';
+                mentionSpan.textContent = '@' + nickname;
+                mentionSpan.dataset.nickname = nickname;
+                
+                range.insertNode(mentionSpan);
+                
+                const space = document.createTextNode('\u00A0');
+                range.collapse(false);
+                range.insertNode(space);
+                
+                const newRange = document.createRange();
+                newRange.setStartAfter(space);
+                newRange.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(newRange);
+                savedRange = newRange.cloneRange();
+                $('#mention-box').hide();
+                return;
+            }
+        }
+
+        const text = textNode.textContent;
+        const cursorPos = range.startOffset;
+        const lastAt = text.lastIndexOf('@', cursorPos - 1);
+        
+        if (lastAt === -1) return;
+
+        // Create range to select "@query" text
+        const queryRange = document.createRange();
+        queryRange.setStart(textNode, lastAt);
+        queryRange.setEnd(textNode, cursorPos);
+        
+        // Delete "@query"
+        queryRange.deleteContents();
+        
+        // Insert styled mention span
+        const mentionSpan = document.createElement('span');
+        mentionSpan.className = 'mention-tag';
+        mentionSpan.contentEditable = 'false';
+        mentionSpan.style.cssText = 'background:rgba(217,119,6,0.12);color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.85em;cursor:default;';
+        mentionSpan.textContent = '@' + nickname;
+        mentionSpan.dataset.nickname = nickname;
+        
+        queryRange.insertNode(mentionSpan);
+        
+        // Insert space after tag
+        const space = document.createTextNode('\u00A0');
+        const nextRange = document.createRange();
+        nextRange.setStartAfter(mentionSpan);
+        nextRange.collapse(true);
+        nextRange.insertNode(space);
+        
+        // Set cursor after the space
+        const finalRange = document.createRange();
+        finalRange.setStartAfter(space);
+        finalRange.collapse(true);
+        
+        sel.removeAllRanges();
+        sel.addRange(finalRange);
+        
+        savedRange = finalRange.cloneRange();
+        $('#mention-box').hide();
+        
+        const editor = document.getElementById(editorId);
+        if (editor) editor.focus();
+    } catch (err) {
+        console.error("Mention tag insertion error:", err);
     }
-    
-    if (!range) return;
-    
-    const textNode = range.startContainer;
-    if (textNode.nodeType !== Node.TEXT_NODE) return;
-    
-    const text = textNode.textContent;
-    const cursorPos = range.startOffset;
-    const lastAt = text.lastIndexOf('@', cursorPos - 1);
-    
-    if (lastAt === -1) return;
-    
-    // Replace @query with styled mention
-    const before = text.substring(0, lastAt);
-    const after = text.substring(cursorPos);
-    
-    // Create mention span
-    const mentionSpan = document.createElement('span');
-    mentionSpan.className = 'mention-tag';
-    mentionSpan.contentEditable = 'false';
-    mentionSpan.style.cssText = 'background:rgba(217,119,6,0.12);color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.85em;cursor:default;';
-    mentionSpan.textContent = '@' + nickname;
-    mentionSpan.dataset.nickname = nickname;
-    
-    // Update DOM
-    const parent = textNode.parentNode;
-    const beforeNode = document.createTextNode(before);
-    const spaceAfter = document.createTextNode('\u00A0' + after);
-    
-    parent.insertBefore(beforeNode, textNode);
-    parent.insertBefore(mentionSpan, textNode);
-    parent.insertBefore(spaceAfter, textNode);
-    parent.removeChild(textNode);
-    
-    // Move cursor after the mention
-    const newRange = document.createRange();
-    newRange.setStart(spaceAfter, 1);
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
-    
-    // Update savedRange state
-    savedRange = newRange.cloneRange();
-    
-    $('#mention-box').hide();
-    editor.focus();
 }
 
 // --- DRAG & DROP ---
