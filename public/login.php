@@ -72,35 +72,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* ─── LEFT PANEL ──────────────────────────── */
         .auth-split-left {
             flex: 1.15;
-            background: #060b14;
+            background: #f8f7f4;
+            background-image:
+                radial-gradient(circle at 80% 10%, rgba(234,179,8,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 10% 90%, rgba(234,179,8,0.05) 0%, transparent 50%);
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 3rem 3.5rem;
             overflow: hidden;
-            color: white;
+            color: #111827;
         }
 
-        /* Animated gradient glow */
+        /* Soft decorative blobs */
         .auth-split-left::before {
             content: '';
             position: absolute;
-            width: 600px; height: 600px;
+            width: 500px; height: 500px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(234,179,8,0.18) 0%, transparent 70%);
-            top: -150px; right: -150px;
-            animation: glowPulse 6s ease-in-out infinite;
+            background: radial-gradient(circle, rgba(234,179,8,0.12) 0%, transparent 70%);
+            top: -180px; right: -120px;
             z-index: 0;
         }
         .auth-split-left::after {
             content: '';
             position: absolute;
-            width: 400px; height: 400px;
+            width: 300px; height: 300px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(234,179,8,0.10) 0%, transparent 70%);
-            bottom: -100px; left: -100px;
-            animation: glowPulse 8s ease-in-out infinite reverse;
+            background: radial-gradient(circle, rgba(234,179,8,0.07) 0%, transparent 70%);
+            bottom: -80px; left: -80px;
             z-index: 0;
         }
         @keyframes glowPulse {
@@ -113,11 +114,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
             background-size: 48px 48px;
             z-index: 0;
-            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
         }
 
         /* All content above overlays */
@@ -128,8 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(234,179,8,0.1);
-            border: 1px solid rgba(234,179,8,0.25);
+            background: rgba(234,179,8,0.12);
+            border: 1px solid rgba(234,179,8,0.3);
             border-radius: 100px;
             padding: 6px 14px 6px 8px;
         }
@@ -154,16 +155,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             gap: 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.06);
             border-radius: 16px;
             padding: 16px 20px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
             transition: all 0.3s ease;
         }
         .feature-card:hover {
-            background: rgba(255,255,255,0.07);
-            border-color: rgba(234,179,8,0.25);
+            border-color: rgba(234,179,8,0.4);
+            box-shadow: 0 4px 20px rgba(234,179,8,0.1);
             transform: translateX(4px);
         }
         .feature-icon {
@@ -180,34 +181,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0 0 2px;
             font-size: 0.88rem;
             font-weight: 700;
-            color: #f1f5f9;
+            color: #111827;
         }
         .feature-card-text p {
             margin: 0;
             font-size: 0.76rem;
             color: #6b7280;
-            font-weight: 300;
+            font-weight: 400;
         }
 
         /* Stats row */
         .stats-row {
             display: flex;
-            gap: 24px;
+            gap: 0;
             margin-bottom: 2.5rem;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
         }
-        .stat-item { flex: 1; }
+        .stat-item {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            border-right: 1px solid rgba(0,0,0,0.06);
+        }
+        .stat-item:last-child { border-right: none; }
         .stat-item .stat-num {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: #eab308;
             letter-spacing: -0.03em;
             line-height: 1;
         }
         .stat-item .stat-label {
-            font-size: 0.72rem;
-            color: #4b5563;
-            font-weight: 400;
-            margin-top: 2px;
+            font-size: 0.7rem;
+            color: #9ca3af;
+            font-weight: 500;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
         /* ─── RIGHT PANEL ─────────────────────────── */
@@ -230,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: absolute;
             width: 300px; height: 300px;
             border-radius: 50%;
-            border: 1px solid rgba(234,179,8,0.08);
+            border: 1px solid rgba(234,179,8,0.1);
             top: -80px; right: -80px;
         }
         .auth-split-right::after {
@@ -238,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: absolute;
             width: 200px; height: 200px;
             border-radius: 50%;
-            border: 1px solid rgba(234,179,8,0.06);
+            border: 1px solid rgba(234,179,8,0.07);
             bottom: -50px; left: -50px;
         }
 
@@ -409,11 +423,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Center: Headline + Cards -->
         <div class="left-content" style="margin: auto 0;">
-            <h1 style="font-size:2.6rem; font-weight:800; line-height:1.12; letter-spacing:-0.03em; margin-bottom:0.75rem;">
+            <h1 style="font-size:2.6rem; font-weight:800; line-height:1.12; letter-spacing:-0.03em; margin-bottom:0.75rem; color:#111827;">
                 Satu Platform.<br>
-                <span style="background: linear-gradient(135deg,#eab308,#fcd34d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Semua Kendali.</span>
+                <span style="background: linear-gradient(135deg,#eab308,#ca8a04); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Semua Kendali.</span>
             </h1>
-            <p style="font-size:0.95rem; color:#6b7280; line-height:1.65; margin-bottom:0; font-weight:300; max-width:380px;">
+            <p style="font-size:0.95rem; color:#6b7280; line-height:1.65; margin-bottom:0; font-weight:400; max-width:380px;">
                 Dashboard internal tim GraViTTi untuk memantau produktivitas, penjualan, dan kolaborasi divisi.
             </p>
 
@@ -459,7 +473,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <!-- Footer -->
-        <div class="left-content" style="font-size:0.72rem; color:#374151; letter-spacing:0.3px;">
+        <div class="left-content" style="font-size:0.72rem; color:#9ca3af; letter-spacing:0.3px;">
             &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
         </div>
     </div>
