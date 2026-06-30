@@ -54,176 +54,496 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - Grav Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css?v=11.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
     <style>
-        /* Split Layout Styles */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ─── WRAPPER ─────────────────────────────── */
         .auth-split-wrapper {
             display: flex;
             min-height: 100vh;
             width: 100%;
         }
+
+        /* ─── LEFT PANEL ──────────────────────────── */
         .auth-split-left {
-            flex: 1.1;
-            background: linear-gradient(135deg, #111827, #030712);
+            flex: 1.15;
+            background: #060b14;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 4rem;
+            padding: 3rem 3.5rem;
             overflow: hidden;
             color: white;
         }
+
+        /* Animated gradient glow */
         .auth-split-left::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background: 
-                radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.12), transparent 45%),
-                radial-gradient(circle at 20% 80%, rgba(250, 204, 21, 0.08), transparent 45%);
-            z-index: 1;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(234,179,8,0.18) 0%, transparent 70%);
+            top: -150px; right: -150px;
+            animation: glowPulse 6s ease-in-out infinite;
+            z-index: 0;
         }
+        .auth-split-left::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(234,179,8,0.10) 0%, transparent 70%);
+            bottom: -100px; left: -100px;
+            animation: glowPulse 8s ease-in-out infinite reverse;
+            z-index: 0;
+        }
+        @keyframes glowPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.7; }
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 48px 48px;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+        }
+
+        /* All content above overlays */
+        .left-content { position: relative; z-index: 2; }
+
+        /* Brand badge */
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(234,179,8,0.1);
+            border: 1px solid rgba(234,179,8,0.25);
+            border-radius: 100px;
+            padding: 6px 14px 6px 8px;
+        }
+        .brand-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #eab308;
+            box-shadow: 0 0 8px #eab308, 0 0 16px rgba(234,179,8,0.5);
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* Feature cards */
+        .feature-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 3rem;
+            margin-top: 2.5rem;
+        }
+        .feature-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 16px 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(234,179,8,0.25);
+            transform: translateX(4px);
+        }
+        .feature-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        .feature-icon.yellow { background: rgba(234,179,8,0.15); color: #eab308; }
+        .feature-icon.blue   { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .feature-icon.green  { background: rgba(34,197,94,0.12);  color: #4ade80; }
+        .feature-card-text h6 {
+            margin: 0 0 2px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        .feature-card-text p {
+            margin: 0;
+            font-size: 0.76rem;
+            color: #6b7280;
+            font-weight: 300;
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 2.5rem;
+        }
+        .stat-item { flex: 1; }
+        .stat-item .stat-num {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #eab308;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+        .stat-item .stat-label {
+            font-size: 0.72rem;
+            color: #4b5563;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        /* ─── RIGHT PANEL ─────────────────────────── */
         .auth-split-right {
-            flex: 0.9;
+            flex: 0.85;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--bg-body);
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 0%, transparent 100%);
+            background: #f8f7f4;
+            background-image:
+                radial-gradient(circle at 30% 20%, rgba(234,179,8,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(234,179,8,0.04) 0%, transparent 50%);
             padding: 2rem;
             position: relative;
         }
+
+        /* Decorative circles on right */
+        .auth-split-right::before {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            border: 1px solid rgba(234,179,8,0.08);
+            top: -80px; right: -80px;
+        }
+        .auth-split-right::after {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            border: 1px solid rgba(234,179,8,0.06);
+            bottom: -50px; left: -50px;
+        }
+
+        /* Login Card */
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.04),
+                0 8px 40px rgba(0,0,0,0.08),
+                0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top accent line */
+        .card-accent {
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, #eab308, #fcd34d);
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* Form fields */
+        .field-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .field-input {
+            width: 100%;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #111827;
+            background: #fafafa;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .field-input::placeholder { color: #9ca3af; }
+        .field-input:focus {
+            border-color: #eab308;
+            box-shadow: 0 0 0 4px rgba(234,179,8,0.1);
+            background: #ffffff;
+        }
+        .field-wrapper { position: relative; }
+        .eye-btn {
+            position: absolute;
+            right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none;
+            color: #9ca3af; cursor: pointer;
+            font-size: 1.1rem;
+            display: flex; align-items: center;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .eye-btn:hover { color: #374151; }
+
+        /* Submit button */
+        .btn-signin {
+            width: 100%;
+            background: linear-gradient(135deg, #eab308, #fcd34d);
+            color: #111827;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 12px;
+            padding: 13px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 20px rgba(234,179,8,0.3);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-signin:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 28px rgba(234,179,8,0.4);
+        }
+        .btn-signin:active { transform: translateY(0); }
+
+        /* Register link */
+        .btn-register {
+            width: 100%;
+            background: transparent;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-register:hover {
+            border-color: #eab308;
+            color: #111827;
+            background: rgba(234,179,8,0.04);
+        }
+
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 20px 0;
+            color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1;
+            height: 1px; background: #f3f4f6;
+        }
+
+        /* Checkbox */
+        .check-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.83rem; color: #6b7280; cursor: pointer;
+            user-select: none;
+        }
+        .check-label input[type="checkbox"] {
+            width: 16px; height: 16px; cursor: pointer;
+            accent-color: #eab308;
+        }
+
+        /* Alert */
+        .auth-alert {
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+            border: none;
+        }
+        .auth-alert.danger { background: #fef2f2; color: #dc2626; }
+        .auth-alert.success { background: #f0fdf4; color: #16a34a; }
+
         @media (max-width: 991px) {
-            .auth-split-left {
-                display: none;
-            }
-            .auth-split-right {
-                flex: 1;
-                background-color: var(--bg-body);
-                padding: 1.5rem;
-            }
+            .auth-split-left { display: none; }
+            .auth-split-right { flex: 1; padding: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="auth-split-wrapper">
-        <!-- Left Side: Brand Visuals -->
-        <div class="auth-split-left">
-            <div style="z-index: 2; display: flex; align-items: center; gap: 8px;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--gv-primary); box-shadow: 0 0 10px var(--gv-primary);"></div>
-                <span class="fw-bold" style="letter-spacing: 1.5px; font-size: 0.78rem; color: var(--gv-primary); text-transform: uppercase;">GRAVITTI CORE</span>
-            </div>
-            
-            <div style="z-index: 2; max-width: 480px; margin-bottom: 4rem; margin-top: auto;">
-                <h1 class="fw-bold mb-3" style="font-size: 2.8rem; line-height: 1.15; letter-spacing: -0.03em;">Platform Kolaborasi Internal Tim</h1>
-                <p style="font-size: 1.05rem; color: #9ca3af; line-height: 1.6; font-weight: 300;">Pantau progress harian, koordinasi divisi, target penjualan, absensi, dan kelola pekerjaan dalam satu dashboard terintegrasi.</p>
-            </div>
-            
-            <div style="z-index: 2; font-size: 0.75rem; color: #4b5563; letter-spacing: 0.3px;">
-                &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
+<div class="auth-split-wrapper">
+
+    <!-- ══════════════ LEFT PANEL ══════════════ -->
+    <div class="auth-split-left">
+        <div class="grid-overlay"></div>
+
+        <!-- Top Brand -->
+        <div class="left-content">
+            <div class="brand-badge">
+                <div class="brand-dot"></div>
+                <span style="font-size:0.72rem; font-weight:700; letter-spacing:1.5px; color:#eab308; text-transform:uppercase;">Gravitti Core</span>
             </div>
         </div>
 
-        <!-- Right Side: Form Card -->
-        <div class="auth-split-right">
-            <div class="auth-card">
-                
-                <div class="auth-header text-center">
-                    <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 220px; height: auto; margin: 0 auto 1.2rem auto; display: block;">
-                    <p class="text-secondary small">Masuk untuk mengakses Grav Center</p>
+        <!-- Center: Headline + Cards -->
+        <div class="left-content" style="margin: auto 0;">
+            <h1 style="font-size:2.6rem; font-weight:800; line-height:1.12; letter-spacing:-0.03em; margin-bottom:0.75rem;">
+                Satu Platform.<br>
+                <span style="background: linear-gradient(135deg,#eab308,#fcd34d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Semua Kendali.</span>
+            </h1>
+            <p style="font-size:0.95rem; color:#6b7280; line-height:1.65; margin-bottom:0; font-weight:300; max-width:380px;">
+                Dashboard internal tim GraViTTi untuk memantau produktivitas, penjualan, dan kolaborasi divisi.
+            </p>
+
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <div class="feature-icon yellow"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="feature-card-text">
+                        <h6>Target & Progress</h6>
+                        <p>Pantau target harian & pencapaian penjualan</p>
+                    </div>
                 </div>
-
-                <?php if($success_msg): ?>
-                    <div class="alert alert-success py-2 small text-center border-0 bg-success-subtle text-success mb-4">
-                        <i class="bi bi-check-circle me-1"></i> <?= $success_msg ?>
+                <div class="feature-card">
+                    <div class="feature-icon blue"><i class="bi bi-people-fill"></i></div>
+                    <div class="feature-card-text">
+                        <h6>Kolaborasi Divisi</h6>
+                        <p>Koordinasi antar tim secara real-time</p>
                     </div>
-                <?php endif; ?>
-
-                <?php if($error): ?>
-                    <div class="alert alert-danger py-2 small text-center border-0 bg-danger-subtle text-danger mb-4">
-                        <i class="bi bi-exclamation-circle me-1"></i> <?= $error ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" action="">
-                    
-                    <div class="mb-3 text-start">
-                        <label for="email" class="form-label fw-bold text-secondary mb-1.5" style="font-size: 0.75rem; letter-spacing: 0.3px; text-transform: uppercase;">Email Address</label>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email Anda" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 12px 16px; font-size: 0.9rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
-                    </div>
-
-                    <div class="mb-4 text-start">
-                        <label for="password" class="form-label fw-bold text-secondary mb-1.5" style="font-size: 0.75rem; letter-spacing: 0.3px; text-transform: uppercase;">Password</label>
-                        <div style="position: relative;">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Masukkan password Anda" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 12px 16px; padding-right: 46px; font-size: 0.9rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s; width: 100%;">
-                            <button type="button" id="togglePassword" aria-label="Toggle Password Visibility" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 5;">
-                                <i class="bi bi-eye" id="toggleIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me" style="cursor: pointer; border-color: rgba(0,0,0,0.15);">
-                            <label class="form-check-label text-secondary small" for="remember-me" style="cursor: pointer; user-select: none;">
-                                Ingat Saya
-                            </label>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-login-dark mb-3" type="submit" style="background: linear-gradient(135deg, var(--gv-primary), var(--gv-primary-light)); color: #1a1a1a; font-weight: 700; border-radius: 12px; padding: 12px; width: 100%; border: none; font-size: 0.95rem; box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15); transition: all 0.2s;">
-                        Sign In
-                    </button>
-
-                </form>
-
-                <div class="divider-text" style="color: #9ca3af; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <span style="height: 1px; background: rgba(0,0,0,0.06); flex-grow: 1;"></span>
-                    <span>atau</span>
-                    <span style="height: 1px; background: rgba(0,0,0,0.06); flex-grow: 1;"></span>
                 </div>
-                    
-                <a href="register.php" class="btn w-100 py-2.5 fw-bold" style="border: 1.5px solid rgba(0,0,0,0.08); border-radius: 12px; color: var(--text-secondary); background: transparent; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--gv-primary)'; this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'; this.style.color='var(--text-secondary)'">
-                    Daftar Akun Baru
-                </a>
-
+                <div class="feature-card">
+                    <div class="feature-icon green"><i class="bi bi-calendar2-check-fill"></i></div>
+                    <div class="feature-card-text">
+                        <h6>Absensi & Jadwal</h6>
+                        <p>Kelola kehadiran & jadwal kerja tim</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-num">5+</div>
+                    <div class="stat-label">Divisi Aktif</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">24/7</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">100%</div>
+                    <div class="stat-label">Realtime</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="left-content" style="font-size:0.72rem; color:#374151; letter-spacing:0.3px;">
+            &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
         </div>
     </div>
 
-    <script>
-        // Custom focus styles for inputs
-        document.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
-            input.addEventListener('focus', () => {
-                input.style.borderColor = 'var(--gv-primary)';
-                input.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.12)';
-                input.style.backgroundColor = '#ffffff';
-            });
-            input.addEventListener('blur', () => {
-                input.style.borderColor = 'rgba(0,0,0,0.08)';
-                input.style.boxShadow = 'none';
-                input.style.backgroundColor = 'rgba(255,255,255,0.6)';
-            });
-        });
+    <!-- ══════════════ RIGHT PANEL ══════════════ -->
+    <div class="auth-split-right">
+        <div class="login-card">
+            <div class="card-accent"></div>
 
-        // Password visibility toggler
-        document.getElementById('togglePassword').addEventListener('click', function () {
-            const passwordInput = document.getElementById('password');
-            const icon = document.getElementById('toggleIcon');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
-            }
-        });
-    </script>
+            <!-- Logo -->
+            <div class="text-center mb-4">
+                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width:200px; height:auto; display:block; margin:0 auto 10px;">
+                <p style="font-size:0.83rem; color:#9ca3af; margin:0;">Masuk untuk mengakses Grav Center</p>
+            </div>
+
+            <?php if($success_msg): ?>
+                <div class="auth-alert success">
+                    <i class="bi bi-check-circle-fill"></i> <?= $success_msg ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if($error): ?>
+                <div class="auth-alert danger">
+                    <i class="bi bi-exclamation-circle-fill"></i> <?= $error ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+
+                <div class="mb-3">
+                    <label for="email" class="field-label">Email Address</label>
+                    <input type="email" class="field-input" id="email" name="email" placeholder="Masukkan email Anda" required autocomplete="email">
+                </div>
+
+                <div class="mb-2">
+                    <label for="password" class="field-label">Password</label>
+                    <div class="field-wrapper">
+                        <input type="password" class="field-input" id="password" name="password" placeholder="Masukkan password Anda" required autocomplete="current-password" style="padding-right:46px;">
+                        <button type="button" id="togglePassword" class="eye-btn" aria-label="Toggle Password">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4 mt-3">
+                    <label class="check-label" for="remember-me">
+                        <input type="checkbox" id="remember-me" name="remember-me">
+                        Ingat Saya
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-signin mb-2">
+                    Sign In &nbsp;<i class="bi bi-arrow-right-short" style="font-size:1.1rem;vertical-align:-1px;"></i>
+                </button>
+
+            </form>
+
+            <div class="divider">atau</div>
+
+            <a href="register.php" class="btn-register">
+                <i class="bi bi-person-plus me-1"></i> Daftar Akun Baru
+            </a>
+
+            <p style="text-align:center; font-size:0.72rem; color:#d1d5db; margin-top:1.5rem; margin-bottom:0;">
+                Protected by GraViTTi Security System
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const input = document.getElementById('password');
+        const icon  = document.getElementById('toggleIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    });
+</script>
 
 </body>
 </html>
