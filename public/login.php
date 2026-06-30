@@ -51,442 +51,555 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Grav Center</title>
+    <title>Login – Grav Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css?v=11.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        /* ─── WRAPPER ─────────────────────────────── */
-        .auth-split-wrapper {
-            display: flex;
+        /* ════════════════════════════════════
+           LAYOUT
+        ════════════════════════════════════ */
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 480px;
             min-height: 100vh;
-            width: 100%;
+            background: #faf9f6;
         }
 
-        /* ─── LEFT PANEL ──────────────────────────── */
-        .auth-split-left {
-            flex: 1.15;
-            background: #f8f7f4;
-            background-image:
-                radial-gradient(circle at 80% 10%, rgba(234,179,8,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 10% 90%, rgba(234,179,8,0.05) 0%, transparent 50%);
+        /* ════════════════════════════════════
+           LEFT PANEL
+        ════════════════════════════════════ */
+        .panel-left {
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 3rem 3.5rem;
+            padding: 3rem 4rem;
             overflow: hidden;
-            color: #111827;
+            background: #faf9f6;
         }
 
-        /* Soft decorative blobs */
-        .auth-split-left::before {
+        /* Soft golden glow top-right */
+        .panel-left::before {
             content: '';
             position: absolute;
-            width: 500px; height: 500px;
+            width: 700px; height: 700px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(234,179,8,0.12) 0%, transparent 70%);
-            top: -180px; right: -120px;
-            z-index: 0;
+            background: radial-gradient(circle, rgba(234,179,8,0.13) 0%, transparent 65%);
+            top: -200px; right: -200px;
+            pointer-events: none;
         }
-        .auth-split-left::after {
+        /* Soft golden glow bottom-left */
+        .panel-left::after {
             content: '';
             position: absolute;
-            width: 300px; height: 300px;
+            width: 400px; height: 400px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(234,179,8,0.07) 0%, transparent 70%);
-            bottom: -80px; left: -80px;
-            z-index: 0;
-        }
-        @keyframes glowPulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.7; }
+            background: radial-gradient(circle, rgba(234,179,8,0.07) 0%, transparent 65%);
+            bottom: -100px; left: -100px;
+            pointer-events: none;
         }
 
-        /* Grid overlay */
-        .grid-overlay {
+        /* Subtle dot-grid texture */
+        .dot-grid {
             position: absolute;
             inset: 0;
-            background-image:
-                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
-            background-size: 48px 48px;
-            z-index: 0;
-            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+            background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: radial-gradient(ellipse 70% 70% at 40% 50%, black 20%, transparent 100%);
+            pointer-events: none;
         }
 
-        /* All content above overlays */
-        .left-content { position: relative; z-index: 2; }
-
-        /* Brand badge */
-        .brand-badge {
+        /* Top brand tag */
+        .brand-tag {
+            position: relative; z-index: 2;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(234,179,8,0.12);
-            border: 1px solid rgba(234,179,8,0.3);
+            background: rgba(234,179,8,0.1);
+            border: 1px solid rgba(234,179,8,0.28);
             border-radius: 100px;
-            padding: 6px 14px 6px 8px;
+            padding: 5px 14px 5px 8px;
+            width: fit-content;
         }
-        .brand-dot {
+        .live-dot {
             width: 8px; height: 8px;
             border-radius: 50%;
             background: #eab308;
-            box-shadow: 0 0 8px #eab308, 0 0 16px rgba(234,179,8,0.5);
-            animation: blink 2s ease-in-out infinite;
+            box-shadow: 0 0 0 3px rgba(234,179,8,0.2);
+            animation: pulse 2.2s ease-in-out infinite;
         }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 0 0 3px rgba(234,179,8,0.2); }
+            50%      { box-shadow: 0 0 0 7px rgba(234,179,8,0.05); }
+        }
+        .brand-tag span {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.6px;
+            color: #b45309;
+            text-transform: uppercase;
+        }
 
-        /* Feature cards */
-        .feature-cards {
+        /* Hero text */
+        .hero {
+            position: relative; z-index: 2;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            margin-bottom: 3rem;
-            margin-top: 2.5rem;
+            justify-content: center;
+            padding: 2rem 0;
         }
-        .feature-card {
+        .hero-eyebrow {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #eab308;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.6rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+        .hero h1 em {
+            font-style: normal;
+            color: #eab308;
+        }
+        .hero-desc {
+            font-size: 0.92rem;
+            color: #64748b;
+            line-height: 1.7;
+            max-width: 400px;
+            font-weight: 400;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Dashboard preview mockup */
+        .mockup {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.07);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+            max-width: 520px;
+        }
+        .mockup-header {
             display: flex;
             align-items: center;
-            gap: 16px;
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.06);
-            border-radius: 16px;
-            padding: 16px 20px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-            transition: all 0.3s ease;
+            gap: 8px;
+            margin-bottom: 14px;
         }
-        .feature-card:hover {
-            border-color: rgba(234,179,8,0.4);
-            box-shadow: 0 4px 20px rgba(234,179,8,0.1);
-            transform: translateX(4px);
+        .mockup-dots span {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
         }
-        .feature-icon {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-        .feature-icon.yellow { background: rgba(234,179,8,0.15); color: #eab308; }
-        .feature-icon.blue   { background: rgba(59,130,246,0.12); color: #60a5fa; }
-        .feature-icon.green  { background: rgba(34,197,94,0.12);  color: #4ade80; }
-        .feature-card-text h6 {
-            margin: 0 0 2px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: #111827;
-        }
-        .feature-card-text p {
-            margin: 0;
-            font-size: 0.76rem;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
-        /* Stats row */
-        .stats-row {
-            display: flex;
-            gap: 0;
-            margin-bottom: 2.5rem;
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.06);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        }
-        .stat-item {
-            flex: 1;
-            padding: 16px;
-            text-align: center;
-            border-right: 1px solid rgba(0,0,0,0.06);
-        }
-        .stat-item:last-child { border-right: none; }
-        .stat-item .stat-num {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #eab308;
-            letter-spacing: -0.03em;
-            line-height: 1;
-        }
-        .stat-item .stat-label {
+        .mockup-dots span:nth-child(1) { background: #fca5a5; }
+        .mockup-dots span:nth-child(2) { background: #fcd34d; }
+        .mockup-dots span:nth-child(3) { background: #86efac; }
+        .mockup-title {
             font-size: 0.7rem;
-            color: #9ca3af;
+            color: #94a3b8;
             font-weight: 500;
-            margin-top: 3px;
+            margin-left: 4px;
+        }
+        .mockup-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .ms-card {
+            background: #f8f9fb;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .ms-card .ms-label {
+            font-size: 0.62rem;
+            color: #94a3b8;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.4px;
+            margin-bottom: 5px;
+        }
+        .ms-card .ms-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+        }
+        .ms-card .ms-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+        .ms-badge.up   { color: #16a34a; }
+        .ms-badge.down { color: #dc2626; }
+        .ms-badge.neut { color: #eab308; }
+
+        .mockup-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 54px;
+        }
+        .bar {
+            flex: 1;
+            border-radius: 6px 6px 0 0;
+            background: #f1f5f9;
+            transition: background 0.3s;
+        }
+        .bar.active { background: linear-gradient(180deg, #fcd34d, #eab308); }
+        .bar.semi   { background: rgba(234,179,8,0.3); }
+
+        /* Feature pills */
+        .pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 2rem;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 100px;
+            padding: 6px 14px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: #374151;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .pill i { color: #eab308; font-size: 0.85rem; }
+
+        /* Footer */
+        .left-footer {
+            position: relative; z-index: 2;
+            font-size: 0.7rem;
+            color: #cbd5e1;
         }
 
-        /* ─── RIGHT PANEL ─────────────────────────── */
-        .auth-split-right {
-            flex: 0.85;
+        /* ════════════════════════════════════
+           RIGHT PANEL
+        ════════════════════════════════════ */
+        .panel-right {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f8f7f4;
-            background-image:
-                radial-gradient(circle at 30% 20%, rgba(234,179,8,0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(234,179,8,0.04) 0%, transparent 50%);
-            padding: 2rem;
-            position: relative;
-        }
-
-        /* Decorative circles on right */
-        .auth-split-right::before {
-            content: '';
-            position: absolute;
-            width: 300px; height: 300px;
-            border-radius: 50%;
-            border: 1px solid rgba(234,179,8,0.1);
-            top: -80px; right: -80px;
-        }
-        .auth-split-right::after {
-            content: '';
-            position: absolute;
-            width: 200px; height: 200px;
-            border-radius: 50%;
-            border: 1px solid rgba(234,179,8,0.07);
-            bottom: -50px; left: -50px;
-        }
-
-        /* Login Card */
-        .login-card {
-            width: 100%;
-            max-width: 440px;
+            padding: 2rem 2.5rem;
             background: #ffffff;
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow:
-                0 0 0 1px rgba(0,0,0,0.04),
-                0 8px 40px rgba(0,0,0,0.08),
-                0 2px 8px rgba(0,0,0,0.04);
+            border-left: 1px solid rgba(0,0,0,0.06);
             position: relative;
-            z-index: 1;
         }
 
-        /* Top accent line */
-        .card-accent {
-            position: absolute;
-            top: 0; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 3px;
-            background: linear-gradient(90deg, #eab308, #fcd34d);
-            border-radius: 0 0 4px 4px;
+        .login-box {
+            width: 100%;
+            max-width: 380px;
         }
 
-        /* Form fields */
-        .field-label {
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-            color: #6b7280;
-            margin-bottom: 6px;
+        /* Logo block */
+        .logo-block {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo-block img {
+            max-width: 180px;
+            height: auto;
             display: block;
+            margin: 0 auto 10px;
         }
-        .field-input {
+        .logo-block p {
+            font-size: 0.82rem;
+            color: #94a3b8;
+        }
+
+        /* Welcome line */
+        .welcome-line {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+        .welcome-line h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .welcome-line p {
+            font-size: 0.82rem;
+            color: #94a3b8;
+        }
+
+        /* Field */
+        .field { margin-bottom: 1.1rem; }
+        .field label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .field-wrap { position: relative; }
+        .field input {
             width: 100%;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e2e8f0;
             border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 0.9rem;
+            padding: 11.5px 16px;
+            font-size: 0.88rem;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #111827;
-            background: #fafafa;
-            transition: all 0.2s ease;
+            color: #0f172a;
+            background: #f8fafc;
             outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
         }
-        .field-input::placeholder { color: #9ca3af; }
-        .field-input:focus {
+        .field input::placeholder { color: #cbd5e1; }
+        .field input:focus {
             border-color: #eab308;
+            background: #fff;
             box-shadow: 0 0 0 4px rgba(234,179,8,0.1);
-            background: #ffffff;
         }
-        .field-wrapper { position: relative; }
-        .eye-btn {
+        .field input.has-btn { padding-right: 46px; }
+        .eye-toggle {
             position: absolute;
-            right: 12px; top: 50%; transform: translateY(-50%);
+            right: 13px; top: 50%;
+            transform: translateY(-50%);
             background: none; border: none;
-            color: #9ca3af; cursor: pointer;
-            font-size: 1.1rem;
+            color: #cbd5e1; cursor: pointer;
+            font-size: 1.05rem;
             display: flex; align-items: center;
             padding: 4px;
-            transition: color 0.2s;
+            transition: color 0.18s;
         }
-        .eye-btn:hover { color: #374151; }
+        .eye-toggle:hover { color: #64748b; }
 
-        /* Submit button */
+        /* Remember row */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0.6rem 0 1.4rem;
+        }
+        .remember-row input[type="checkbox"] {
+            width: 15px; height: 15px;
+            accent-color: #eab308;
+            cursor: pointer;
+        }
+        .remember-row label {
+            font-size: 0.8rem;
+            color: #64748b;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Sign in button */
         .btn-signin {
             width: 100%;
-            background: linear-gradient(135deg, #eab308, #fcd34d);
-            color: #111827;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
+            letter-spacing: 0.2px;
             border: none;
             border-radius: 12px;
             padding: 13px;
-            letter-spacing: 0.3px;
-            box-shadow: 0 4px 20px rgba(234,179,8,0.3);
-            transition: all 0.2s ease;
             cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            box-shadow: 0 4px 18px rgba(234,179,8,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+            transition: all 0.18s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-signin:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 28px rgba(234,179,8,0.4);
+            box-shadow: 0 7px 24px rgba(234,179,8,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
         }
-        .btn-signin:active { transform: translateY(0); }
+        .btn-signin:active { transform: none; box-shadow: 0 2px 8px rgba(234,179,8,0.3); }
+        .btn-signin .arrow-icon {
+            width: 26px; height: 26px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
 
-        /* Register link */
+        /* Divider */
+        .or-divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 1.2rem 0;
+            font-size: 0.72rem; color: #cbd5e1;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .or-divider::before, .or-divider::after {
+            content: ''; flex: 1;
+            height: 1px; background: #f1f5f9;
+        }
+
+        /* Register button */
         .btn-register {
             width: 100%;
-            background: transparent;
+            background: #f8fafc;
             color: #374151;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
-            font-size: 0.88rem;
-            border: 1.5px solid #e5e7eb;
+            font-size: 0.85rem;
+            border: 1.5px solid #e2e8f0;
             border-radius: 12px;
             padding: 12px;
             text-align: center;
             text-decoration: none;
-            display: block;
-            transition: all 0.2s ease;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: all 0.18s ease;
         }
         .btn-register:hover {
             border-color: #eab308;
-            color: #111827;
+            color: #0f172a;
             background: rgba(234,179,8,0.04);
-        }
-
-        /* Divider */
-        .divider {
-            display: flex; align-items: center; gap: 12px;
-            margin: 20px 0;
-            color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1;
-            height: 1px; background: #f3f4f6;
-        }
-
-        /* Checkbox */
-        .check-label {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.83rem; color: #6b7280; cursor: pointer;
-            user-select: none;
-        }
-        .check-label input[type="checkbox"] {
-            width: 16px; height: 16px; cursor: pointer;
-            accent-color: #eab308;
         }
 
         /* Alert */
         .auth-alert {
+            display: flex; align-items: center; gap: 9px;
             border-radius: 12px;
             padding: 10px 14px;
-            font-size: 0.82rem;
-            margin-bottom: 16px;
-            display: flex; align-items: center; gap: 8px;
-            border: none;
+            font-size: 0.81rem;
+            margin-bottom: 14px;
+            font-weight: 500;
         }
-        .auth-alert.danger { background: #fef2f2; color: #dc2626; }
-        .auth-alert.success { background: #f0fdf4; color: #16a34a; }
+        .auth-alert.danger  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .auth-alert.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 
-        @media (max-width: 991px) {
-            .auth-split-left { display: none; }
-            .auth-split-right { flex: 1; padding: 1.5rem; }
+        /* Security footnote */
+        .footnote {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.68rem;
+            color: #e2e8f0;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+
+        /* ════════════════════════════════════
+           RESPONSIVE
+        ════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .page { grid-template-columns: 1fr; }
+            .panel-left { display: none; }
+            .panel-right { border-left: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="auth-split-wrapper">
+<div class="page">
 
-    <!-- ══════════════ LEFT PANEL ══════════════ -->
-    <div class="auth-split-left">
-        <div class="grid-overlay"></div>
+    <!-- ═══════════════════ LEFT PANEL ═══════════════════ -->
+    <div class="panel-left">
+        <div class="dot-grid"></div>
 
-        <!-- Top Brand -->
-        <div class="left-content">
-            <div class="brand-badge">
-                <div class="brand-dot"></div>
-                <span style="font-size:0.72rem; font-weight:700; letter-spacing:1.5px; color:#eab308; text-transform:uppercase;">Gravitti Core</span>
-            </div>
+        <!-- Brand Tag -->
+        <div class="brand-tag">
+            <div class="live-dot"></div>
+            <span>Gravitti Core &nbsp;·&nbsp; Internal Platform</span>
         </div>
 
-        <!-- Center: Headline + Cards -->
-        <div class="left-content" style="margin: auto 0;">
-            <h1 style="font-size:2.6rem; font-weight:800; line-height:1.12; letter-spacing:-0.03em; margin-bottom:0.75rem; color:#111827;">
-                Satu Platform.<br>
-                <span style="background: linear-gradient(135deg,#eab308,#ca8a04); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Semua Kendali.</span>
-            </h1>
-            <p style="font-size:0.95rem; color:#6b7280; line-height:1.65; margin-bottom:0; font-weight:400; max-width:380px;">
-                Dashboard internal tim GraViTTi untuk memantau produktivitas, penjualan, dan kolaborasi divisi.
+        <!-- Hero + Content -->
+        <div class="hero">
+            <div class="hero-eyebrow">Platform Manajemen Tim</div>
+            <h1>Satu Tempat<br>untuk <em>Semua</em><br>Kendali Tim.</h1>
+            <p class="hero-desc">
+                Dashboard terpadu untuk memantau target penjualan, absensi, progress divisi, dan koordinasi tim GraViTTi secara real-time.
             </p>
 
-            <div class="feature-cards">
-                <div class="feature-card">
-                    <div class="feature-icon yellow"><i class="bi bi-graph-up-arrow"></i></div>
-                    <div class="feature-card-text">
-                        <h6>Target & Progress</h6>
-                        <p>Pantau target harian & pencapaian penjualan</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon blue"><i class="bi bi-people-fill"></i></div>
-                    <div class="feature-card-text">
-                        <h6>Kolaborasi Divisi</h6>
-                        <p>Koordinasi antar tim secara real-time</p>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon green"><i class="bi bi-calendar2-check-fill"></i></div>
-                    <div class="feature-card-text">
-                        <h6>Absensi & Jadwal</h6>
-                        <p>Kelola kehadiran & jadwal kerja tim</p>
-                    </div>
-                </div>
+            <!-- Pills -->
+            <div class="pills">
+                <div class="pill"><i class="bi bi-graph-up-arrow"></i> Target & Sales</div>
+                <div class="pill"><i class="bi bi-people-fill"></i> Kolaborasi Tim</div>
+                <div class="pill"><i class="bi bi-calendar2-check"></i> Absensi</div>
+                <div class="pill"><i class="bi bi-bell-fill"></i> Notifikasi</div>
             </div>
 
-            <!-- Stats -->
-            <div class="stats-row">
-                <div class="stat-item">
-                    <div class="stat-num">5+</div>
-                    <div class="stat-label">Divisi Aktif</div>
+            <!-- Dashboard Mockup -->
+            <div class="mockup">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="mockup-title">Grav Center &nbsp;·&nbsp; Dashboard Overview</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-num">24/7</div>
-                    <div class="stat-label">Monitoring</div>
+
+                <div class="mockup-stats">
+                    <div class="ms-card">
+                        <div class="ms-label">Target Bulan Ini</div>
+                        <div class="ms-val">87<span style="font-size:0.8rem;font-weight:600;color:#94a3b8;">%</span></div>
+                        <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +12%</div>
+                    </div>
+                    <div class="ms-card">
+                        <div class="ms-label">Anggota Aktif</div>
+                        <div class="ms-val">24</div>
+                        <div class="ms-badge neut"><i class="bi bi-circle-fill" style="font-size:5px;"></i> Online</div>
+                    </div>
+                    <div class="ms-card">
+                        <div class="ms-label">Tugas Selesai</div>
+                        <div class="ms-val">142</div>
+                        <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +8%</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-num">100%</div>
-                    <div class="stat-label">Realtime</div>
+
+                <div style="margin-bottom:8px;">
+                    <div style="font-size:0.62rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Aktivitas Minggu Ini</div>
+                    <div class="mockup-bars">
+                        <div class="bar semi"  style="height:35%;"></div>
+                        <div class="bar semi"  style="height:50%;"></div>
+                        <div class="bar"       style="height:40%;"></div>
+                        <div class="bar active"style="height:80%;"></div>
+                        <div class="bar active"style="height:95%;"></div>
+                        <div class="bar semi"  style="height:65%;"></div>
+                        <div class="bar semi"  style="height:55%;"></div>
+                        <div class="bar"       style="height:30%;"></div>
+                        <div class="bar active"style="height:72%;"></div>
+                        <div class="bar active"style="height:88%;"></div>
+                        <div class="bar semi"  style="height:60%;"></div>
+                        <div class="bar"       style="height:45%;"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="left-content" style="font-size:0.72rem; color:#9ca3af; letter-spacing:0.3px;">
+        <div class="left-footer">
             &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
         </div>
     </div>
 
-    <!-- ══════════════ RIGHT PANEL ══════════════ -->
-    <div class="auth-split-right">
-        <div class="login-card">
-            <div class="card-accent"></div>
+    <!-- ═══════════════════ RIGHT PANEL ═══════════════════ -->
+    <div class="panel-right">
+        <div class="login-box">
 
             <!-- Logo -->
-            <div class="text-center mb-4">
-                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width:200px; height:auto; display:block; margin:0 auto 10px;">
-                <p style="font-size:0.83rem; color:#9ca3af; margin:0;">Masuk untuk mengakses Grav Center</p>
+            <div class="logo-block">
+                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology">
+                <p>Selamat datang kembali 👋</p>
+            </div>
+
+            <!-- Welcome -->
+            <div class="welcome-line">
+                <h2>Masuk ke Akun Kamu</h2>
+                <p>Masukkan email & password untuk melanjutkan</p>
             </div>
 
             <?php if($success_msg): ?>
@@ -503,43 +616,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="">
 
-                <div class="mb-3">
-                    <label for="email" class="field-label">Email Address</label>
-                    <input type="email" class="field-input" id="email" name="email" placeholder="Masukkan email Anda" required autocomplete="email">
+                <div class="field">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="nama@example.com" required autocomplete="email">
                 </div>
 
-                <div class="mb-2">
-                    <label for="password" class="field-label">Password</label>
-                    <div class="field-wrapper">
-                        <input type="password" class="field-input" id="password" name="password" placeholder="Masukkan password Anda" required autocomplete="current-password" style="padding-right:46px;">
-                        <button type="button" id="togglePassword" class="eye-btn" aria-label="Toggle Password">
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="field-wrap">
+                        <input type="password" class="has-btn" id="password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+                        <button type="button" id="togglePassword" class="eye-toggle" aria-label="Toggle Password">
                             <i class="bi bi-eye" id="toggleIcon"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="mb-4 mt-3">
-                    <label class="check-label" for="remember-me">
-                        <input type="checkbox" id="remember-me" name="remember-me">
-                        Ingat Saya
-                    </label>
+                <div class="remember-row">
+                    <input type="checkbox" id="remember-me" name="remember-me">
+                    <label for="remember-me">Ingat saya selama 30 hari</label>
                 </div>
 
-                <button type="submit" class="btn-signin mb-2">
-                    Sign In &nbsp;<i class="bi bi-arrow-right-short" style="font-size:1.1rem;vertical-align:-1px;"></i>
+                <button type="submit" class="btn-signin">
+                    Masuk ke Dashboard
+                    <span class="arrow-icon"><i class="bi bi-arrow-right"></i></span>
                 </button>
 
             </form>
 
-            <div class="divider">atau</div>
+            <div class="or-divider">atau</div>
 
             <a href="register.php" class="btn-register">
-                <i class="bi bi-person-plus me-1"></i> Daftar Akun Baru
+                <i class="bi bi-person-plus"></i>
+                Buat Akun Baru
             </a>
 
-            <p style="text-align:center; font-size:0.72rem; color:#d1d5db; margin-top:1.5rem; margin-bottom:0;">
-                Protected by GraViTTi Security System
-            </p>
+            <div class="footnote">
+                <i class="bi bi-shield-lock-fill"></i>
+                Dilindungi sistem keamanan GraViTTi
+            </div>
+
         </div>
     </div>
 
