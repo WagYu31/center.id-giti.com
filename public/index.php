@@ -262,16 +262,16 @@ $tanggal = date('d M Y');
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <div class="d-flex gap-1">
-                            <button class="ev-color-btn" data-color="#d97706" style="width:20px;height:20px;border-radius:50%;border:2px solid #d97706;background:#d97706;cursor:pointer;" onclick="pickColor(this)"></button>
-                            <button class="ev-color-btn" data-color="#ef4444" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#ef4444;cursor:pointer;" onclick="pickColor(this)"></button>
-                            <button class="ev-color-btn" data-color="#3b82f6" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#3b82f6;cursor:pointer;" onclick="pickColor(this)"></button>
-                            <button class="ev-color-btn" data-color="#059669" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#059669;cursor:pointer;" onclick="pickColor(this)"></button>
-                            <button class="ev-color-btn" data-color="#8b5cf6" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#8b5cf6;cursor:pointer;" onclick="pickColor(this)"></button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="ev-color-btn" data-color="#d97706" style="width:24px;height:24px;border-radius:50%;border:none;background:#d97706;cursor:pointer;box-shadow:0 0 0 3px white, 0 0 0 5px #d97706;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
+                            <button type="button" class="ev-color-btn" data-color="#ef4444" style="width:24px;height:24px;border-radius:50%;border:none;background:#ef4444;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
+                            <button type="button" class="ev-color-btn" data-color="#3b82f6" style="width:24px;height:24px;border-radius:50%;border:none;background:#3b82f6;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
+                            <button type="button" class="ev-color-btn" data-color="#059669" style="width:24px;height:24px;border-radius:50%;border:none;background:#059669;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
+                            <button type="button" class="ev-color-btn" data-color="#8b5cf6" style="width:24px;height:24px;border-radius:50%;border:none;background:#8b5cf6;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
                         </div>
                         <div class="ms-auto d-flex gap-1">
-                            <button onclick="cancelAddEvent()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">Batal</button>
-                            <button onclick="submitEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">
+                            <button type="button" onclick="cancelAddEvent()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">Batal</button>
+                            <button type="button" onclick="submitEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">
                                 <i class="bi bi-check-lg"></i> Simpan
                             </button>
                         </div>
@@ -734,7 +734,11 @@ $tanggal = date('d M Y');
 
     function showAddEvent() { 
         document.getElementById('addEventForm').style.display = 'block'; 
-        document.getElementById('evTitle').focus(); 
+        document.getElementById('evTitle').focus();
+        // Reset color to default
+        selectedColor = '#d97706';
+        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.boxShadow = 'none');
+        document.querySelector('.ev-color-btn[data-color="#d97706"]').style.boxShadow = '0 0 0 3px white, 0 0 0 5px #d97706';
     }
     function cancelAddEvent() { 
         document.getElementById('addEventForm').style.display = 'none'; 
@@ -752,8 +756,8 @@ $tanggal = date('d M Y');
     }
 
     function pickColor(btn) {
-        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.borderColor = 'transparent');
-        btn.style.borderColor = btn.dataset.color;
+        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.boxShadow = 'none');
+        btn.style.boxShadow = '0 0 0 3px white, 0 0 0 5px ' + btn.dataset.color;
         selectedColor = btn.dataset.color;
     }
 
