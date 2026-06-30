@@ -83,25 +83,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css?v=11.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
+    <style>
+        /* Split Layout Styles */
+        .auth-split-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        .auth-split-left {
+            flex: 1.1;
+            background: linear-gradient(135deg, #111827, #030712);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4rem;
+            overflow: hidden;
+            color: white;
+        }
+        .auth-split-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.12), transparent 45%),
+                radial-gradient(circle at 20% 80%, rgba(250, 204, 21, 0.08), transparent 45%);
+            z-index: 1;
+        }
+        .auth-split-right {
+            flex: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 0%, transparent 100%);
+            padding: 2rem;
+            position: relative;
+        }
+        @media (max-width: 991px) {
+            .auth-split-left {
+                display: none;
+            }
+            .auth-split-right {
+                flex: 1;
+                background-color: var(--bg-body);
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div class="auth-card" style="max-width: 600px;">
-            
-            <div class="auth-header text-center">
-                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 240px; height: auto; margin: 0 auto 1.5rem auto; display: block;">
-                <h4 class="fw-bold mb-1" style="font-size: 1.15rem; color: var(--text-primary);">Create Account</h4>
-                <p class="text-secondary small">Bergabung dengan Grav Tech Team</p>
+    <div class="auth-split-wrapper">
+        <!-- Left Side: Brand Visuals -->
+        <div class="auth-split-left">
+            <div style="z-index: 2; display: flex; align-items: center; gap: 8px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--gv-primary); box-shadow: 0 0 10px var(--gv-primary);"></div>
+                <span class="fw-bold" style="letter-spacing: 1.5px; font-size: 0.78rem; color: var(--gv-primary); text-transform: uppercase;">GRAVITTI CORE</span>
             </div>
+            
+            <div style="z-index: 2; max-width: 480px; margin-bottom: 4rem; margin-top: auto;">
+                <h1 class="fw-bold mb-3" style="font-size: 2.8rem; line-height: 1.15; letter-spacing: -0.03em;">Platform Kolaborasi Internal Tim</h1>
+                <p style="font-size: 1.05rem; color: #9ca3af; line-height: 1.6; font-weight: 300;">Pantau progress harian, koordinasi divisi, target penjualan, absensi, dan kelola pekerjaan dalam satu dashboard terintegrasi.</p>
+            </div>
+            
+            <div style="z-index: 2; font-size: 0.75rem; color: #4b5563; letter-spacing: 0.3px;">
+                &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
+            </div>
+        </div>
 
-            <?php if($error): ?>
-                <div class="alert alert-danger py-2 small text-center border-0 bg-danger-subtle text-danger mb-4">
-                    <i class="bi bi-exclamation-circle me-1"></i> <?= $error ?>
+        <!-- Right Side: Form Card -->
+        <div class="auth-split-right">
+            <div class="auth-card" style="max-width: 600px;">
+                
+                <div class="auth-header text-center">
+                    <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 220px; height: auto; margin: 0 auto 1.2rem auto; display: block;">
+                    <h4 class="fw-bold mb-1" style="font-size: 1.15rem; color: var(--text-primary);">Create Account</h4>
+                    <p class="text-secondary small">Bergabung dengan Grav Tech Team</p>
                 </div>
-            <?php endif; ?>
 
-            <form method="POST" action="">
+                <?php if($error): ?>
+                    <div class="alert alert-danger py-2 small text-center border-0 bg-danger-subtle text-danger mb-4">
+                        <i class="bi bi-exclamation-circle me-1"></i> <?= $error ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" action="">
                 <div class="row g-3">
                     <div class="col-md-6 text-start">
                         <label for="name" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Nama Lengkap</label>
@@ -168,8 +236,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </p>
             </div>
 
-        </div>
+         </div>
     </div>
+</div>
 
     <script>
         document.getElementById('togglePassword').addEventListener('click', function () {
