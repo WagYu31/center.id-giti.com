@@ -910,6 +910,106 @@ function setupMentions(sel) {
 }
 function insertTag(n,s,e,sel){ let i=$(sel); i.val(i.val().substring(0,s)+'@'+n+' '+i.val().substring(e)).focus(); $('#mention-box').hide(); }
 
+// @mention for contenteditable rich editor
+function setupRichMentions(editorId) {
+    const editor = document.getElementById(editorId);
+    if (!editor) return;
+    
+    editor.addEventListener('input', function() {
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        
+        const range = sel.getRangeAt(0);
+        const textNode = range.startContainer;
+        if (textNode.nodeType !== Node.TEXT_NODE) { $('#mention-box').hide(); return; }
+        
+        const text = textNode.textContent;
+        const cursorPos = range.startOffset;
+        const lastAt = text.lastIndexOf('@', cursorPos - 1);
+        
+        if (lastAt !== -1 && !text.substring(lastAt + 1, cursorPos).includes(' ')) {
+            const query = text.substring(lastAt + 1, cursorPos);
+            
+            // Position dropdown near cursor
+            const rect = range.getBoundingClientRect();
+            if ($('#mention-box').length === 0) $('body').append('<div id="mention-box" class="mention-list"></div>');
+            $('#mention-box').css({
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                display: 'block'
+            });
+            
+            $.get('ajax_action.php', {action: 'search_users', term: query}, function(res) {
+                let h = '';
+                if (res.length) {
+                    res.forEach(u => {
+                        h += `<div class="mention-item" onclick="insertRichTag('${u.nickname}', '${u.name}', '${editorId}')">
+                                <img src="${u.avatar}" class="mention-avatar">
+                                <div class="mention-info">
+                                    <span class="mention-name">${u.name}</span>
+                                    <span class="mention-nick">@${u.nickname}</span>
+                                </div>
+                            </div>`;
+                    });
+                } else {
+                    h = '<div class="p-2 small text-muted text-center">Tidak ditemukan</div>';
+                }
+                $('#mention-box').html(h);
+            }, 'json');
+        } else {
+            $('#mention-box').hide();
+        }
+    });
+}
+
+function insertRichTag(nickname, name, editorId) {
+    const editor = document.getElementById(editorId);
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    
+    const range = sel.getRangeAt(0);
+    const textNode = range.startContainer;
+    if (textNode.nodeType !== Node.TEXT_NODE) return;
+    
+    const text = textNode.textContent;
+    const cursorPos = range.startOffset;
+    const lastAt = text.lastIndexOf('@', cursorPos - 1);
+    
+    if (lastAt === -1) return;
+    
+    // Replace @query with styled mention
+    const before = text.substring(0, lastAt);
+    const after = text.substring(cursorPos);
+    
+    // Create mention span
+    const mentionSpan = document.createElement('span');
+    mentionSpan.className = 'mention-tag';
+    mentionSpan.contentEditable = 'false';
+    mentionSpan.style.cssText = 'background:rgba(217,119,6,0.12);color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.85em;cursor:default;';
+    mentionSpan.textContent = '@' + nickname;
+    mentionSpan.dataset.nickname = nickname;
+    
+    // Update DOM
+    const parent = textNode.parentNode;
+    const beforeNode = document.createTextNode(before);
+    const spaceAfter = document.createTextNode('\u00A0' + after);
+    
+    parent.insertBefore(beforeNode, textNode);
+    parent.insertBefore(mentionSpan, textNode);
+    parent.insertBefore(spaceAfter, textNode);
+    parent.removeChild(textNode);
+    
+    // Move cursor after the mention
+    const newRange = document.createRange();
+    newRange.setStart(spaceAfter, 1);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    
+    $('#mention-box').hide();
+    editor.focus();
+}
+
 // --- DRAG & DROP ---
 function setupDropZone(zoneId, fileInputId, fileArray, arrayName, containerId) {
     const zone = document.getElementById(zoneId);
@@ -1108,6 +1208,7 @@ function plainToRich(text) {
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
         .replace(/_([^_]+)_/g, '<em>$1</em>')
+        .replace(/@(\w+)/g, '<span class="mention-tag" contenteditable="false" style="background:rgba(217,119,6,0.12);color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.85em;cursor:default;" data-nickname="$1">@$1</span>')
         .replace(/\n/g, '<br>');
     return t;
 }
@@ -1145,6 +1246,7 @@ function setupRichPaste() {
 
 $(document).ready(()=>{ 
     setupMentions('#inpDesc'); setupMentions('#d-input');
+    setupRichMentions('richDesc');
     setupDropZone('dropZone', 'fileInput', selectedFiles, 'selectedFiles', 'file-preview-container');
     setupDropZone('progressDropZone', 'progressFileInput', progressFiles, 'progressFiles', 'progress-preview-container');
     setupRichPaste();
