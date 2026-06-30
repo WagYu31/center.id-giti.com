@@ -56,7 +56,7 @@ if ($action == 'create_post') {
                 $u = $conn->prepare("SELECT id FROM users WHERE nickname = ? LIMIT 1");
                 $u->execute([$nick]);
                 $tid = $u->fetchColumn();
-                if($tid && $tid != $user_id) $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'mention')")->execute([$tid, $user_id, $job_id]);
+                if($tid) $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'mention')")->execute([$tid, $user_id, $job_id]);
             }
         }
 
