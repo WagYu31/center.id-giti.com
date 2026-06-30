@@ -135,6 +135,9 @@ $page = "Data Karyawan";
                         <?php endforeach; ?>
 
                         <td class="text-center">
+                            <button class="btn btn-icon-action" style="color:#d97706;" onclick="showResetModal(<?= $row['id'] ?>, '<?= htmlspecialchars(addslashes($row['name'])) ?>')" title="Reset Password">
+                                <i class="bi bi-key"></i>
+                            </button>
                             <a href="#" class="btn btn-icon-action text-danger" onclick="return confirm('Hapus user ini?')">
                                 <i class="bi bi-trash"></i>
                             </a>
@@ -183,6 +186,39 @@ $page = "Data Karyawan";
             <p class="text-secondary">Tidak ada karyawan yang ditemukan.</p>
         </div>
 
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="overflow:hidden;">
+            <div class="modal-header border-0 px-4 pt-4 pb-1">
+                <div>
+                    <h6 class="fw-bold mb-0" style="color:#0f172a;"><i class="bi bi-key me-2" style="color:#d97706;"></i>Reset Password</h6>
+                    <small id="resetUserLabel" style="color:#94a3b8;"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <input type="hidden" id="resetUserId">
+                <div class="mb-3">
+                    <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Password Baru</label>
+                    <div class="input-group">
+                        <input type="password" id="resetNewPassword" class="form-control" placeholder="Min. 6 karakter" style="border-radius:10px 0 0 10px;border-color:#e2e8f0;font-size:0.88rem;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePwdVisibility()" style="border-radius:0 10px 10px 0;border-color:#e2e8f0;" title="Tampilkan">
+                            <i class="bi bi-eye" id="togglePwdIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="btn btn-sm w-100 mb-3" onclick="generatePassword()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-weight:600;color:#64748b;">
+                    <i class="bi bi-shuffle me-1"></i>Generate Password Acak
+                </button>
+                <button onclick="submitResetPassword()" class="btn w-100 fw-bold" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:10px;padding:10px;font-size:0.88rem;">
+                    <i class="bi bi-check-lg me-1"></i>Reset Password
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -240,7 +276,59 @@ $page = "Data Karyawan";
             });
         });
     });
-</script>
+    // 3. RESET PASSWORD
+    function showResetModal(userId, userName) {
+        document.getElementById('resetUserId').value = userId;
+        document.getElementById('resetUserLabel').textContent = 'Untuk: ' + userName;
+        document.getElementById('resetNewPassword').value = '';
+        new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+    }
 
+    function togglePwdVisibility() {
+        const inp = document.getElementById('resetNewPassword');
+        const icon = document.getElementById('togglePwdIcon');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+
+    function generatePassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+        let pwd = '';
+        for (let i = 0; i < 10; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+        const inp = document.getElementById('resetNewPassword');
+        inp.value = pwd;
+        inp.type = 'text';
+        document.getElementById('togglePwdIcon').className = 'bi bi-eye-slash';
+    }
+
+    function submitResetPassword() {
+        const userId = document.getElementById('resetUserId').value;
+        const newPwd = document.getElementById('resetNewPassword').value;
+        if (newPwd.length < 6) { alert('Password minimal 6 karakter'); return; }
+        if (!confirm('Yakin reset password user ini?')) return;
+
+        const fd = new FormData();
+        fd.append('user_id', userId);
+        fd.append('new_password', newPwd);
+
+        fetch('reset_password.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+                    alert(res.message);
+                } else {
+                    alert(res.message);
+                }
+            })
+            .catch(() => alert('Gagal koneksi ke server'));
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
