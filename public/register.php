@@ -327,6 +327,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .auth-alert.danger  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
+        /* ════ ANIMATIONS ════ */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(28px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.94); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-8px); }
+        }
+
+        /* Card entrance */
+        .page { animation: scaleIn 0.55s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Left panel — stagger */
+        .brand-tag   { animation: fadeUp 0.5s 0.10s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero-eyebrow{ animation: fadeUp 0.5s 0.18s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero h1     { animation: fadeUp 0.55s 0.24s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero-desc   { animation: fadeUp 0.5s 0.32s cubic-bezier(0.16,1,0.3,1) both; }
+        .left-footer { animation: fadeIn 0.5s 0.7s both; }
+
+        /* Step cards cascade */
+        .step:nth-child(1) { animation: fadeUp 0.45s 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+        .step:nth-child(2) { animation: fadeUp 0.45s 0.48s cubic-bezier(0.16,1,0.3,1) both; }
+        .step:nth-child(3) { animation: fadeUp 0.45s 0.58s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Floating blob on left */
+        .panel-left::before { animation: float 6s 1s ease-in-out infinite; }
+        .panel-left::after  { animation: float 8s 1.5s ease-in-out infinite reverse; }
+
+        /* Right panel slide in */
+        .panel-right { animation: slideInRight 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Logo bounce */
+        .logo-block img { animation: scaleIn 0.5s 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+        /* Form elements stagger */
+        .welcome-line        { animation: fadeUp 0.45s 0.46s both; }
+        .field-row:nth-child(1) { animation: fadeUp 0.4s 0.52s both; }
+        .field:nth-child(2)  { animation: fadeUp 0.4s 0.58s both; }
+        .field-row:nth-child(3) { animation: fadeUp 0.4s 0.64s both; }
+        .field-row:nth-child(4) { animation: fadeUp 0.4s 0.70s both; }
+        .btn-submit  { animation: fadeUp 0.45s 0.76s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .login-link  { animation: fadeIn 0.4s 0.84s both; }
+
+        /* Button ripple */
+        .btn-submit { position: relative; overflow: hidden; }
+        .btn-submit::after {
+            content: ''; position: absolute;
+            width: 200%; height: 200%;
+            background: rgba(255,255,255,0.15); border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0);
+            opacity: 0; transition: transform 0.5s, opacity 0.5s;
+        }
+        .btn-submit:active::after { transform: translate(-50%,-50%) scale(1); opacity: 0; transition: 0s; }
+
+        /* Step hover micro-lift */
+        .step { transition: transform 0.2s, box-shadow 0.2s; }
+        .step:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(234,179,8,0.12); }
+
         /* ════ RESPONSIVE ════ */
         @media (max-width: 960px) {
             .page-wrap { padding: 0; align-items: stretch; }
