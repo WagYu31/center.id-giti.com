@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Auto-create table
 try {
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->exec("CREATE TABLE IF NOT EXISTS calendar_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -21,11 +22,14 @@ try {
         color VARCHAR(20) DEFAULT '#d97706',
         description TEXT DEFAULT NULL,
         is_done TINYINT(1) DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        INDEX idx_user_date (user_id, event_date)
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-} catch (Exception $e) {}
+    // Add index separately (ignore if already exists)
+    try { $conn->exec("ALTER TABLE calendar_events ADD INDEX idx_user_date (user_id, event_date)"); } catch(Exception $e2) {}
+} catch (Exception $e) {
+    // Log error for debugging
+    error_log("Calendar table creation error: " . $e->getMessage());
+}
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
