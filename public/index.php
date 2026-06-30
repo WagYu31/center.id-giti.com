@@ -487,7 +487,13 @@ $tanggal = date('d M Y');
                                     <span style="font-weight:700;font-size:0.82rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.title}</span>
                                 </div>
                                 <p style="font-size:0.75rem;color:#64748b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.content}</p>
-                                <div style="font-size:0.65rem;color:#94a3b8;margin-top:3px;">${a.author_name} · ${timeAgo(a.created_at)}</div>
+                                <div style="font-size:0.65rem;color:#94a3b8;margin-top:3px;">
+                                    ${a.author_name} · ${timeAgo(a.created_at)}
+                                    ${isAdmin ? ` · <span style="color:${a.target_all==='1'||a.target_all===1?'#059669':'#d97706'};font-weight:600;">
+                                        <i class="bi bi-${a.target_all==='1'||a.target_all===1?'people-fill':'person-check'}"></i> 
+                                        ${a.target_all==='1'||a.target_all===1?'Semua':(a.recipient_names||'Spesifik')}
+                                    </span>` : ''}
+                                </div>
                             </div>
                             ${isAdmin?`<button onclick="deleteAnnouncement(${a.id})" class="btn btn-sm p-0 ms-2" style="color:#cbd5e1;font-size:0.7rem;border:none;background:none;" title="Hapus"><i class="bi bi-x-lg"></i></button>`:''}
                         </div>
@@ -511,8 +517,11 @@ $tanggal = date('d M Y');
             .then(() => loadAnnouncements());
     }
 
+    let annUsers = []; // cached user list
+    let annSelectedUsers = new Set();
+    let annTargetAll = true;
+
     function showCreateAnnouncement() {
-        // Create modal dynamically
         let modal = document.getElementById('createAnnouncementModal');
         if (!modal) {
             const div = document.createElement('div');
@@ -523,7 +532,7 @@ $tanggal = date('d M Y');
                         <div class="modal-header border-0 px-4 pt-4 pb-2">
                             <div>
                                 <h6 class="fw-bold mb-0" style="color:#0f172a;"><i class="bi bi-megaphone me-2" style="color:#d97706;"></i>Buat Pengumuman</h6>
-                                <small style="color:#94a3b8;">Akan tampil di dashboard semua karyawan</small>
+                                <small style="color:#94a3b8;">Pilih siapa yang menerima pengumuman ini</small>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
@@ -536,6 +545,44 @@ $tanggal = date('d M Y');
                                 <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Isi</label>
                                 <textarea id="annContent" class="form-control" rows="3" placeholder="Detail pengumuman..." style="border-radius:10px;border-color:#e2e8f0;font-size:0.88rem;"></textarea>
                             </div>
+                            
+                            <!-- PENERIMA SECTION -->
+                            <div class="mb-3">
+                                <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Penerima</label>
+                                <div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#fafafa;">
+                                    <!-- Toggle Semua -->
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;">
+                                                <i class="bi bi-people-fill" style="color:white;font-size:0.7rem;"></i>
+                                            </div>
+                                            <span style="font-weight:600;font-size:0.82rem;">Semua Karyawan</span>
+                                        </div>
+                                        <label style="position:relative;width:42px;height:22px;cursor:pointer;">
+                                            <input type="checkbox" id="annTargetAll" checked onchange="toggleTargetAll(this.checked)" style="display:none;">
+                                            <div id="annToggleTrack" style="width:42px;height:22px;border-radius:11px;background:#d97706;transition:background 0.2s;position:absolute;top:0;left:0;"></div>
+                                            <div id="annToggleThumb" style="width:18px;height:18px;border-radius:50%;background:white;position:absolute;top:2px;left:22px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- User Picker (hidden when target all) -->
+                                    <div id="annUserPicker" style="display:none;">
+                                        <div style="position:relative;margin-bottom:8px;">
+                                            <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.75rem;"></i>
+                                            <input type="text" id="annUserSearch" placeholder="Cari karyawan..." oninput="filterAnnUsers(this.value)" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px 6px 30px;font-size:0.78rem;outline:none;">
+                                        </div>
+                                        
+                                        <!-- Selected Pills -->
+                                        <div id="annSelectedPills" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
+                                        
+                                        <!-- User List -->
+                                        <div id="annUserList" style="max-height:150px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;background:white;">
+                                            <div class="text-center py-2"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
                                     <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Prioritas</label>
@@ -560,7 +607,98 @@ $tanggal = date('d M Y');
             document.body.appendChild(div);
             modal = document.getElementById('createAnnouncementModal');
         }
+        
+        // Reset state
+        annTargetAll = true;
+        annSelectedUsers.clear();
+        document.getElementById('annTargetAll').checked = true;
+        document.getElementById('annToggleTrack').style.background = '#d97706';
+        document.getElementById('annToggleThumb').style.left = '22px';
+        document.getElementById('annUserPicker').style.display = 'none';
+        document.getElementById('annSelectedPills').innerHTML = '';
+        
+        // Load users
+        if (annUsers.length === 0) {
+            fetch('api_announcement.php?action=list_users')
+                .then(r => r.json())
+                .then(res => { if (res.status === 'success') { annUsers = res.data; renderAnnUserList(); } });
+        }
+        
         new bootstrap.Modal(modal).show();
+    }
+
+    function toggleTargetAll(checked) {
+        annTargetAll = checked;
+        document.getElementById('annToggleTrack').style.background = checked ? '#d97706' : '#cbd5e1';
+        document.getElementById('annToggleThumb').style.left = checked ? '22px' : '2px';
+        document.getElementById('annUserPicker').style.display = checked ? 'none' : 'block';
+        if (!checked && annUsers.length > 0) renderAnnUserList();
+    }
+
+    function renderAnnUserList(filter = '') {
+        const list = document.getElementById('annUserList');
+        const filtered = annUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase()));
+        
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="text-center py-2" style="color:#94a3b8;font-size:0.78rem;">Tidak ditemukan</div>';
+            return;
+        }
+        
+        list.innerHTML = filtered.map(u => `
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f8fafc;transition:background 0.15s;font-size:0.82rem;" 
+                   onmouseenter="this.style.background='#fefce8'" onmouseleave="this.style.background='white'">
+                <input type="checkbox" value="${u.id}" ${annSelectedUsers.has(u.id) ? 'checked' : ''} 
+                       onchange="toggleAnnUser(${u.id}, '${u.name.replace(/'/g, "\\'")}', this.checked)"
+                       style="accent-color:#d97706;width:16px;height:16px;cursor:pointer;">
+                <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:white;font-size:0.65rem;font-weight:700;">
+                    ${u.name.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600;color:#1e293b;line-height:1.2;">${u.name}</div>
+                    <div style="font-size:0.68rem;color:#94a3b8;">${u.role === 'admin' ? 'Admin' : 'Karyawan'}</div>
+                </div>
+            </label>
+        `).join('');
+        
+        updateSelectedPills();
+    }
+
+    function toggleAnnUser(id, name, checked) {
+        if (checked) {
+            annSelectedUsers.add(id);
+        } else {
+            annSelectedUsers.delete(id);
+        }
+        updateSelectedPills();
+    }
+
+    function updateSelectedPills() {
+        const container = document.getElementById('annSelectedPills');
+        if (annSelectedUsers.size === 0) {
+            container.innerHTML = '<span style="font-size:0.72rem;color:#94a3b8;font-style:italic;">Belum ada yang dipilih</span>';
+            return;
+        }
+        
+        const pills = [];
+        annSelectedUsers.forEach(id => {
+            const user = annUsers.find(u => u.id === id);
+            if (user) {
+                pills.push(`<span style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(217,119,6,0.1),rgba(245,158,11,0.1));color:#92400e;border:1px solid rgba(217,119,6,0.2);border-radius:20px;padding:3px 10px 3px 8px;font-size:0.72rem;font-weight:600;">
+                    ${user.name}
+                    <i class="bi bi-x" style="cursor:pointer;font-size:0.8rem;" onclick="removeAnnUser(${id})"></i>
+                </span>`);
+            }
+        });
+        container.innerHTML = pills.join('');
+    }
+
+    function removeAnnUser(id) {
+        annSelectedUsers.delete(id);
+        renderAnnUserList(document.getElementById('annUserSearch')?.value || '');
+    }
+
+    function filterAnnUsers(q) {
+        renderAnnUserList(q);
     }
 
     function submitAnnouncement() {
@@ -570,6 +708,11 @@ $tanggal = date('d M Y');
         fd.append('content', document.getElementById('annContent').value);
         fd.append('priority', document.getElementById('annPriority').value);
         fd.append('expires_at', document.getElementById('annExpires').value);
+        fd.append('target_all', annTargetAll ? '1' : '0');
+        
+        if (!annTargetAll) {
+            fd.append('recipients', JSON.stringify([...annSelectedUsers]));
+        }
 
         fetch('api_announcement.php', {method:'POST', body: fd})
             .then(r => r.json())
@@ -578,7 +721,9 @@ $tanggal = date('d M Y');
                     bootstrap.Modal.getInstance(document.getElementById('createAnnouncementModal')).hide();
                     document.getElementById('annTitle').value = '';
                     document.getElementById('annContent').value = '';
+                    annSelectedUsers.clear();
                     loadAnnouncements();
+                    alert(res.message);
                 } else {
                     alert(res.message);
                 }
