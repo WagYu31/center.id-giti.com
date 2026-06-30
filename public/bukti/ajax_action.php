@@ -53,8 +53,9 @@ if ($action == 'create_post') {
         preg_match_all('/@(\w+)/', $_POST['description'], $matches);
         if($matches[1]) {
             foreach($matches[1] as $nick) {
-                $u = $conn->prepare("SELECT id FROM users WHERE nickname = ? LIMIT 1");
-                $u->execute([$nick]);
+                // Check both nickname and fallback space-removed name
+                $u = $conn->prepare("SELECT id FROM users WHERE nickname = ? OR REPLACE(name, ' ', '') = ? LIMIT 1");
+                $u->execute([$nick, $nick]);
                 $tid = $u->fetchColumn();
                 if($tid) $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'mention')")->execute([$tid, $user_id, $job_id]);
             }
