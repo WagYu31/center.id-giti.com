@@ -240,11 +240,25 @@ $tanggal = date('d M Y');
                 <!-- Add Event Form (hidden) -->
                 <div id="addEventForm" style="display:none;background:#fefce8;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #fef08a;">
                     <div class="row g-2 mb-2">
-                        <div class="col-8">
+                        <div class="col">
                             <input type="text" id="evTitle" placeholder="Judul rencana..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'">
                         </div>
-                        <div class="col-4">
-                            <input type="time" id="evTime" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;">
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-auto">
+                            <input type="time" id="evTime" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 8px;font-size:0.78rem;outline:none;">
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <div class="form-check form-switch m-0" style="min-height:auto;">
+                                <input class="form-check-input" type="checkbox" id="evMultiDay" onchange="toggleMultiDay()" style="cursor:pointer;">
+                                <label class="form-check-label" for="evMultiDay" style="font-size:0.72rem;font-weight:600;color:#64748b;cursor:pointer;">Multi-hari</label>
+                            </div>
+                        </div>
+                        <div class="col" id="endDateWrap" style="display:none;">
+                            <div class="d-flex align-items-center gap-1">
+                                <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">s/d</span>
+                                <input type="date" id="evEndDate" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:5px 8px;font-size:0.78rem;outline:none;">
+                            </div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
@@ -617,7 +631,10 @@ $tanggal = date('d M Y');
             const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
             const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
             const isSelected = dateStr === selectedDate;
-            const hasEvents = monthEvents.some(ev => ev.event_date === dateStr);
+            const hasEvents = monthEvents.some(ev => {
+                const end = ev.end_date || ev.event_date;
+                return dateStr >= ev.event_date && dateStr <= end;
+            });
             
             cell.style.cssText = `padding:4px;cursor:pointer;border-radius:10px;transition:all 0.15s;position:relative;`;
             
@@ -683,12 +700,23 @@ $tanggal = date('d M Y');
                             </div>`;
                         return;
                     }
-                    list.innerHTML = res.data.map(ev => `
+                    list.innerHTML = res.data.map(ev => {
+                        const mN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+                        let dateInfo = '';
+                        if (ev.end_date && ev.end_date !== ev.event_date) {
+                            const s = new Date(ev.event_date + 'T00:00:00');
+                            const e = new Date(ev.end_date + 'T00:00:00');
+                            dateInfo = `<span style="font-size:0.68rem;background:#f1f5f9;color:#64748b;padding:1px 6px;border-radius:4px;font-weight:600;"><i class="bi bi-calendar-range me-1"></i>${s.getDate()} ${mN[s.getMonth()]} → ${e.getDate()} ${mN[e.getMonth()]}</span>`;
+                        }
+                        return `
                         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc;${ev.is_done == 1 ? 'opacity:0.5;' : ''}" id="ev-${ev.id}">
                             <div style="width:4px;min-height:32px;border-radius:4px;background:${ev.color};margin-top:2px;flex-shrink:0;"></div>
                             <div style="flex:1;min-width:0;">
                                 <div style="font-weight:600;font-size:0.82rem;color:#0f172a;${ev.is_done == 1 ? 'text-decoration:line-through;' : ''}">${ev.title}</div>
-                                ${ev.event_time ? `<span style="font-size:0.7rem;color:#94a3b8;"><i class="bi bi-clock me-1"></i>${ev.event_time.substring(0,5)}</span>` : ''}
+                                <div class="d-flex gap-2 flex-wrap align-items-center" style="margin-top:2px;">
+                                    ${ev.event_time ? `<span style="font-size:0.7rem;color:#94a3b8;"><i class="bi bi-clock me-1"></i>${ev.event_time.substring(0,5)}</span>` : ''}
+                                    ${dateInfo}
+                                </div>
                             </div>
                             <div class="d-flex gap-1">
                                 <button onclick="toggleEvent(${ev.id})" style="background:none;border:none;cursor:pointer;color:${ev.is_done == 1 ? '#059669' : '#cbd5e1'};font-size:0.9rem;" title="${ev.is_done == 1 ? 'Batalkan' : 'Selesai'}">
@@ -698,14 +726,30 @@ $tanggal = date('d M Y');
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
                 }
             });
     }
 
-    function showAddEvent() { document.getElementById('addEventForm').style.display = 'block'; document.getElementById('evTitle').focus(); }
-    function cancelAddEvent() { document.getElementById('addEventForm').style.display = 'none'; document.getElementById('evTitle').value = ''; document.getElementById('evTime').value = ''; }
+    function showAddEvent() { 
+        document.getElementById('addEventForm').style.display = 'block'; 
+        document.getElementById('evTitle').focus(); 
+    }
+    function cancelAddEvent() { 
+        document.getElementById('addEventForm').style.display = 'none'; 
+        document.getElementById('evTitle').value = ''; 
+        document.getElementById('evTime').value = ''; 
+        document.getElementById('evMultiDay').checked = false;
+        document.getElementById('endDateWrap').style.display = 'none';
+        document.getElementById('evEndDate').value = '';
+    }
+
+    function toggleMultiDay() {
+        const isMulti = document.getElementById('evMultiDay').checked;
+        document.getElementById('endDateWrap').style.display = isMulti ? 'block' : 'none';
+        if (!isMulti) document.getElementById('evEndDate').value = '';
+    }
 
     function pickColor(btn) {
         document.querySelectorAll('.ev-color-btn').forEach(b => b.style.borderColor = 'transparent');
@@ -717,12 +761,19 @@ $tanggal = date('d M Y');
         const title = document.getElementById('evTitle').value.trim();
         if (!title) { alert('Judul wajib diisi'); return; }
         
+        const isMulti = document.getElementById('evMultiDay').checked;
+        const endDate = document.getElementById('evEndDate').value;
+        
+        if (isMulti && !endDate) { alert('Pilih tanggal selesai'); return; }
+        if (isMulti && endDate < selectedDate) { alert('Tanggal selesai harus setelah tanggal mulai'); return; }
+        
         const fd = new FormData();
         fd.append('action', 'create');
         fd.append('title', title);
         fd.append('event_date', selectedDate);
         fd.append('event_time', document.getElementById('evTime').value);
         fd.append('color', selectedColor);
+        if (isMulti && endDate) fd.append('end_date', endDate);
         
         fetch('api_calendar.php', {method:'POST', body: fd})
             .then(r => r.json())
