@@ -20,8 +20,7 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         expires_at DATE DEFAULT NULL,
         is_active TINYINT(1) DEFAULT 1,
-        target_all TINYINT(1) DEFAULT 1,
-        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+        target_all TINYINT(1) DEFAULT 1
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     
     // Add target_all column if missing (for existing tables)
@@ -35,9 +34,7 @@ try {
         user_id INT NOT NULL,
         is_read TINYINT(1) DEFAULT 0,
         read_at DATETIME DEFAULT NULL,
-        UNIQUE KEY unique_ann_user (announcement_id, user_id),
-        FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        UNIQUE KEY unique_ann_user (announcement_id, user_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 } catch (Exception $e) { /* tables may already exist */ }
 
