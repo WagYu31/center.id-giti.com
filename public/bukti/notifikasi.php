@@ -5,6 +5,12 @@ require_once 'includes/sidebar.php';
 
 $user_id = $_SESSION['user_id'];
 
+// Mark all unread notifications for this user as read
+try {
+    $stmt_mark_read = $conn->prepare("UPDATE bukti_notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0");
+    $stmt_mark_read->execute([$user_id]);
+} catch(Exception $e) {}
+
 $stmt_user = $conn->prepare("SELECT nickname, name FROM users WHERE id = ?");
 $stmt_user->execute([$user_id]);
 $curr_user = $stmt_user->fetch();

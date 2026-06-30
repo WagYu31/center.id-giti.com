@@ -8,7 +8,22 @@
     <div class="flex-grow-1">
         <a href="index.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>"><i class="bi bi-house-door"></i> Beranda</a>
         <a href="profile.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>"><i class="bi bi-person"></i> Profil Saya</a>
-        <a href="notifikasi.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'notifikasi.php' ? 'active' : ''; ?>"><i class="bi bi-bell"></i> Notifikasi</a>
+        
+        <?php
+        // Fetch unread notifications count
+        $unread_count = 0;
+        try {
+            $stmt_unread = $conn->prepare("SELECT COUNT(*) FROM bukti_notifications WHERE user_id = ? AND is_read = 0 AND deleted_at IS NULL");
+            $stmt_unread->execute([$_SESSION['user_id']]);
+            $unread_count = (int)$stmt_unread->fetchColumn();
+        } catch(Exception $e) {}
+        ?>
+        <a href="notifikasi.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'notifikasi.php' ? 'active' : ''; ?> d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-bell"></i> Notifikasi</span>
+            <?php if ($unread_count > 0): ?>
+                <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem; padding: 4px 8px;"><?php echo $unread_count; ?></span>
+            <?php endif; ?>
+        </a>
         <a href="log.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'log.php' ? 'active' : ''; ?>"><i class="bi bi-clock-history"></i> Riwayat Log</a>
         
         <div class="section-label">Filter Cepat</div>
