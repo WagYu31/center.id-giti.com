@@ -89,11 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-container">
         <div class="auth-card" style="max-width: 600px;">
             
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <i class="bi bi-person-plus-fill"></i>
-                </div>
-                <h3 class="fw-bold mb-1">Create Account</h3>
+            <div class="auth-header text-center">
+                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 240px; height: auto; margin: 0 auto 1.5rem auto; display: block;">
+                <h4 class="fw-bold mb-1" style="font-size: 1.15rem; color: var(--text-primary);">Create Account</h4>
                 <p class="text-secondary small">Bergabung dengan Grav Tech Team</p>
             </div>
 

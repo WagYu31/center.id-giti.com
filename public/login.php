@@ -63,11 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-container">
         <div class="auth-card">
             
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <i class="bi bi-grid-fill"></i>
-                </div>
-                <h3 class="fw-bold mb-1">Welcome Back!</h3>
+            <div class="auth-header text-center">
+                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 240px; height: auto; margin: 0 auto 1.5rem auto; display: block;">
                 <p class="text-secondary small">Masuk untuk mengakses Grav Center</p>
             </div>
 

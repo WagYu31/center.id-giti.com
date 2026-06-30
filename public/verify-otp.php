@@ -66,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-container">
         <div class="auth-card text-center">
             
-            <div class="auth-icon mb-3">
-                <i class="bi bi-shield-lock-fill"></i>
+            <div class="auth-header text-center">
+                <img src="assets/uploads/logo-gravitti.png" alt="GraViTTi Technology" style="max-width: 240px; height: auto; margin: 0 auto 1.5rem auto; display: block;">
+                <h4 class="fw-bold mb-1" style="font-size: 1.15rem; color: var(--text-primary);">Verifikasi Email</h4>
+                <p class="text-secondary small">Kode 6 digit telah dikirim ke <b><?= htmlspecialchars($email) ?></b></p>
             </div>
-            <h3 class="fw-bold">Verifikasi Email</h3>
-            <p class="text-secondary small">Kode 6 digit telah dikirim ke <b><?= htmlspecialchars($email) ?></b></p>
 
             <?php if($error): ?>
                 <div class="alert alert-danger py-2 small border-0 bg-danger-subtle text-danger mb-3">
