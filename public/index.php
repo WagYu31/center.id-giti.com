@@ -201,23 +201,73 @@ $tanggal = date('d M Y');
         </div>
     </div>
 
-    <!-- Quick Notes -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div style="background:white;border-radius:16px;padding:20px 24px;border:1px solid rgba(0,0,0,0.06);">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+    <!-- Calendar & Planner -->
+    <div class="row mb-4 g-3">
+        <!-- Mini Calendar -->
+        <div class="col-lg-5">
+            <div style="background:white;border-radius:16px;padding:20px;border:1px solid rgba(0,0,0,0.06);height:100%;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button onclick="calNav(-1)" style="background:none;border:none;color:#64748b;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span id="calMonthYear" style="font-weight:700;font-size:0.95rem;color:#0f172a;"></span>
+                    <button onclick="calNav(1)" style="background:none;border:none;color:#64748b;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;"></div>
+            </div>
+        </div>
+        
+        <!-- Event Panel -->
+        <div class="col-lg-7">
+            <div style="background:white;border-radius:16px;padding:20px;border:1px solid rgba(0,0,0,0.06);height:100%;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="d-flex align-items-center gap-2">
-                        <div class="icon-note-yellow"><i class="bi bi-journal-text"></i></div>
-                        <span class="fw-bold" style="font-size:0.95rem;">Quick Notes</span>
+                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-calendar-event" style="color:white;font-size:0.75rem;"></i>
+                        </div>
+                        <div>
+                            <span id="eventDateTitle" style="font-weight:700;font-size:0.9rem;color:#0f172a;">Hari Ini</span>
+                            <span id="eventDateSub" style="font-size:0.7rem;color:#94a3b8;display:block;line-height:1;"></span>
+                        </div>
+                    </div>
+                    <button onclick="showAddEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:5px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;">
+                        <i class="bi bi-plus-lg me-1"></i>Tambah
+                    </button>
+                </div>
+                
+                <!-- Add Event Form (hidden) -->
+                <div id="addEventForm" style="display:none;background:#fefce8;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #fef08a;">
+                    <div class="row g-2 mb-2">
+                        <div class="col-8">
+                            <input type="text" id="evTitle" placeholder="Judul rencana..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'">
+                        </div>
+                        <div class="col-4">
+                            <input type="time" id="evTime" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;">
+                        </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span id="saveStatus" style="font-size:0.72rem;font-weight:600;color:#059669;opacity:0;transition:opacity 0.3s;"><i class="bi bi-check-circle-fill me-1"></i>Tersimpan</span>
-                        <button id="btnSaveNote" onclick="saveNote()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                            <i class="bi bi-floppy me-1"></i>Simpan
-                        </button>
+                        <div class="d-flex gap-1">
+                            <button class="ev-color-btn" data-color="#d97706" style="width:20px;height:20px;border-radius:50%;border:2px solid #d97706;background:#d97706;cursor:pointer;" onclick="pickColor(this)"></button>
+                            <button class="ev-color-btn" data-color="#ef4444" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#ef4444;cursor:pointer;" onclick="pickColor(this)"></button>
+                            <button class="ev-color-btn" data-color="#3b82f6" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#3b82f6;cursor:pointer;" onclick="pickColor(this)"></button>
+                            <button class="ev-color-btn" data-color="#059669" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#059669;cursor:pointer;" onclick="pickColor(this)"></button>
+                            <button class="ev-color-btn" data-color="#8b5cf6" style="width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:#8b5cf6;cursor:pointer;" onclick="pickColor(this)"></button>
+                        </div>
+                        <div class="ms-auto d-flex gap-1">
+                            <button onclick="cancelAddEvent()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">Batal</button>
+                            <button onclick="submitEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">
+                                <i class="bi bi-check-lg"></i> Simpan
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <textarea id="noteInput" placeholder="Tulis catatan harianmu di sini..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:0.85rem;color:#334155;resize:vertical;min-height:60px;max-height:140px;font-family:inherit;transition:border 0.2s;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'"><?= htmlspecialchars($user['notes'] ?? '') ?></textarea>
+                
+                <!-- Event List -->
+                <div id="eventList" style="max-height:220px;overflow-y:auto;">
+                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+                </div>
             </div>
         </div>
     </div>
@@ -521,39 +571,192 @@ $tanggal = date('d M Y');
             });
     }
 
-    // === QUICK NOTES ===
-    const noteInput = document.getElementById('noteInput');
-    const btnSave = document.getElementById('btnSaveNote');
-    const statusText = document.getElementById('saveStatus');
-    let originalNote = noteInput.value;
+    // === CALENDAR PLANNER ===
+    const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+    let calMonth = <?= (int)date('m') - 1 ?>;
+    let calYear = <?= (int)date('Y') ?>;
+    let selectedDate = '<?= date('Y-m-d') ?>';
+    let monthEvents = [];
+    let selectedColor = '#d97706';
 
-    noteInput.addEventListener('input', function() {
-        if (this.value !== originalNote) {
-            btnSave.style.display = 'inline-block';
-            statusText.style.opacity = '0';
-        } else {
-            btnSave.style.display = 'none';
-        }
-    });
-
-    function saveNote() {
-        btnSave.disabled = true;
-        btnSave.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        const fd = new FormData();
-        fd.append('notes', noteInput.value);
-        fetch('save_note.php', {method:'POST', body: fd})
-            .then(r => r.text())
-            .then(d => {
-                if (d.trim() === 'success') {
-                    originalNote = noteInput.value;
-                    btnSave.style.display = 'none';
-                    statusText.style.opacity = '1';
-                    setTimeout(() => { statusText.style.opacity = '0'; }, 3000);
-                } else { alert('Gagal simpan: ' + d); }
-            })
-            .catch(() => alert('Gagal koneksi'))
-            .finally(() => { btnSave.disabled = false; btnSave.innerHTML = '<i class="bi bi-floppy me-1"></i>Simpan'; });
+    function calNav(dir) {
+        calMonth += dir;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        renderCalendar();
     }
+
+    function renderCalendar() {
+        document.getElementById('calMonthYear').textContent = MONTHS[calMonth] + ' ' + calYear;
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '';
+        
+        // Day headers
+        DAYS.forEach(d => {
+            const h = document.createElement('div');
+            h.style.cssText = 'font-size:0.68rem;font-weight:700;color:#94a3b8;padding:6px 0;text-transform:uppercase;';
+            h.textContent = d;
+            grid.appendChild(h);
+        });
+        
+        const firstDay = new Date(calYear, calMonth, 1).getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const today = new Date();
+        
+        // Empty cells
+        for (let i = 0; i < firstDay; i++) {
+            const e = document.createElement('div');
+            e.style.padding = '6px';
+            grid.appendChild(e);
+        }
+        
+        // Day cells
+        for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement('div');
+            const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+            const isSelected = dateStr === selectedDate;
+            const hasEvents = monthEvents.some(ev => ev.event_date === dateStr);
+            
+            cell.style.cssText = `padding:4px;cursor:pointer;border-radius:10px;transition:all 0.15s;position:relative;`;
+            
+            let bg = 'transparent', color = '#334155', fw = '500';
+            if (isSelected) { bg = '#d97706'; color = 'white'; fw = '700'; }
+            else if (isToday) { bg = '#fef3c7'; color = '#92400e'; fw = '700'; }
+            
+            cell.innerHTML = `
+                <div style="width:32px;height:32px;line-height:32px;margin:auto;border-radius:10px;font-size:0.78rem;font-weight:${fw};color:${color};background:${bg};transition:all 0.15s;">${d}</div>
+                ${hasEvents ? '<div style="width:5px;height:5px;border-radius:50%;background:#d97706;margin:2px auto 0;"></div>' : '<div style="height:7px;"></div>'}
+            `;
+            
+            cell.onclick = () => selectDate(dateStr);
+            if (!isSelected) {
+                cell.onmouseenter = () => { if(!isToday) cell.querySelector('div').style.background='#f8fafc'; };
+                cell.onmouseleave = () => { if(!isToday) cell.querySelector('div').style.background=bg; };
+            }
+            grid.appendChild(cell);
+        }
+        
+        fetchMonthEvents();
+    }
+
+    function selectDate(dateStr) {
+        selectedDate = dateStr;
+        const d = new Date(dateStr + 'T00:00:00');
+        const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        const mNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        document.getElementById('eventDateTitle').textContent = dayNames[d.getDay()] + ', ' + d.getDate() + ' ' + mNames[d.getMonth()];
+        document.getElementById('eventDateSub').textContent = d.getFullYear();
+        
+        renderCalendar();
+        fetchDateEvents(dateStr);
+    }
+
+    function fetchMonthEvents() {
+        fetch(`api_calendar.php?action=fetch&month=${calMonth+1}&year=${calYear}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    monthEvents = res.data;
+                    // Re-render dots
+                    const grid = document.getElementById('calGrid');
+                    const cells = grid.querySelectorAll('div[style*="cursor:pointer"]');
+                    // Already handled in renderCalendar, but update dots
+                }
+            });
+    }
+
+    function fetchDateEvents(dateStr) {
+        const list = document.getElementById('eventList');
+        list.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
+        
+        fetch(`api_calendar.php?action=fetch_date&date=${dateStr}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    if (res.data.length === 0) {
+                        list.innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="bi bi-calendar2-check" style="font-size:2rem;color:#e2e8f0;"></i>
+                                <p style="font-size:0.78rem;color:#94a3b8;margin:8px 0 0;">Tidak ada rencana</p>
+                            </div>`;
+                        return;
+                    }
+                    list.innerHTML = res.data.map(ev => `
+                        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc;${ev.is_done == 1 ? 'opacity:0.5;' : ''}" id="ev-${ev.id}">
+                            <div style="width:4px;min-height:32px;border-radius:4px;background:${ev.color};margin-top:2px;flex-shrink:0;"></div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-weight:600;font-size:0.82rem;color:#0f172a;${ev.is_done == 1 ? 'text-decoration:line-through;' : ''}">${ev.title}</div>
+                                ${ev.event_time ? `<span style="font-size:0.7rem;color:#94a3b8;"><i class="bi bi-clock me-1"></i>${ev.event_time.substring(0,5)}</span>` : ''}
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button onclick="toggleEvent(${ev.id})" style="background:none;border:none;cursor:pointer;color:${ev.is_done == 1 ? '#059669' : '#cbd5e1'};font-size:0.9rem;" title="${ev.is_done == 1 ? 'Batalkan' : 'Selesai'}">
+                                    <i class="bi bi-check-circle${ev.is_done == 1 ? '-fill' : ''}"></i>
+                                </button>
+                                <button onclick="deleteEvent(${ev.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.8rem;" title="Hapus">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            });
+    }
+
+    function showAddEvent() { document.getElementById('addEventForm').style.display = 'block'; document.getElementById('evTitle').focus(); }
+    function cancelAddEvent() { document.getElementById('addEventForm').style.display = 'none'; document.getElementById('evTitle').value = ''; document.getElementById('evTime').value = ''; }
+
+    function pickColor(btn) {
+        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.borderColor = 'transparent');
+        btn.style.borderColor = btn.dataset.color;
+        selectedColor = btn.dataset.color;
+    }
+
+    function submitEvent() {
+        const title = document.getElementById('evTitle').value.trim();
+        if (!title) { alert('Judul wajib diisi'); return; }
+        
+        const fd = new FormData();
+        fd.append('action', 'create');
+        fd.append('title', title);
+        fd.append('event_date', selectedDate);
+        fd.append('event_time', document.getElementById('evTime').value);
+        fd.append('color', selectedColor);
+        
+        fetch('api_calendar.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    cancelAddEvent();
+                    renderCalendar();
+                    fetchDateEvents(selectedDate);
+                } else { alert(res.message); }
+            });
+    }
+
+    function toggleEvent(id) {
+        const fd = new FormData();
+        fd.append('action', 'toggle');
+        fd.append('id', id);
+        fetch('api_calendar.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(() => fetchDateEvents(selectedDate));
+    }
+
+    function deleteEvent(id) {
+        if (!confirm('Hapus rencana ini?')) return;
+        const fd = new FormData();
+        fd.append('action', 'delete');
+        fd.append('id', id);
+        fetch('api_calendar.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(() => { renderCalendar(); fetchDateEvents(selectedDate); });
+    }
+
+    // Init calendar
+    selectDate(selectedDate);
+    renderCalendar();
 
     // === TARGET EDIT ===
     function editTarget() {
