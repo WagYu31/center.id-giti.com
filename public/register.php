@@ -103,79 +103,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="">
                 <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap" required>
-                            <label for="name" class="text-secondary">Nama Lengkap</label>
-                        </div>
+                    <div class="col-md-6 text-start">
+                        <label for="name" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Nama Lengkap Anda" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="telp" name="telp" placeholder="No. WhatsApp" required>
-                            <label for="telp" class="text-secondary">No. WhatsApp</label>
-                        </div>
+                    <div class="col-md-6 text-start">
+                        <label for="telp" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">No. WhatsApp</label>
+                        <input type="text" class="form-control" id="telp" name="telp" placeholder="Contoh: 08123456789" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
                     </div>
                     
-                    <div class="col-12">
-                        <label style="font-size:10px; color:red;" class="mt-0">*Email harus sama dengan yang terdaftar di Web Penggajian (SSLL) yaaaa...</label>
-                        <div class="form-floating">
-                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
-                            <label for="email" class="text-secondary">Email Address</label>
+                    <div class="col-12 text-start">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="email" class="form-label fw-bold text-secondary mb-0" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Email Address</label>
+                            <span style="font-size:10px; color:red; font-weight: 500;">*Harus sama dengan Web Penggajian (SSLL)</span>
                         </div>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <select class="form-select" id="division" name="division" required>
-                                <option value="" selected disabled>Pilih Divisi</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Sales">Sales</option>
-                                <option value="Teknisi">Teknisi</option>
-                                <option value="Produksi">Produksi</option>
-                                <option value="Finance">Finance</option>
-                                <option value="Leader">Leader</option>
-                            </select>
-                            <label for="division">Divisi</label>
-                        </div>
+                    <div class="col-md-6 text-start">
+                        <label for="division" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Divisi</label>
+                        <select class="form-select" id="division" name="division" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s; cursor: pointer;">
+                            <option value="" selected disabled>Pilih Divisi</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Teknisi">Teknisi</option>
+                            <option value="Produksi">Produksi</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Leader">Leader</option>
+                        </select>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Jabatan" required>
-                            <label for="jabatan" class="text-secondary">Jabatan</label>
-                        </div>
+                    <div class="col-md-6 text-start">
+                        <label for="jabatan" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Jabatan</label>
+                        <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Contoh: Staff" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="password-toggle-container">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                                <label for="password" class="text-secondary">Password</label>
-                            </div>
-                            <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle Password Visibility">
+                    <div class="col-md-6 text-start">
+                        <label for="password" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; padding-right: 46px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s; width: 100%;">
+                            <button type="button" id="togglePassword" aria-label="Toggle Password Visibility" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 5;">
                                 <i class="bi bi-eye" id="toggleIcon"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="password-toggle-container">
-                            <div class="form-floating">
-                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
-                                <label for="confirm_password" class="text-secondary">Ulangi Password</label>
-                            </div>
-                            <button type="button" class="password-toggle-btn" id="toggleConfirmPassword" aria-label="Toggle Confirm Password Visibility">
+                    <div class="col-md-6 text-start">
+                        <label for="confirm_password" class="form-label fw-bold text-secondary mb-1" style="font-size: 0.78rem; letter-spacing: 0.3px; text-transform: uppercase;">Ulangi Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Ulangi Password" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 11px 16px; padding-right: 46px; font-size: 0.88rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s; width: 100%;">
+                            <button type="button" id="toggleConfirmPassword" aria-label="Toggle Confirm Password Visibility" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 5;">
                                 <i class="bi bi-eye" id="toggleConfirmIcon"></i>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <button class="btn btn-login-dark mt-4 mb-3" type="submit">
+                <button class="btn btn-login-dark mt-4 mb-3" type="submit" style="background: linear-gradient(135deg, var(--gv-primary), var(--gv-primary-light)); color: #1a1a1a; font-weight: 700; border-radius: 12px; padding: 12px; width: 100%; border: none; font-size: 0.95rem; box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15); transition: all 0.2s;">
                     Daftar & Kirim OTP
                 </button>
             </form>
 
             <div class="text-center mt-3">
-                <p class="small text-secondary mb-0">
+                <p class="small text-secondary mb-0" style="font-size: 0.82rem;">
                     Sudah punya akun? <a href="login.php" class="text-dark fw-bold text-decoration-none">Login disini</a>
                 </p>
             </div>
