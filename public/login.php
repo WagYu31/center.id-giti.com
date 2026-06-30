@@ -66,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ════════════════════════════════════ */
         .page {
             display: grid;
-            grid-template-columns: 1fr 480px;
+            grid-template-columns: 1fr 460px;
+            grid-template-rows: 1fr;
             min-height: 100vh;
             background: #faf9f6;
         }
@@ -78,7 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
             display: flex;
             flex-direction: column;
-            padding: 3rem 4rem;
+            justify-content: space-between;
+            padding: 2.5rem 4rem;
             overflow: hidden;
             background: #faf9f6;
         }
@@ -148,21 +150,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* Hero text */
         .hero {
             position: relative; z-index: 2;
-            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 2rem 0;
         }
         .hero-eyebrow {
-            font-size: 0.78rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: #eab308;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.6rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 0.7rem;
         }
         .hero h1 {
-            font-size: 3rem;
+            font-size: clamp(2rem, 2.6vw, 3rem);
             font-weight: 800;
             line-height: 1.1;
             letter-spacing: -0.04em;
@@ -305,6 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #ffffff;
             border-left: 1px solid rgba(0,0,0,0.06);
             position: relative;
+            min-height: 100vh;
         }
 
         .login-box {
@@ -496,10 +498,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* ════════════════════════════════════
            RESPONSIVE
         ════════════════════════════════════ */
-        @media (max-width: 1024px) {
+        @media (max-width: 1280px) {
+            .page { grid-template-columns: 1fr 420px; }
+            .panel-left { padding: 2.5rem 2.5rem; }
+            .mockup { max-width: 440px; }
+        }
+        @media (max-width: 1100px) {
+            .page { grid-template-columns: 1fr 400px; }
+            .pills { display: none; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+        @media (max-width: 900px) {
             .page { grid-template-columns: 1fr; }
             .panel-left { display: none; }
-            .panel-right { border-left: none; }
+            .panel-right { border-left: none; min-height: 100vh; }
         }
     </style>
 </head>
@@ -512,7 +524,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="dot-grid"></div>
 
         <!-- Brand Tag -->
-        <div class="brand-tag">
+        <div class="brand-tag" style="position:relative;z-index:2;">
             <div class="live-dot"></div>
             <span>Gravitti Core &nbsp;·&nbsp; Internal Platform</span>
         </div>
