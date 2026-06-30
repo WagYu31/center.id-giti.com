@@ -24,6 +24,11 @@ try {
         UNIQUE KEY unique_view (job_id, user_id),
         INDEX idx_job (job_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    
+    // Add progress_id column to attachments table
+    try {
+        $conn->exec("ALTER TABLE bukti_job_attachments ADD COLUMN progress_id INT DEFAULT NULL");
+    } catch(Exception $e) {}
 } catch(Exception $e) {
     // Table may already exist or insufficient permissions - ignore
 }

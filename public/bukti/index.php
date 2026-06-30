@@ -565,6 +565,12 @@ function format_text($text) {
                             <div class="drop-hint">Foto, Video, PDF, Dokumen (maks. 10MB per file)</div>
                         </div>
                         <div id="file-preview-container" class="preview-grid"></div>
+                        
+                        <!-- Container untuk file-file lama saat edit -->
+                        <div id="existing-files-container" class="mt-3" style="display:none;">
+                            <label class="small text-muted fw-bold mb-2">File Terupload Sebelumnya</label>
+                            <div id="existing-files-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -687,6 +693,28 @@ function openDetail(id){
             if(res.history.length){ 
                 res.history.forEach((h,i)=>{ 
                     let sColor = h.status_after === 'done' ? '#15803d' : (h.status_after === 'in_progress' ? '#a16207' : '#475569');
+            let th=''; 
+            if(res.history.length){ 
+                res.history.forEach((h, i)=>{ 
+                    let sColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#3b82f6' : '#6b7280');
+                    
+                    // Render progress attachments HTML
+                    let pattHtml = '';
+                    if (h.attachments && h.attachments.length > 0) {
+                        pattHtml += `<div class="row g-2 mt-2">`;
+                        h.attachments.forEach(a => {
+                            let p = 'assets/uploads/bukti/' + a.file_path;
+                            if (a.file_type == 'image') {
+                                pattHtml += `<div class="col-4"><div style="position:relative; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover;"></div></div>`;
+                            } else if (a.file_type == 'video') {
+                                pattHtml += `<div class="col-12"><video src="${p}" controls class="w-100 rounded" style="max-height:150px; background:#000;"></video></div>`;
+                            } else {
+                                pattHtml += `<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-2 p-2 text-decoration-none border rounded-3" style="background:#fafafa; font-size:0.75rem;"><i class="bi bi-file-earmark-text text-warning"></i> <span style="font-weight:600; color:#374151;">${a.file_name}</span></a></div>`;
+                            }
+                        });
+                        pattHtml += `</div>`;
+                    }
+
                     th+=`<div class="d-flex gap-3 mb-3 ${i > 0 ? 'pt-3' : ''}" ${i > 0 ? 'style="border-top: 1px solid rgba(0,0,0,0.04);"' : ''}>
                         <div style="width:8px; height:8px; border-radius:50%; background:${sColor}; margin-top:6px; flex-shrink:0; box-shadow: 0 0 0 3px ${sColor}22;"></div>
                         <div class="flex-grow-1">
@@ -696,6 +724,7 @@ function openDetail(id){
                             </div>
                             <span class="px-2 py-1 rounded-pill d-inline-block mt-1" style="font-size:0.68rem; font-weight:600; background:${sColor}10; color:${sColor}; text-transform:uppercase; letter-spacing:0.5px;">${h.status_after}</span>
                             ${h.notes ? `<p class="mt-2 mb-0" style="font-size:0.85rem; color:#4b5563; line-height:1.55;">${h.notes}</p>` : ''}
+                            ${pattHtml}
                         </div>
                     </div>`; 
                 }); 
@@ -717,6 +746,13 @@ function openDetail(id){
                 }
             });
             $('#d-att').html(ah);
+            
+            // Hide main attachment container if empty
+            if (res.attachments.length === 0) {
+                $('#d-att').hide();
+            } else {
+                $('#d-att').show();
+            }
 
             renderComments(res.comments);
             $('#d-like-count').text(j.like_count);
@@ -813,9 +849,55 @@ function openEditModal(id){
             document.getElementById('richDesc').innerHTML = plainToRich(j.description);
             $('#inpStart').val(j.start_date); $('#inpEnd').val(j.end_date);
             selectedFiles = []; updatePreviews('file-preview-container', selectedFiles, 'selectedFiles');
+            
+            // Render existing attachments for editing
+            const extContainer = document.getElementById('existing-files-container');
+            const extList = document.getElementById('existing-files-list');
+            if (res.attachments && res.attachments.length > 0) {
+                extContainer.style.display = 'block';
+                let eh = '';
+                res.attachments.forEach(a => {
+                    let p = 'assets/uploads/bukti/' + a.file_path;
+                    let iconHtml = '';
+                    if (a.file_type == 'image') {
+                        iconHtml = `<img src="${p}" style="width:100%;height:100%;object-fit:cover;">`;
+                    } else if (a.file_type == 'video') {
+                        iconHtml = `<div class="d-flex align-items-center justify-content-center h-100 bg-dark rounded text-white" style="width:80px;"><i class="bi bi-play-circle-fill" style="font-size:1.5rem;"></i></div>`;
+                    } else {
+                        iconHtml = `<div class="d-flex align-items-center justify-content-center h-100 bg-light rounded text-secondary" style="width:80px;"><i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i></div>`;
+                    }
+                    eh += `
+                    <div id="att-card-${a.id}" style="position:relative; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #e5e7eb;">
+                        ${iconHtml}
+                        <button type="button" onclick="deleteExistingAttachment(${a.id})" class="btn btn-danger btn-sm p-0 d-flex align-items-center justify-content-center" style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; font-size:0.65rem; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>`;
+                });
+                extList.innerHTML = eh;
+            } else {
+                extContainer.style.display = 'none';
+                extList.innerHTML = '';
+            }
+            
             new bootstrap.Modal('#createModal').show();
         }
     },'json');
+}
+
+function deleteExistingAttachment(id) {
+    if (confirm('Hapus file ini secara permanen?')) {
+        $.post('ajax_action.php', {action: 'delete_attachment', attachment_id: id}, function(res) {
+            if (res.status == 'success') {
+                $(`#att-card-${id}`).remove();
+                if ($('#existing-files-list').children().length === 0) {
+                    $('#existing-files-container').hide();
+                }
+            } else {
+                alert(res.message);
+            }
+        }, 'json');
+    }
 }
 
 function deletePost(id){ if(confirm('Yakin hapus?')) $.post('ajax_action.php', {action:'delete_post', job_id:id}, function(){ location.reload(); }); }

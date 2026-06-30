@@ -13,7 +13,7 @@ function write_log($conn, $user_id, $act, $desc) {
 }
 
 // --- FUNGSI HELPER UPLOAD (FIX MASALAH 1 & 2) ---
-function process_uploads($conn, $job_id, $files) {
+function process_uploads($conn, $job_id, $files, $progress_id = null) {
     if (!empty($files['name'][0])) {
         $upload_dir = 'assets/uploads/bukti/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
@@ -29,8 +29,8 @@ function process_uploads($conn, $job_id, $files) {
                 elseif (in_array($ext, ['mp3', 'wav'])) $type = 'audio';
 
                 if (move_uploaded_file($files['tmp_name'][$key], $upload_dir . $new_name)) {
-                    $conn->prepare("INSERT INTO bukti_job_attachments (job_id, file_name, file_path, file_type) VALUES (?, ?, ?, ?)")
-                         ->execute([$job_id, $name, $new_name, $type]);
+                    $conn->prepare("INSERT INTO bukti_job_attachments (job_id, progress_id, file_name, file_path, file_type) VALUES (?, ?, ?, ?, ?)")
+                          ->execute([$job_id, $progress_id, $name, $new_name, $type]);
                 }
             }
         }
@@ -104,12 +104,13 @@ if ($action == 'update_progress') {
     
     $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, ?, ?)")
          ->execute([$job_id, $user_id, $job['status'], $status, $notes]);
+    $progress_id = $conn->lastInsertId();
          
     $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
     
     // Handle Uploads saat Progress (Fix Masalah 2)
     if (isset($_FILES['files'])) {
-        process_uploads($conn, $job_id, $_FILES['files']);
+        process_uploads($conn, $job_id, $_FILES['files'], $progress_id);
     }
 
     write_log($conn, $user_id, 'UPDATE_PROGRESS', "Update status '{$job['title']}' ke $status");
@@ -160,34 +161,12 @@ if ($action == 'delete_post') {
     $check->execute([$job_id]);
     $data = $check->fetch();
 
-    if ($data && $data['user_id'] == $user_id) {
+    if ($data && ($data['user_id'] == $user_id || $_SESSION['role'] === 'admin')) {
         // Soft Delete
         $stmt = $conn->prepare("UPDATE bukti_jobs SET deleted_at = NOW() WHERE id = ?");
         $stmt->execute([$job_id]);
         
         write_log($conn, $user_id, 'DELETE_JOB', "Menghapus pekerjaan: " . $data['title']);
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus. Akses ditolak.']);
-    }
-    exit;
-}
-
-if ($action == 'edit_post') {
-    $job_id = (int)$_POST['job_id'];
-    $title = trim($_POST['title']);
-    $desc = trim($_POST['description']);
-    
-    $check = $conn->prepare("SELECT user_id FROM bukti_jobs WHERE id = ?");
-    $check->execute([$job_id]);
-    
-    if ($check->fetchColumn() == $user_id) {
-        $stmt = $conn->prepare("UPDATE bukti_jobs SET title = ?, description = ?, is_edited = 1, status = ?, start_date = ?, end_date = ? WHERE id = ?");
-        $stmt->execute([$title, $desc, $_POST['status'], $_POST['start_date'], $_POST['end_date'], $job_id]);
-        
-        if (isset($_FILES['files'])) process_uploads($conn, $job_id, $_FILES['files']);
-
-        write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id);
         echo json_encode(['status' => 'success']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
@@ -197,18 +176,46 @@ if ($action == 'edit_post') {
 
 if ($action == 'like') {
     $job_id = $_POST['job_id'];
-    $check = $conn->prepare("SELECT id FROM bukti_reactions WHERE job_id = ? AND user_id = ? AND type = 'like'");
+    
+    $check = $conn->prepare("SELECT id FROM bukti_reactions WHERE job_id = ? AND user_id = ?");
     $check->execute([$job_id, $user_id]);
-    if ($check->rowCount() > 0) {
+    $liked = false;
+    
+    if ($check->fetchColumn()) {
         $conn->prepare("DELETE FROM bukti_reactions WHERE job_id = ? AND user_id = ?")->execute([$job_id, $user_id]);
-        $liked = false;
     } else {
-        $conn->prepare("INSERT INTO bukti_reactions (job_id, user_id, type) VALUES (?, ?, 'like')")->execute([$job_id, $user_id]);
+        $conn->prepare("INSERT INTO bukti_reactions (job_id, user_id) VALUES (?, ?)")->execute([$job_id, $user_id]);
         $liked = true;
     }
+    
     $cnt = $conn->prepare("SELECT COUNT(*) FROM bukti_reactions WHERE job_id = ?");
     $cnt->execute([$job_id]);
+    
     echo json_encode(['status' => 'success', 'liked' => $liked, 'count' => $cnt->fetchColumn()]);
+    exit;
+}
+
+// Delete Attachment action
+if ($action == 'delete_attachment') {
+    $att_id = (int)$_POST['attachment_id'];
+    
+    // Check ownership of the attachment via job owner
+    $check = $conn->prepare("SELECT a.file_path, j.user_id FROM bukti_job_attachments a JOIN bukti_jobs j ON a.job_id = j.id WHERE a.id = ?");
+    $check->execute([$att_id]);
+    $data = $check->fetch();
+    
+    if ($data && ($data['user_id'] == $user_id || $_SESSION['role'] === 'admin')) {
+        // Physical file removal
+        $filepath = 'assets/uploads/bukti/' . $data['file_path'];
+        if (file_exists($filepath)) {
+            @unlink($filepath);
+        }
+        
+        $conn->prepare("DELETE FROM bukti_job_attachments WHERE id = ?")->execute([$att_id]);
+        echo json_encode(['status' => 'success']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
+    }
     exit;
 }
 
@@ -238,7 +245,14 @@ if ($action == 'fetch_detail') {
     $prog = $conn->prepare("SELECT p.*, u.name FROM bukti_job_progress p JOIN users u ON p.user_id = u.id WHERE job_id = ? ORDER BY created_at DESC");
     $prog->execute([$job_id]);
     $history = $prog->fetchAll(PDO::FETCH_ASSOC);
-    foreach($history as &$h) $h['date'] = tgl_indo($h['created_at']);
+    foreach($history as &$h) {
+        $h['date'] = tgl_indo($h['created_at']);
+        
+        // Fetch attachments associated with this specific progress update
+        $patts = $conn->prepare("SELECT * FROM bukti_job_attachments WHERE progress_id = ?");
+        $patts->execute([$h['id']]);
+        $h['attachments'] = $patts->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     // Comments only active
     $comments = $conn->prepare("SELECT c.*, u.name, u.avatar FROM bukti_comments c JOIN users u ON c.user_id = u.id WHERE job_id = ? AND c.deleted_at IS NULL ORDER BY created_at ASC");
@@ -250,7 +264,8 @@ if ($action == 'fetch_detail') {
         $c['is_mine'] = ($c['user_id'] == $user_id);
     }
 
-    $att = $conn->prepare("SELECT * FROM bukti_job_attachments WHERE job_id = ?");
+    // ONLY fetch attachments that belong to the main job creation (progress_id IS NULL)
+    $att = $conn->prepare("SELECT * FROM bukti_job_attachments WHERE job_id = ? AND progress_id IS NULL");
     $att->execute([$job_id]);
     
     // Fetch viewers
