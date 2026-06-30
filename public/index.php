@@ -149,7 +149,15 @@ $tanggal = date('d M Y');
                 $monthlyDone = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE user_id={$user['id']} AND status='done' AND deleted_at IS NULL AND MONTH(created_at)=$month AND YEAR(created_at)=$year")->fetchColumn();
                 $monthlyTotal = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE user_id={$user['id']} AND deleted_at IS NULL AND MONTH(created_at)=$month AND YEAR(created_at)=$year")->fetchColumn();
             } catch(Exception $e) {}
-            $target = 30; // Default target per bulan
+            // Dynamic target from DB
+            $target = 30;
+            try {
+                $conn->exec("ALTER TABLE users ADD COLUMN monthly_target INT DEFAULT 30");
+            } catch(Exception $e) {}
+            try {
+                $dbTarget = $conn->query("SELECT monthly_target FROM users WHERE id={$user['id']}")->fetchColumn();
+                if ($dbTarget) $target = (int)$dbTarget;
+            } catch(Exception $e) {}
             $pct = $target > 0 ? min(100, round(($monthlyDone / $target) * 100)) : 0;
             $bulanNama = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][(int)$month];
             ?>
@@ -161,14 +169,33 @@ $tanggal = date('d M Y');
                         </div>
                         <span style="font-weight:700;font-size:0.88rem;color:#0f172a;">Target <?= $bulanNama ?> <?= $year ?></span>
                     </div>
-                    <span style="font-size:0.75rem;font-weight:700;color:<?= $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#64748b') ?>;"><?= $pct ?>%</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="targetPct" style="font-size:0.75rem;font-weight:700;color:<?= $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#64748b') ?>;"><?= $pct ?>%</span>
+                        <?php if($user['role'] === 'admin'): ?>
+                        <button onclick="editTarget()" style="background:none;border:none;color:#94a3b8;font-size:0.75rem;cursor:pointer;padding:2px;" title="Ubah target">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <div style="background:#f1f5f9;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px;">
-                    <div style="width:<?= $pct ?>%;height:100%;border-radius:8px;background:linear-gradient(90deg,#059669,#10b981);transition:width 1s ease;"></div>
+                    <div id="targetBar" style="width:<?= $pct ?>%;height:100%;border-radius:8px;background:linear-gradient(90deg,#059669,#10b981);transition:width 1s ease;"></div>
                 </div>
-                <div class="d-flex justify-content-between" style="font-size:0.75rem;color:#64748b;">
-                    <span><strong style="color:#0f172a;"><?= $monthlyDone ?></strong> selesai dari <strong><?= $target ?></strong> target</span>
+                <div class="d-flex justify-content-between align-items-center" style="font-size:0.75rem;color:#64748b;">
+                    <span><strong style="color:#0f172a;"><?= $monthlyDone ?></strong> selesai dari <strong id="targetNum"><?= $target ?></strong> target</span>
                     <span><?= $monthlyTotal ?> total tugas</span>
+                </div>
+                <!-- Inline edit (hidden by default) -->
+                <div id="targetEditRow" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" id="targetInput" value="<?= $target ?>" min="1" max="999" style="width:80px;border:1px solid #e2e8f0;border-radius:8px;padding:5px 10px;font-size:0.82rem;font-weight:600;text-align:center;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'">
+                        <button onclick="saveTarget()" style="background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:8px;padding:5px 14px;font-size:0.75rem;font-weight:600;cursor:pointer;">
+                            <i class="bi bi-check-lg"></i> Simpan
+                        </button>
+                        <button onclick="cancelEditTarget()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:8px;padding:5px 14px;font-size:0.75rem;font-weight:600;cursor:pointer;">
+                            Batal
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -526,6 +553,37 @@ $tanggal = date('d M Y');
             })
             .catch(() => alert('Gagal koneksi'))
             .finally(() => { btnSave.disabled = false; btnSave.innerHTML = '<i class="bi bi-floppy me-1"></i>Simpan'; });
+    }
+
+    // === TARGET EDIT ===
+    function editTarget() {
+        document.getElementById('targetEditRow').style.display = 'block';
+        document.getElementById('targetInput').focus();
+    }
+    function cancelEditTarget() {
+        document.getElementById('targetEditRow').style.display = 'none';
+    }
+    function saveTarget() {
+        const newTarget = parseInt(document.getElementById('targetInput').value);
+        if (isNaN(newTarget) || newTarget < 1 || newTarget > 999) { alert('Target harus 1-999'); return; }
+        
+        const fd = new FormData();
+        fd.append('action', 'update');
+        fd.append('target', newTarget);
+        fetch('api_target.php', {method:'POST', body: fd})
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    document.getElementById('targetNum').textContent = newTarget;
+                    const done = <?= $monthlyDone ?>;
+                    const pct = Math.min(100, Math.round((done / newTarget) * 100));
+                    document.getElementById('targetPct').textContent = pct + '%';
+                    document.getElementById('targetBar').style.width = pct + '%';
+                    document.getElementById('targetPct').style.color = pct >= 80 ? '#059669' : (pct >= 50 ? '#d97706' : '#64748b');
+                    cancelEditTarget();
+                } else { alert(res.message); }
+            })
+            .catch(() => alert('Gagal koneksi'));
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
