@@ -90,9 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="email" class="text-secondary">Email Address</label>
                 </div>
 
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                    <label for="password" class="text-secondary">Password</label>
+                <div class="password-toggle-container mb-3">
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <label for="password" class="text-secondary">Password</label>
+                    </div>
+                    <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle Password Visibility">
+                        <i class="bi bi-eye" id="toggleIcon"></i>
+                    </button>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -128,6 +133,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </div>
     </div>
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
 
 </body>
 </html>

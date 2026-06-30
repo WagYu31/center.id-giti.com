@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css?v=6.0">
+    <link rel="stylesheet" href="assets/css/style.css?v=11.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
 </head>
 <body>
@@ -148,15 +148,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                            <label for="password" class="text-secondary">Password</label>
+                        <div class="password-toggle-container">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <label for="password" class="text-secondary">Password</label>
+                            </div>
+                            <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle Password Visibility">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
-                            <label for="confirm_password" class="text-secondary">Ulangi Password</label>
+                        <div class="password-toggle-container">
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                                <label for="confirm_password" class="text-secondary">Ulangi Password</label>
+                            </div>
+                            <button type="button" class="password-toggle-btn" id="toggleConfirmPassword" aria-label="Toggle Confirm Password Visibility">
+                                <i class="bi bi-eye" id="toggleConfirmIcon"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -174,6 +184,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </div>
     </div>
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('confirm_password');
+            const icon = document.getElementById('toggleConfirmIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
 
 </body>
 </html>

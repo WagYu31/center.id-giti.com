@@ -52,12 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verifikasi OTP - Grav Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css?v=6.0">
+    <link rel="stylesheet" href="assets/css/style.css?v=11.0">
     <style>
         .otp-input-group { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
-        .otp-field { width: 50px; height: 55px; text-align: center; font-size: 24px; font-weight: bold; border-radius: 10px; border: 1px solid #ddd; background: #fcfcfc; }
-        .otp-field:focus { border-color: var(--dark-accent); box-shadow: 0 0 0 4px rgba(0,0,0,0.05); outline: none; }
+        .otp-field { width: 50px; height: 55px; text-align: center; font-size: 24px; font-weight: bold; border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.5); transition: all 0.3s ease; }
+        .otp-field:focus { border-color: var(--gv-primary); box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.12); outline: none; background: white; }
     </style>
 </head>
 <body>
