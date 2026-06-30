@@ -59,29 +59,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; }
+        html, body {
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #faf9f6;   /* cream fills the whole screen */
+        }
 
         /* ════════════════════════════════════
-           LAYOUT
+           CENTERED WRAPPER
+        ════════════════════════════════════ */
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* ════════════════════════════════════
+           CARD CONTAINER  (max-width keeps
+           content tight regardless of screen)
         ════════════════════════════════════ */
         .page {
             display: grid;
-            grid-template-columns: 1fr 460px;
-            grid-template-rows: 1fr;
-            min-height: 100vh;
-            background: #faf9f6;
-        }
-
-        /* Constrain left-panel inner content so it doesn't spread too wide */
-        .left-inner {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            max-width: 560px;       /* content never goes wider than this */
-            margin-left: auto;      /* push content towards the center divider */
-            position: relative;
-            z-index: 2;
+            grid-template-columns: 1fr 420px;
+            width: 100%;
+            max-width: 1160px;          /* ← never wider than this */
+            min-height: 680px;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.06),
+                0 24px 80px rgba(0,0,0,0.08),
+                0 4px 16px rgba(0,0,0,0.04);
         }
 
         /* ════════════════════════════════════
@@ -91,7 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
             display: flex;
             flex-direction: column;
-            padding: 2.5rem 3rem 2.5rem 2rem;   /* tighter left padding */
+            justify-content: space-between;
+            padding: 2.5rem 3rem;
             overflow: hidden;
             background: #faf9f6;
         }
@@ -312,12 +324,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .panel-right {
             display: flex;
             align-items: center;
-            justify-content: flex-start;   /* hug content towards center divider */
-            padding: 2rem 2rem 2rem 3rem;  /* more padding on the left (center side) */
+            justify-content: center;
+            padding: 2.5rem 2.5rem;
             background: #ffffff;
             border-left: 1px solid rgba(0,0,0,0.06);
             position: relative;
-            min-height: 100vh;
         }
 
         .login-box {
@@ -509,45 +520,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* ════════════════════════════════════
            RESPONSIVE
         ════════════════════════════════════ */
-        @media (max-width: 1400px) {
-            .left-inner { max-width: 500px; }
-            .mockup { max-width: 440px; }
-        }
-        @media (max-width: 1200px) {
-            .page { grid-template-columns: 1fr 420px; }
-            .left-inner { max-width: 460px; }
-            .pills { gap: 6px; }
-        }
-        @media (max-width: 1050px) {
-            .page { grid-template-columns: 1fr 400px; }
-            .left-inner { max-width: 400px; }
-            .pills .pill:last-child { display: none; }
-            .hero h1 { font-size: 2.1rem; }
-        }
-        @media (max-width: 900px) {
-            .page { grid-template-columns: 1fr; }
-            .panel-left { display: none; }
-            .panel-right {
-                border-left: none;
+        @media (max-width: 960px) {
+            .page-wrap { padding: 0; align-items: stretch; }
+            .page {
+                grid-template-columns: 1fr;
+                border-radius: 0;
                 min-height: 100vh;
-                justify-content: center;
-                padding: 2rem;
+                box-shadow: none;
             }
+            .panel-left { display: none; }
+            .panel-right { padding: 2.5rem 2rem; }
+        }
+        @media (max-width: 700px) {
+            .page-wrap { padding: 0; }
         }
     </style>
 </head>
 <body>
 
+<div class="page-wrap">
 <div class="page">
 
     <!-- ═══════════════════ LEFT PANEL ═══════════════════ -->
     <div class="panel-left">
         <div class="dot-grid"></div>
 
-        <div class="left-inner">
-
-            <!-- Brand Tag -->
-            <div class="brand-tag">
+        <!-- Brand Tag -->
+        <div class="brand-tag">
                 <div class="live-dot"></div>
                 <span>Gravitti Core &nbsp;·&nbsp; Internal Platform</span>
             </div>
@@ -615,13 +614,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="left-footer">
-                &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
-            </div>
+        <!-- Footer -->
+        <div class="left-footer">
+            &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
+        </div>
+    </div><!-- /.panel-left -->
 
-        </div><!-- /.left-inner -->
-    </div>
 
     <!-- ═══════════════════ RIGHT PANEL ═══════════════════ -->
     <div class="panel-right">
@@ -695,7 +693,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-</div>
+</div><!-- /.page -->
+</div><!-- /.page-wrap -->
 
 <script>
     document.getElementById('togglePassword').addEventListener('click', function () {
