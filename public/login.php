@@ -85,48 +85,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="">
                 
-                <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
-                    <label for="email" class="text-secondary">Email Address</label>
+                <div class="mb-3 text-start">
+                    <label for="email" class="form-label fw-bold text-secondary mb-1.5" style="font-size: 0.8rem; letter-spacing: 0.3px; text-transform: uppercase;">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email Anda" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 12px 16px; font-size: 0.9rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s;">
                 </div>
 
-                <div class="password-toggle-container mb-3">
-                    <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        <label for="password" class="text-secondary">Password</label>
+                <div class="mb-4 text-start">
+                    <label for="password" class="form-label fw-bold text-secondary mb-1.5" style="font-size: 0.8rem; letter-spacing: 0.3px; text-transform: uppercase;">Password</label>
+                    <div style="position: relative;">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Masukkan password Anda" required style="border-radius: 12px; border: 1.5px solid rgba(0,0,0,0.08); padding: 12px 16px; padding-right: 46px; font-size: 0.9rem; background-color: rgba(255,255,255,0.6); transition: all 0.2s; width: 100%;">
+                        <button type="button" id="togglePassword" aria-label="Toggle Password Visibility" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 5;">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
                     </div>
-                    <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle Password Visibility">
-                        <i class="bi bi-eye" id="toggleIcon"></i>
-                    </button>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me">
-                        <label class="form-check-label text-secondary small" for="remember-me">
+                        <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me" style="cursor: pointer; border-color: rgba(0,0,0,0.15);">
+                        <label class="form-check-label text-secondary small" for="remember-me" style="cursor: pointer; user-select: none;">
                             Ingat Saya
                         </label>
                     </div>
                 </div>
 
-                <button class="btn btn-login-dark mb-3" type="submit">
+                <button class="btn btn-login-dark mb-3" type="submit" style="background: linear-gradient(135deg, var(--gv-primary), var(--gv-primary-light)); color: #1a1a1a; font-weight: 700; border-radius: 12px; padding: 12px; width: 100%; border: none; font-size: 0.95rem; box-shadow: 0 4px 16px rgba(234, 179, 8, 0.15); transition: all 0.2s;">
                     Sign In
                 </button>
 
             </form>
 
-            <div class="divider-text">atau masuk dengan</div>
+            <div class="divider-text" style="color: #9ca3af; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <span style="height: 1px; background: rgba(0,0,0,0.06); flex-grow: 1;"></span>
+                <span>atau</span>
+                <span style="height: 1px; background: rgba(0,0,0,0.06); flex-grow: 1;"></span>
+            </div>
                 
-            <a href="register.php" class="btn btn-outline-secondary w-100 rounded-pill py-2 fw-bold" style="border: 1px solid #e0e0e0;">
-                Sign Up
+            <a href="register.php" class="btn w-100 py-2.5 fw-bold" style="border: 1.5px solid rgba(0,0,0,0.08); border-radius: 12px; color: var(--text-secondary); background: transparent; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--gv-primary)'; this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'; this.style.color='var(--text-secondary)'">
+                Daftar Akun Baru
             </a>
 
-            <!--<a href="https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online&client_id=GANTI_CLIENT_ID&redirect_uri=GANTI_REDIRECT_URL&scope=email+profile" class="btn btn-login-google">-->
-            <!--    <i class="bi bi-google"></i> Google Account-->
-            <!--</a>-->
-
             <div class="text-center mt-4">
-                <p class="small text-secondary mb-0">
+                <p class="small text-secondary mb-0" style="font-size: 0.75rem;">
                     &copy; <?= date('Y') ?> Grav Technology
                 </p>
             </div>
@@ -135,6 +135,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
+        // Custom focus styles for inputs
+        document.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.style.borderColor = 'var(--gv-primary)';
+                input.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.12)';
+                input.style.backgroundColor = '#ffffff';
+            });
+            input.addEventListener('blur', () => {
+                input.style.borderColor = 'rgba(0,0,0,0.08)';
+                input.style.boxShadow = 'none';
+                input.style.backgroundColor = 'rgba(255,255,255,0.6)';
+            });
+        });
+
+        // Password visibility toggler
         document.getElementById('togglePassword').addEventListener('click', function () {
             const passwordInput = document.getElementById('password');
             const icon = document.getElementById('toggleIcon');
