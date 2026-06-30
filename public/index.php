@@ -631,20 +631,26 @@ $tanggal = date('d M Y');
             const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
             const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
             const isSelected = dateStr === selectedDate;
-            const hasEvents = monthEvents.some(ev => {
+            const dateEvents = monthEvents.filter(ev => {
                 const end = ev.end_date || ev.event_date;
                 return dateStr >= ev.event_date && dateStr <= end;
             });
+            const eventColors = [...new Set(dateEvents.map(ev => ev.color))].slice(0, 3);
             
             cell.style.cssText = `padding:4px;cursor:pointer;border-radius:10px;transition:all 0.15s;position:relative;`;
+            cell.dataset.date = dateStr;
             
             let bg = 'transparent', color = '#334155', fw = '500';
             if (isSelected) { bg = '#d97706'; color = 'white'; fw = '700'; }
             else if (isToday) { bg = '#fef3c7'; color = '#92400e'; fw = '700'; }
             
+            const dotsHtml = eventColors.length > 0 
+                ? `<div class="cal-dots" style="display:flex;justify-content:center;gap:2px;margin-top:2px;">${eventColors.map(c => `<div style="width:5px;height:5px;border-radius:50%;background:${c};"></div>`).join('')}</div>` 
+                : '<div class="cal-dots" style="height:7px;"></div>';
+            
             cell.innerHTML = `
                 <div style="width:32px;height:32px;line-height:32px;margin:auto;border-radius:10px;font-size:0.78rem;font-weight:${fw};color:${color};background:${bg};transition:all 0.15s;">${d}</div>
-                ${hasEvents ? '<div style="width:5px;height:5px;border-radius:50%;background:#d97706;margin:2px auto 0;"></div>' : '<div style="height:7px;"></div>'}
+                ${dotsHtml}
             `;
             
             cell.onclick = () => selectDate(dateStr);
@@ -676,12 +682,27 @@ $tanggal = date('d M Y');
             .then(res => {
                 if (res.status === 'success') {
                     monthEvents = res.data;
-                    // Re-render dots
-                    const grid = document.getElementById('calGrid');
-                    const cells = grid.querySelectorAll('div[style*="cursor:pointer"]');
-                    // Already handled in renderCalendar, but update dots
+                    updateDots();
                 }
             });
+    }
+
+    function updateDots() {
+        document.querySelectorAll('#calGrid [data-date]').forEach(cell => {
+            const dateStr = cell.dataset.date;
+            const dateEvents = monthEvents.filter(ev => {
+                const end = ev.end_date || ev.event_date;
+                return dateStr >= ev.event_date && dateStr <= end;
+            });
+            const eventColors = [...new Set(dateEvents.map(ev => ev.color))].slice(0, 3);
+            const dotContainer = cell.querySelector('.cal-dots');
+            if (dotContainer) {
+                dotContainer.innerHTML = eventColors.length > 0
+                    ? eventColors.map(c => `<div style="width:5px;height:5px;border-radius:50%;background:${c};"></div>`).join('')
+                    : '';
+                dotContainer.style.height = eventColors.length > 0 ? 'auto' : '7px';
+            }
+        });
     }
 
     function fetchDateEvents(dateStr) {
