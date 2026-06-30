@@ -195,8 +195,21 @@ $tanggal = date('d M Y');
                         <button onclick="cancelEditTarget()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:8px;padding:5px 14px;font-size:0.75rem;font-weight:600;cursor:pointer;">
                             Batal
                         </button>
-                    </div>
                 </div>
+            </div>
+            
+            <!-- Quick Notes Widget -->
+            <div class="card-notes d-flex flex-column reveal" style="margin-top: 5px; flex: none; min-height: 220px; background: #fffbeb; border: 1px solid #fef08a;">
+                <div class="notes-header" style="border-bottom: 1px dashed rgba(217,119,6,0.15); padding-bottom: 10px; margin-bottom: 10px;">
+                    <div class="notes-title">
+                        <div class="icon-note-yellow" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <span style="color: #92400e;">Quick Notes</span>
+                    </div>
+                    <span id="notesStatus" style="font-size:0.72rem; color:#b45309; font-style:italic;">Tersimpan</span>
+                </div>
+                <textarea id="quickNotesArea" class="notes-area" placeholder="Tulis catatan cepat Anda di sini... (Autosave)" style="flex: 1; min-height: 120px; font-size: 0.88rem; color: #78350f; font-family: inherit; line-height: 1.6; border: none; outline: none; resize: none; background: transparent;"><?= htmlspecialchars($user['notes'] ?? '') ?></textarea>
             </div>
         </div>
     </div>
@@ -1013,6 +1026,38 @@ $tanggal = date('d M Y');
             })
             .catch(() => alert('Gagal koneksi'));
     }
+    
+    // === QUICK NOTES AUTOSAVE ===
+    let notesTimeout = null;
+    const notesArea = document.getElementById('quickNotesArea');
+    const notesStatus = document.getElementById('notesStatus');
+    if (notesArea && notesStatus) {
+        notesArea.addEventListener('input', function() {
+            notesStatus.textContent = 'Mengetik...';
+            notesStatus.style.color = '#d97706';
+            clearTimeout(notesTimeout);
+            notesTimeout = setTimeout(function() {
+                const fd = new FormData();
+                fd.append('notes', notesArea.value);
+                fetch('save_note.php', { method: 'POST', body: fd })
+                    .then(r => r.text())
+                    .then(res => {
+                        if (res.trim() === 'success') {
+                            notesStatus.textContent = 'Tersimpan';
+                            notesStatus.style.color = '#b45309';
+                        } else {
+                            notesStatus.textContent = 'Gagal menyimpan';
+                            notesStatus.style.color = '#ef4444';
+                        }
+                    })
+                    .catch(() => {
+                        notesStatus.textContent = 'Gagal koneksi';
+                        notesStatus.style.color = '#ef4444';
+                    });
+            }, 1000);
+        });
+    }
+    
     // === SCROLL REVEAL ===
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
