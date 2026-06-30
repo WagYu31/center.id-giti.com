@@ -72,6 +72,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #faf9f6;
         }
 
+        /* Constrain left-panel inner content so it doesn't spread too wide */
+        .left-inner {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            max-width: 560px;       /* content never goes wider than this */
+            margin-left: auto;      /* push content towards the center divider */
+            position: relative;
+            z-index: 2;
+        }
+
         /* ════════════════════════════════════
            LEFT PANEL
         ════════════════════════════════════ */
@@ -79,8 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 2.5rem 4rem;
+            padding: 2.5rem 3rem 2.5rem 2rem;   /* tighter left padding */
             overflow: hidden;
             background: #faf9f6;
         }
@@ -301,8 +312,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .panel-right {
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 2rem 2.5rem;
+            justify-content: flex-start;   /* hug content towards center divider */
+            padding: 2rem 2rem 2rem 3rem;  /* more padding on the left (center side) */
             background: #ffffff;
             border-left: 1px solid rgba(0,0,0,0.06);
             position: relative;
@@ -311,7 +322,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .login-box {
             width: 100%;
-            max-width: 380px;
+            max-width: 390px;
         }
 
         /* Logo block */
@@ -498,20 +509,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* ════════════════════════════════════
            RESPONSIVE
         ════════════════════════════════════ */
-        @media (max-width: 1280px) {
-            .page { grid-template-columns: 1fr 420px; }
-            .panel-left { padding: 2.5rem 2.5rem; }
+        @media (max-width: 1400px) {
+            .left-inner { max-width: 500px; }
             .mockup { max-width: 440px; }
         }
-        @media (max-width: 1100px) {
+        @media (max-width: 1200px) {
+            .page { grid-template-columns: 1fr 420px; }
+            .left-inner { max-width: 460px; }
+            .pills { gap: 6px; }
+        }
+        @media (max-width: 1050px) {
             .page { grid-template-columns: 1fr 400px; }
-            .pills { display: none; }
-            .hero h1 { font-size: 2.2rem; }
+            .left-inner { max-width: 400px; }
+            .pills .pill:last-child { display: none; }
+            .hero h1 { font-size: 2.1rem; }
         }
         @media (max-width: 900px) {
             .page { grid-template-columns: 1fr; }
             .panel-left { display: none; }
-            .panel-right { border-left: none; min-height: 100vh; }
+            .panel-right {
+                border-left: none;
+                min-height: 100vh;
+                justify-content: center;
+                padding: 2rem;
+            }
         }
     </style>
 </head>
@@ -523,79 +544,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="panel-left">
         <div class="dot-grid"></div>
 
-        <!-- Brand Tag -->
-        <div class="brand-tag" style="position:relative;z-index:2;">
-            <div class="live-dot"></div>
-            <span>Gravitti Core &nbsp;·&nbsp; Internal Platform</span>
-        </div>
+        <div class="left-inner">
 
-        <!-- Hero + Content -->
-        <div class="hero">
-            <div class="hero-eyebrow">Platform Manajemen Tim</div>
-            <h1>Satu Tempat<br>untuk <em>Semua</em><br>Kendali Tim.</h1>
-            <p class="hero-desc">
-                Dashboard terpadu untuk memantau target penjualan, absensi, progress divisi, dan koordinasi tim GraViTTi secara real-time.
-            </p>
-
-            <!-- Pills -->
-            <div class="pills">
-                <div class="pill"><i class="bi bi-graph-up-arrow"></i> Target & Sales</div>
-                <div class="pill"><i class="bi bi-people-fill"></i> Kolaborasi Tim</div>
-                <div class="pill"><i class="bi bi-calendar2-check"></i> Absensi</div>
-                <div class="pill"><i class="bi bi-bell-fill"></i> Notifikasi</div>
+            <!-- Brand Tag -->
+            <div class="brand-tag">
+                <div class="live-dot"></div>
+                <span>Gravitti Core &nbsp;·&nbsp; Internal Platform</span>
             </div>
 
-            <!-- Dashboard Mockup -->
-            <div class="mockup">
-                <div class="mockup-header">
-                    <div class="mockup-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <div class="mockup-title">Grav Center &nbsp;·&nbsp; Dashboard Overview</div>
+            <!-- Hero + Content -->
+            <div class="hero">
+                <div class="hero-eyebrow">Platform Manajemen Tim</div>
+                <h1>Satu Tempat<br>untuk <em>Semua</em><br>Kendali Tim.</h1>
+                <p class="hero-desc">
+                    Dashboard terpadu untuk memantau target penjualan, absensi, progress divisi, dan koordinasi tim GraViTTi secara real-time.
+                </p>
+
+                <!-- Pills -->
+                <div class="pills">
+                    <div class="pill"><i class="bi bi-graph-up-arrow"></i> Target & Sales</div>
+                    <div class="pill"><i class="bi bi-people-fill"></i> Kolaborasi Tim</div>
+                    <div class="pill"><i class="bi bi-calendar2-check"></i> Absensi</div>
+                    <div class="pill"><i class="bi bi-bell-fill"></i> Notifikasi</div>
                 </div>
 
-                <div class="mockup-stats">
-                    <div class="ms-card">
-                        <div class="ms-label">Target Bulan Ini</div>
-                        <div class="ms-val">87<span style="font-size:0.8rem;font-weight:600;color:#94a3b8;">%</span></div>
-                        <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +12%</div>
+                <!-- Dashboard Mockup -->
+                <div class="mockup">
+                    <div class="mockup-header">
+                        <div class="mockup-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="mockup-title">Grav Center &nbsp;·&nbsp; Dashboard Overview</div>
                     </div>
-                    <div class="ms-card">
-                        <div class="ms-label">Anggota Aktif</div>
-                        <div class="ms-val">24</div>
-                        <div class="ms-badge neut"><i class="bi bi-circle-fill" style="font-size:5px;"></i> Online</div>
-                    </div>
-                    <div class="ms-card">
-                        <div class="ms-label">Tugas Selesai</div>
-                        <div class="ms-val">142</div>
-                        <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +8%</div>
-                    </div>
-                </div>
 
-                <div style="margin-bottom:8px;">
-                    <div style="font-size:0.62rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Aktivitas Minggu Ini</div>
-                    <div class="mockup-bars">
-                        <div class="bar semi"  style="height:35%;"></div>
-                        <div class="bar semi"  style="height:50%;"></div>
-                        <div class="bar"       style="height:40%;"></div>
-                        <div class="bar active"style="height:80%;"></div>
-                        <div class="bar active"style="height:95%;"></div>
-                        <div class="bar semi"  style="height:65%;"></div>
-                        <div class="bar semi"  style="height:55%;"></div>
-                        <div class="bar"       style="height:30%;"></div>
-                        <div class="bar active"style="height:72%;"></div>
-                        <div class="bar active"style="height:88%;"></div>
-                        <div class="bar semi"  style="height:60%;"></div>
-                        <div class="bar"       style="height:45%;"></div>
+                    <div class="mockup-stats">
+                        <div class="ms-card">
+                            <div class="ms-label">Target Bulan Ini</div>
+                            <div class="ms-val">87<span style="font-size:0.8rem;font-weight:600;color:#94a3b8;">%</span></div>
+                            <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +12%</div>
+                        </div>
+                        <div class="ms-card">
+                            <div class="ms-label">Anggota Aktif</div>
+                            <div class="ms-val">24</div>
+                            <div class="ms-badge neut"><i class="bi bi-circle-fill" style="font-size:5px;"></i> Online</div>
+                        </div>
+                        <div class="ms-card">
+                            <div class="ms-label">Tugas Selesai</div>
+                            <div class="ms-val">142</div>
+                            <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +8%</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:8px;">
+                        <div style="font-size:0.62rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Aktivitas Minggu Ini</div>
+                        <div class="mockup-bars">
+                            <div class="bar semi"  style="height:35%;"></div>
+                            <div class="bar semi"  style="height:50%;"></div>
+                            <div class="bar"       style="height:40%;"></div>
+                            <div class="bar active"style="height:80%;"></div>
+                            <div class="bar active"style="height:95%;"></div>
+                            <div class="bar semi"  style="height:65%;"></div>
+                            <div class="bar semi"  style="height:55%;"></div>
+                            <div class="bar"       style="height:30%;"></div>
+                            <div class="bar active"style="height:72%;"></div>
+                            <div class="bar active"style="height:88%;"></div>
+                            <div class="bar semi"  style="height:60%;"></div>
+                            <div class="bar"       style="height:45%;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Footer -->
-        <div class="left-footer">
-            &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
-        </div>
+            <!-- Footer -->
+            <div class="left-footer">
+                &copy; <?= date('Y') ?> GraViTTi Technology. All rights reserved.
+            </div>
+
+        </div><!-- /.left-inner -->
     </div>
 
     <!-- ═══════════════════ RIGHT PANEL ═══════════════════ -->
