@@ -174,6 +174,27 @@ $tanggal = date('d M Y');
         </div>
     </div>
 
+    <!-- Quick Notes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div style="background:white;border-radius:16px;padding:20px 24px;border:1px solid rgba(0,0,0,0.06);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-note-yellow"><i class="bi bi-journal-text"></i></div>
+                        <span class="fw-bold" style="font-size:0.95rem;">Quick Notes</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="saveStatus" style="font-size:0.72rem;font-weight:600;color:#059669;opacity:0;transition:opacity 0.3s;"><i class="bi bi-check-circle-fill me-1"></i>Tersimpan</span>
+                        <button id="btnSaveNote" onclick="saveNote()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:6px 16px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
+                            <i class="bi bi-floppy me-1"></i>Simpan
+                        </button>
+                    </div>
+                </div>
+                <textarea id="noteInput" placeholder="Tulis catatan harianmu di sini..." style="width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:0.85rem;color:#334155;resize:vertical;min-height:60px;max-height:140px;font-family:inherit;transition:border 0.2s;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'"><?= htmlspecialchars($user['notes'] ?? '') ?></textarea>
+            </div>
+        </div>
+    </div>
+
     <?php if($user['role'] === 'admin'): ?>
     <div class="row mb-4">
         <div class="col-12">
@@ -471,6 +492,40 @@ $tanggal = date('d M Y');
                     alert(res.message);
                 }
             });
+    }
+
+    // === QUICK NOTES ===
+    const noteInput = document.getElementById('noteInput');
+    const btnSave = document.getElementById('btnSaveNote');
+    const statusText = document.getElementById('saveStatus');
+    let originalNote = noteInput.value;
+
+    noteInput.addEventListener('input', function() {
+        if (this.value !== originalNote) {
+            btnSave.style.display = 'inline-block';
+            statusText.style.opacity = '0';
+        } else {
+            btnSave.style.display = 'none';
+        }
+    });
+
+    function saveNote() {
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        const fd = new FormData();
+        fd.append('notes', noteInput.value);
+        fetch('save_note.php', {method:'POST', body: fd})
+            .then(r => r.text())
+            .then(d => {
+                if (d.trim() === 'success') {
+                    originalNote = noteInput.value;
+                    btnSave.style.display = 'none';
+                    statusText.style.opacity = '1';
+                    setTimeout(() => { statusText.style.opacity = '0'; }, 3000);
+                } else { alert('Gagal simpan: ' + d); }
+            })
+            .catch(() => alert('Gagal koneksi'))
+            .finally(() => { btnSave.disabled = false; btnSave.innerHTML = '<i class="bi bi-floppy me-1"></i>Simpan'; });
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
