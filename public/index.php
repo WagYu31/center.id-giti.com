@@ -62,7 +62,7 @@ $tanggal = date('d M Y');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=11.0">
+    <link rel="stylesheet" href="assets/css/style.css?v=12.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
 </head>
 <body>
@@ -84,12 +84,12 @@ $tanggal = date('d M Y');
         </div>
     </div>
 
-    <div class="row g-4 mb-5">
+    <div class="row g-4 mb-5 reveal" id="calendarSection">
         <div class="col-lg-8 d-flex flex-column">
             <div class="card-wander h-100 d-flex flex-column justify-content-center">
                 <div class="mb-4">
-                    <h1 class="fw-bold display-6 mb-1 text-dark">
-                        <?= $sapa ?>, <span style="color: var(--green-accent);"><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?></span>
+                    <h1 class="fw-bold display-6 mb-1 text-dark greeting-text">
+                        <?= $sapa ?>, <span><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?></span>
                     </h1>
                     <p class="text-secondary">Have a productive day at Grav Technology!</p>
                 </div>
@@ -287,7 +287,7 @@ $tanggal = date('d M Y');
     </div>
 
     <?php if($user['role'] === 'admin'): ?>
-    <div class="row mb-4">
+    <div class="row mb-4 reveal">
         <div class="col-12">
             <div class="admin-banner">
                 <div class="d-flex align-items-center gap-3">
@@ -305,13 +305,13 @@ $tanggal = date('d M Y');
     </div>
     <?php endif; ?>
 
-    <div class="row mb-3">
+    <div class="row mb-3 reveal">
         <div class="col-12">
-            <h5 class="fw-bold text-dark"><i class="bi bi-grid-1x2-fill me-2"></i>Your Applications</h5>
+            <h5 class="fw-bold text-dark section-title"><i class="bi bi-grid-1x2-fill me-2"></i>Your Applications</h5>
         </div>
     </div>
 
-    <div class="row g-4 pb-5">
+    <div class="row g-4 pb-5 reveal reveal-delay-1">
         
         <div class="col-md-6 col-xl-4">
             <a href="https://ssll.id-giti.com/" target="_blank" class="app-ticket">
@@ -598,6 +598,10 @@ $tanggal = date('d M Y');
         calMonth += dir;
         if (calMonth > 11) { calMonth = 0; calYear++; }
         if (calMonth < 0) { calMonth = 11; calYear--; }
+        const grid = document.getElementById('calGrid');
+        grid.classList.remove('cal-slide-left', 'cal-slide-right');
+        void grid.offsetWidth; // force reflow
+        grid.classList.add(dir > 0 ? 'cal-slide-left' : 'cal-slide-right');
         renderCalendar();
     }
 
@@ -864,6 +868,29 @@ $tanggal = date('d M Y');
             })
             .catch(() => alert('Gagal koneksi'));
     }
+    // === SCROLL REVEAL ===
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // === MOUSE-FOLLOW RIPPLE ON APP CARDS ===
+    document.querySelectorAll('.app-ticket').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            card.style.setProperty('--ripple-x', x + '%');
+            card.style.setProperty('--ripple-y', y + '%');
+        });
+    });
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

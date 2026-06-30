@@ -1166,6 +1166,209 @@ html {
 }
 
 /* ============================================
+   SCROLL REVEAL — IntersectionObserver driven
+   ============================================ */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ============================================
+   GREETING TEXT — Animated gradient shimmer
+   ============================================ */
+
+@keyframes textShimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.greeting-text {
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.2s;
+}
+
+.greeting-text span {
+    background: linear-gradient(120deg, #d97706, #f59e0b, #eab308, #fbbf24, #d97706);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: textShimmer 4s ease-in-out infinite;
+}
+
+/* ============================================
+   GLASSMORPHISM CALENDAR WIDGET
+   ============================================ */
+
+.calendar-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.calendar-card:hover {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
+   APP CARD RIPPLE EFFECT
+   ============================================ */
+
+.app-ticket::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), 
+                rgba(234, 179, 8, 0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.app-ticket:hover::after {
+    opacity: 1;
+}
+
+/* ============================================
+   WIDGET COUNTER FLIP
+   ============================================ */
+
+@keyframes countPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+.clock-tick {
+    animation: countPop 0.3s ease;
+}
+
+/* ============================================
+   CALENDAR MONTH TRANSITION
+   ============================================ */
+
+@keyframes calSlideLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes calSlideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.cal-slide-left {
+    animation: calSlideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cal-slide-right {
+    animation: calSlideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================
+   PROGRESS BAR ANIMATION
+   ============================================ */
+
+@keyframes progressFill {
+    from { width: 0; }
+}
+
+.progress-animated .progress-bar {
+    animation: progressFill 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================
+   EVENT ITEM ENTER
+   ============================================ */
+
+@keyframes eventSlideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.event-item-enter {
+    animation: eventSlideIn 0.3s ease both;
+}
+
+/* ============================================
+   ADMIN BANNER SHINE
+   ============================================ */
+
+@keyframes bannerShine {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+.admin-banner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    animation: bannerShine 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* ============================================
+   NAVBAR GLASSMORPHISM UPGRADE
+   ============================================ */
+
+.navbar-wander {
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* ============================================
+   APP SECTION TITLE
+   ============================================ */
+
+.section-title {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    height: 3px;
+    width: 40px;
+    background: linear-gradient(90deg, var(--gv-primary), transparent);
+    border-radius: 4px;
+}
+
+/* ============================================
+   ANNOUNCEMENT CARD UPGRADE
+   ============================================ */
+
+.card-notes {
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-notes:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================
    REDUCED MOTION (Accessibility)
    ============================================ */
 
@@ -1175,6 +1378,7 @@ html {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+    .reveal { opacity: 1; transform: none; }
 }
 
 /* ============================================
