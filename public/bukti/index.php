@@ -911,6 +911,8 @@ function setupMentions(sel) {
 function insertTag(n,s,e,sel){ let i=$(sel); i.val(i.val().substring(0,s)+'@'+n+' '+i.val().substring(e)).focus(); $('#mention-box').hide(); }
 
 // @mention for contenteditable rich editor
+let savedRange = null;
+
 function setupRichMentions(editorId) {
     const editor = document.getElementById(editorId);
     if (!editor) return;
@@ -920,6 +922,8 @@ function setupRichMentions(editorId) {
         if (!sel.rangeCount) return;
         
         const range = sel.getRangeAt(0);
+        savedRange = range.cloneRange(); // Save selection range
+        
         const textNode = range.startContainer;
         if (textNode.nodeType !== Node.TEXT_NODE) { $('#mention-box').hide(); return; }
         
@@ -933,6 +937,8 @@ function setupRichMentions(editorId) {
             // Position dropdown near cursor
             const rect = range.getBoundingClientRect();
             if ($('#mention-box').length === 0) $('body').append('<div id="mention-box" class="mention-list"></div>');
+            
+            // Update positioning and style of mention box
             $('#mention-box').css({
                 top: rect.bottom + window.scrollY + 4,
                 left: rect.left + window.scrollX,
@@ -943,7 +949,8 @@ function setupRichMentions(editorId) {
                 let h = '';
                 if (res.length) {
                     res.forEach(u => {
-                        h += `<div class="mention-item" onclick="insertRichTag('${u.nickname}', '${u.name}', '${editorId}')">
+                        // Use onmousedown with preventDefault to keep editor focus and selection
+                        h += `<div class="mention-item" onmousedown="event.preventDefault(); insertRichTag('${u.nickname}', '${u.name}', '${editorId}')">
                                 <img src="${u.avatar}" class="mention-avatar">
                                 <div class="mention-info">
                                     <span class="mention-name">${u.name}</span>
@@ -960,14 +967,36 @@ function setupRichMentions(editorId) {
             $('#mention-box').hide();
         }
     });
+    
+    // Track cursor positioning updates
+    editor.addEventListener('keyup', function() {
+        const sel = window.getSelection();
+        if (sel.rangeCount) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    });
+    editor.addEventListener('mouseup', function() {
+        const sel = window.getSelection();
+        if (sel.rangeCount) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    });
 }
 
 function insertRichTag(nickname, name, editorId) {
     const editor = document.getElementById(editorId);
     const sel = window.getSelection();
-    if (!sel.rangeCount) return;
     
-    const range = sel.getRangeAt(0);
+    // Restore saved range if editor lost focus
+    let range = null;
+    if (savedRange) {
+        range = savedRange;
+    } else if (sel.rangeCount) {
+        range = sel.getRangeAt(0);
+    }
+    
+    if (!range) return;
+    
     const textNode = range.startContainer;
     if (textNode.nodeType !== Node.TEXT_NODE) return;
     
@@ -1005,6 +1034,9 @@ function insertRichTag(nickname, name, editorId) {
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
+    
+    // Update savedRange state
+    savedRange = newRange.cloneRange();
     
     $('#mention-box').hide();
     editor.focus();
