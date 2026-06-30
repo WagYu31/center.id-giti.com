@@ -517,9 +517,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex; align-items: center; justify-content: center; gap: 5px;
         }
 
-        /* ════════════════════════════════════
-           RESPONSIVE
-        ════════════════════════════════════ */
+        /* ════ ANIMATIONS ════ */
+
+        /* Keyframes */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0px); }
+            50%      { transform: translateY(-10px); }
+        }
+        @keyframes barGrow {
+            from { transform: scaleY(0); }
+            to   { transform: scaleY(1); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* Page wrapper entrance */
+        .page {
+            animation: scaleIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* Left panel elements — stagger */
+        .brand-tag { animation: fadeUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero-eyebrow { animation: fadeUp 0.5s 0.18s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero h1      { animation: fadeUp 0.55s 0.24s cubic-bezier(0.16,1,0.3,1) both; }
+        .hero-desc    { animation: fadeUp 0.5s 0.32s cubic-bezier(0.16,1,0.3,1) both; }
+        .pills        { animation: fadeUp 0.5s 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+        .mockup       { animation: fadeUp 0.6s 0.44s cubic-bezier(0.16,1,0.3,1) both; }
+        .left-footer  { animation: fadeIn 0.5s 0.6s both; }
+
+        /* Floating mockup */
+        .mockup { animation: fadeUp 0.6s 0.44s cubic-bezier(0.16,1,0.3,1) both, float 5s 1.2s ease-in-out infinite; }
+
+        /* Bar chart: origin bottom */
+        .bar {
+            transform-origin: bottom;
+            animation: barGrow 0.6s 0.9s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        .bar:nth-child(1)  { animation-delay: 0.90s; }
+        .bar:nth-child(2)  { animation-delay: 0.96s; }
+        .bar:nth-child(3)  { animation-delay: 1.00s; }
+        .bar:nth-child(4)  { animation-delay: 1.05s; }
+        .bar:nth-child(5)  { animation-delay: 1.09s; }
+        .bar:nth-child(6)  { animation-delay: 1.13s; }
+        .bar:nth-child(7)  { animation-delay: 1.17s; }
+        .bar:nth-child(8)  { animation-delay: 1.21s; }
+        .bar:nth-child(9)  { animation-delay: 1.25s; }
+        .bar:nth-child(10) { animation-delay: 1.29s; }
+        .bar:nth-child(11) { animation-delay: 1.33s; }
+        .bar:nth-child(12) { animation-delay: 1.37s; }
+
+        /* Right panel: slide in from right */
+        .panel-right { animation: slideInRight 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Logo bounce in */
+        .logo-block img { animation: scaleIn 0.5s 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+        /* Form fields stagger */
+        .welcome-line  { animation: fadeUp 0.45s 0.48s both; }
+        .field:nth-child(1) { animation: fadeUp 0.4s 0.52s both; }
+        .field:nth-child(2) { animation: fadeUp 0.4s 0.57s both; }
+        .field:nth-child(3) { animation: fadeUp 0.4s 0.62s both; }
+        .remember-row  { animation: fadeUp 0.4s 0.67s both; }
+        .btn-signin    { animation: fadeUp 0.45s 0.72s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .or-divider    { animation: fadeIn 0.4s 0.78s both; }
+        .btn-register  { animation: fadeUp 0.4s 0.82s both; }
+        .footnote      { animation: fadeIn 0.4s 0.9s both; }
+
+        /* Pill hover lift */
+        .pill { transition: transform 0.2s, box-shadow 0.2s; }
+        .pill:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(234,179,8,0.2); }
+
+        /* Stat card fade */
+        .ms-card:nth-child(1) { animation: fadeUp 0.4s 1.0s both; }
+        .ms-card:nth-child(2) { animation: fadeUp 0.4s 1.08s both; }
+        .ms-card:nth-child(3) { animation: fadeUp 0.4s 1.16s both; }
+
+        /* Button ripple */
+        .btn-signin { position: relative; overflow: hidden; }
+        .btn-signin::after {
+            content: '';
+            position: absolute;
+            width: 200%; height: 200%;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s, opacity 0.5s;
+            opacity: 0;
+        }
+        .btn-signin:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
+            transition: 0s;
+        }
+
+        /* ════ RESPONSIVE ════ */
         @media (max-width: 960px) {
             .page-wrap { padding: 0; align-items: stretch; }
             .page {
@@ -579,17 +685,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="mockup-stats">
                         <div class="ms-card">
                             <div class="ms-label">Target Bulan Ini</div>
-                            <div class="ms-val">87<span style="font-size:0.8rem;font-weight:600;color:#94a3b8;">%</span></div>
+                            <div class="ms-val"><span id="cnt-target">0</span><span style="font-size:0.8rem;font-weight:600;color:#94a3b8;">%</span></div>
                             <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +12%</div>
                         </div>
                         <div class="ms-card">
                             <div class="ms-label">Anggota Aktif</div>
-                            <div class="ms-val">24</div>
+                            <div class="ms-val"><span id="cnt-member">0</span></div>
                             <div class="ms-badge neut"><i class="bi bi-circle-fill" style="font-size:5px;"></i> Online</div>
                         </div>
                         <div class="ms-card">
                             <div class="ms-label">Tugas Selesai</div>
-                            <div class="ms-val">142</div>
+                            <div class="ms-val"><span id="cnt-tasks">0</span></div>
                             <div class="ms-badge up"><i class="bi bi-arrow-up"></i> +8%</div>
                         </div>
                     </div>
@@ -697,6 +803,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div><!-- /.page-wrap -->
 
 <script>
+    /* ── Password toggle ── */
     document.getElementById('togglePassword').addEventListener('click', function () {
         const input = document.getElementById('password');
         const icon  = document.getElementById('toggleIcon');
@@ -708,6 +815,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
     });
+
+    /* ── Stat number counter ── */
+    function animateCount(el, from, to, suffix, duration) {
+        const start = performance.now();
+        function step(now) {
+            const p = Math.min((now - start) / duration, 1);
+            // easeOutExpo
+            const ease = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+            el.textContent = Math.round(from + (to - from) * ease) + suffix;
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    /* Run counters after a brief delay so cards are visible */
+    setTimeout(() => {
+        const counters = [
+            { id: 'cnt-target',  from: 0, to: 87,  suffix: '%' },
+            { id: 'cnt-member',  from: 0, to: 24,  suffix: ''  },
+            { id: 'cnt-tasks',   from: 0, to: 142, suffix: ''  },
+        ];
+        counters.forEach(c => {
+            const el = document.getElementById(c.id);
+            if (el) animateCount(el, c.from, c.to, c.suffix, 1400);
+        });
+    }, 900);
 </script>
 
 </body>
