@@ -218,6 +218,12 @@ if ($action == 'fetch_detail') {
     // Track view (INSERT IGNORE = skip if already viewed)
     $conn->prepare("INSERT IGNORE INTO bukti_post_views (job_id, user_id) VALUES (?, ?)")
          ->execute([$job_id, $user_id]);
+         
+    // Mark notifications as read for this job and user
+    try {
+        $conn->prepare("UPDATE bukti_notifications SET is_read = 1 WHERE job_id = ? AND user_id = ? AND is_read = 0")
+             ->execute([$job_id, $user_id]);
+    } catch(Exception $e) {}
     
     $stmt = $conn->prepare("SELECT j.*, u.name, u.avatar, u.jabatan,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id) as like_count,
