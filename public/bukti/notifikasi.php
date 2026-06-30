@@ -222,19 +222,86 @@ function openDetail(id){
             let j=res.job;
             $('#d-title').text(j.title); $('#d-desc').html(formatText(j.description));
             $('#d-name').text(j.nickname||j.name); $('#d-date').text(j.date_fmt); $('#d-avatar').attr('src',j.avatar_url);
-            let b={todo:'secondary', in_progress:'primary', done:'success'};
-            let l={todo:'Belum Mulai', in_progress:'Dalam Proses', done:'Selesai'};
-            $('#d-status-badge').html(`<span class="badge bg-${b[j.status]} px-3 py-2 rounded-pill">${l[j.status]}</span>`);
             
-            let th=''; if(res.history.length){ res.history.forEach(h=>{ th+=`<div class="timeline-box"><div class="timeline-item"><div class="fw-bold small">${h.name} <span class="badge bg-light text-dark border ms-1 uppercase">${h.status_after}</span></div><div class="timeline-date">${h.date}</div><div class="timeline-content">${h.notes}</div></div></div>`; }); } else { th='<div class="text-muted small ps-3 fst-italic">Belum ada progress.</div>'; }
+            // Premium status badges
+            let sc = {
+                todo: {bg:'#f1f5f9', color:'#475569', icon:'circle', label:'Belum Mulai'},
+                in_progress: {bg:'#fefce8', color:'#a16207', icon:'play-circle-fill', label:'Dalam Proses'},
+                done: {bg:'#f0fdf4', color:'#15803d', icon:'check-circle-fill', label:'Selesai'}
+            };
+            let s = sc[j.status] || sc.todo;
+            $('#d-status-badge').html(`<span class="px-3 py-2 rounded-pill fw-bold" style="background:${s.bg}; color:${s.color}; font-size:0.75rem; letter-spacing:0.3px;"><i class="bi bi-${s.icon} me-1"></i>${s.label}</span>`);
+            
+            // Timeline with premium cards
+            let th=''; 
+            if(res.history.length){ 
+                res.history.forEach((h, i)=>{ 
+                    let sColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#3b82f6' : '#6b7280');
+                    
+                    // Render progress attachments HTML
+                    let pattHtml = '';
+                    if (h.attachments && h.attachments.length > 0) {
+                        pattHtml += `<div class="row g-2 mt-2">`;
+                        h.attachments.forEach(a => {
+                            let p = 'assets/uploads/bukti/' + a.file_path;
+                            if (a.file_type == 'image') {
+                                pattHtml += `<div class="col-4"><div style="position:relative; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover;"></div></div>`;
+                            } else if (a.file_type == 'video') {
+                                pattHtml += `<div class="col-12"><video src="${p}" controls class="w-100 rounded" style="max-height:150px; background:#000;"></video></div>`;
+                            } else {
+                                pattHtml += `<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-2 p-2 text-decoration-none border rounded-3" style="background:#fafafa; font-size:0.75rem;"><i class="bi bi-file-earmark-text text-warning"></i> <span style="font-weight:600; color:#374151;">${a.file_name}</span></a></div>`;
+                            }
+                        });
+                        pattHtml += `</div>`;
+                    }
+
+                    th+=`<div class="d-flex gap-3 mb-3 ${i > 0 ? 'pt-3' : ''}" ${i > 0 ? 'style="border-top: 1px solid rgba(0,0,0,0.04);"' : ''}>
+                        <div style="width:8px; height:8px; border-radius:50%; background:${sColor}; margin-top:6px; flex-shrink:0; box-shadow: 0 0 0 3px ${sColor}22;"></div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="fw-bold" style="font-size:0.85rem; color:#111827;">${h.name}</span>
+                                <small style="font-size:0.7rem; color:#9ca3af;">${h.date}</small>
+                            </div>
+                            <span class="px-2 py-1 rounded-pill d-inline-block mt-1" style="font-size:0.68rem; font-weight:600; background:${sColor}10; color:${sColor}; text-transform:uppercase; letter-spacing:0.5px;">${h.status_after}</span>
+                            ${h.notes ? `<p class="mt-2 mb-0" style="font-size:0.85rem; color:#4b5563; line-height:1.55;">${h.notes}</p>` : ''}
+                            ${pattHtml}
+                        </div>
+                    </div>`; 
+                }); 
+            } else { 
+                th='<div class="text-center py-3"><i class="bi bi-clock-history" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada progress</p></div>'; 
+            }
             $('#d-timeline').html(th);
             
-            let ah=''; res.attachments.forEach(a=>{ let p='assets/uploads/bukti/'+a.file_path; if(a.file_type=='image') ah+=`<div class="col-4"><img src="${p}" class="img-fluid rounded cursor-pointer" onclick="showMedia('${a.file_path}','image')"></div>`; else if(a.file_type=='video') ah+=`<div class="col-12"><video src="${p}" controls class="w-100 rounded"></video></div>`; else ah+=`<div class="col-12"><a href="${p}" target="_blank" class="btn btn-light w-100 text-start border"><i class="bi bi-file-earmark"></i> ${a.file_name}</a></div>`; });
+            // Premium attachment gallery
+            let ah=''; 
+            res.attachments.forEach(a=>{ 
+                let p='assets/uploads/bukti/'+a.file_path; 
+                if(a.file_type=='image') {
+                    ah+=`<div class="col-4"><div style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,0.3));opacity:0;transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><i class="bi bi-zoom-in position-absolute bottom-0 end-0 m-2 text-white"></i></div></div></div>`; 
+                } else if(a.file_type=='video') {
+                    ah+=`<div class="col-12"><video src="${p}" controls class="w-100" style="border-radius:12px; max-height:300px; background:#000;"></video></div>`; 
+                } else {
+                    ah+=`<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:white; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s;" onmouseover="this.style.borderColor='#eab308'" onmouseout="this.style.borderColor='#e5e7eb'"><div style="width:40px;height:40px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;"><i class="bi bi-file-earmark-text" style="color:#eab308; font-size:1.1rem;"></i></div><div><div style="font-size:0.85rem; font-weight:600; color:#111827;">${a.file_name}</div><div style="font-size:0.7rem; color:#9ca3af;">Klik untuk download</div></div></a></div>`; 
+                }
+            });
             $('#d-att').html(ah);
+            
+            // Hide main attachment container if empty
+            if (res.attachments.length === 0) {
+                $('#d-att').hide();
+            } else {
+                $('#d-att').show();
+            }
 
             renderComments(res.comments);
             $('#d-like-count').text(j.like_count);
-            let btn=$('#d-like-btn'); j.is_liked?btn.removeClass('btn-light text-muted').addClass('btn-primary text-white'):btn.removeClass('btn-primary text-white').addClass('btn-light text-muted');
+            let btn=$('#d-like-btn'); 
+            if(j.is_liked) {
+                btn.removeClass('btn-light text-muted').addClass('btn-primary text-white');
+            } else {
+                btn.removeClass('btn-primary text-white').addClass('btn-light text-muted');
+            }
             
             $('#btn-update-progress').toggle(res.is_owner);
             $('#p-job-id').val(id);

@@ -691,10 +691,6 @@ function openDetail(id){
             // Timeline with premium cards
             let th=''; 
             if(res.history.length){ 
-                res.history.forEach((h,i)=>{ 
-                    let sColor = h.status_after === 'done' ? '#15803d' : (h.status_after === 'in_progress' ? '#a16207' : '#475569');
-            let th=''; 
-            if(res.history.length){ 
                 res.history.forEach((h, i)=>{ 
                     let sColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#3b82f6' : '#6b7280');
                     
