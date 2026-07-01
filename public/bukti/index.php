@@ -98,6 +98,45 @@ function format_text($text) {
     .preview-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
     .preview-content img, .preview-content video { width: 100%; height: 100%; object-fit: cover; }
     .preview-content i { font-size: 2rem; color: #eab308; }
+
+    /* ── File Lightbox ── */
+    #fileLightbox {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.82);
+        backdrop-filter: blur(6px);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.18s ease;
+    }
+    #fileLightbox.show { display: flex; }
+    #fileLightbox .lb-close {
+        position: absolute; top: 18px; right: 22px;
+        background: rgba(255,255,255,0.12);
+        border: none; color: #fff;
+        width: 38px; height: 38px;
+        border-radius: 50%; font-size: 1.2rem;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+    }
+    #fileLightbox .lb-close:hover { background: rgba(255,255,255,0.25); }
+    #fileLightbox .lb-img {
+        max-width: 90vw; max-height: 85vh;
+        border-radius: 12px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+        object-fit: contain;
+        animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #fileLightbox .lb-name {
+        position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.55);
+        color: #fff; font-size: 0.82rem;
+        padding: 5px 14px; border-radius: 20px;
+        white-space: nowrap; max-width: 80vw;
+        overflow: hidden; text-overflow: ellipsis;
+    }
+    .preview-item img { cursor: zoom-in; }
     .btn-remove-file { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all 0.2s ease; }
     .btn-remove-file:hover { background: #ef4444; transform: scale(1.15); }
     .file-name-small { font-size: 0.6rem; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; color: #6b7280; }
@@ -737,7 +776,8 @@ function updatePreviews(containerId, fileArray, arrayName) {
     const container = $('#' + containerId); container.empty();
     fileArray.forEach((file, index) => {
         let pc = '';
-        if (file.type.startsWith('image/')) pc = `<img src="${URL.createObjectURL(file)}">`;
+         const objUrl = URL.createObjectURL(file);
+        if (file.type.startsWith('image/')) pc = `<img src="${objUrl}" onclick="openLightbox('${objUrl}','${file.name.replace(/'/g,"\\'")}')">`;
         else if (file.type.startsWith('video/')) pc = `<div class="preview-content"><i class="bi bi-camera-video"></i><div class="file-name-small">${file.name}</div></div>`;
         else pc = `<div class="preview-content"><i class="bi bi-file-earmark-text"></i><div class="file-name-small">${file.name}</div></div>`;
         container.append(`<div class="preview-item"><button type="button" class="btn-remove-file" onclick="removeFile(${index}, '${arrayName}')"><i class="bi bi-x"></i></button><div class="preview-content">${pc}</div></div>`);
@@ -1531,3 +1571,25 @@ $(document).ready(()=>{
         });
     })();
 });</script>
+
+<!-- ═══ FILE LIGHTBOX ═══ -->
+<div id="fileLightbox" onclick="if(event.target===this)closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()"><i class="bi bi-x-lg"></i></button>
+    <img id="lbImg" class="lb-img" src="" alt="Preview">
+    <span id="lbName" class="lb-name"></span>
+</div>
+<script>
+function openLightbox(src, name) {
+    document.getElementById('lbImg').src = src;
+    document.getElementById('lbName').textContent = name;
+    document.getElementById('fileLightbox').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('fileLightbox').classList.remove('show');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
+</script>
