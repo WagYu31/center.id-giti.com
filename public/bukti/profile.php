@@ -59,39 +59,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $base_dir = __DIR__ . '/assets/img/avatars/';
-            
+
             if (isset($_POST['delete_avatar']) && $_POST['delete_avatar'] == '1') {
                 $curr_av = $conn->query("SELECT avatar FROM users WHERE id=$user_id")->fetchColumn();
                 if ($curr_av) {
                     $file_path = $base_dir . $curr_av;
-                    if (file_exists($file_path)) {
-                        unlink($file_path);
-                    }
+                    if (file_exists($file_path)) unlink($file_path);
                 }
                 $conn->prepare("UPDATE users SET avatar = NULL WHERE id = ?")->execute([$user_id]);
             }
 
-            if (!empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === 0) {
-                $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-                $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
-                
-                if (in_array($ext, $allowed)) {
-                    $curr_av = $conn->query("SELECT avatar FROM users WHERE id=$user_id")->fetchColumn();
-                    
-                    $new_filename = "avatar_" . $user_id . "_" . time() . "." . $ext;
-                    
-                    if (!is_dir($base_dir)) {
-                        mkdir($base_dir, 0777, true);
-                    }
-                    
-                    if (move_uploaded_file($_FILES['avatar']['tmp_name'], $base_dir . $new_filename)) {
-                        if ($curr_av) {
-                            $old_file = $base_dir . $curr_av;
-                            if (file_exists($old_file)) {
-                                unlink($old_file);
+            if (!empty($_FILES['avatar']['name'])) {
+                $upload_err = $_FILES['avatar']['error'];
+
+                if ($upload_err !== UPLOAD_ERR_OK) {
+                    $php_err_map = [
+                        UPLOAD_ERR_INI_SIZE   => 'File terlalu besar (melebihi batas server php.ini upload_max_filesize).',
+                        UPLOAD_ERR_FORM_SIZE  => 'File terlalu besar (melebihi MAX_FILE_SIZE form).',
+                        UPLOAD_ERR_PARTIAL    => 'Upload tidak lengkap, coba lagi.',
+                        UPLOAD_ERR_NO_FILE    => 'Tidak ada file yang dipilih.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Folder sementara server tidak ditemukan.',
+                        UPLOAD_ERR_CANT_WRITE => 'Server tidak bisa menulis file, periksa permission.',
+                        UPLOAD_ERR_EXTENSION  => 'Upload diblokir oleh ekstensi PHP.',
+                    ];
+                    $msg = $php_err_map[$upload_err] ?? "Upload gagal (kode: $upload_err).";
+                    $msg_type = 'danger';
+                } else {
+                    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                    $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
+
+                    if (!in_array($ext, $allowed)) {
+                        $msg = 'Format foto tidak didukung. Gunakan JPG, PNG, WEBP, atau GIF.';
+                        $msg_type = 'danger';
+                    } else {
+                        // Ensure directory exists & writable
+                        if (!is_dir($base_dir)) {
+                            mkdir($base_dir, 0775, true);
+                        }
+                        if (!is_writable($base_dir)) {
+                            $msg = 'Folder foto profil tidak bisa ditulis. Hubungi admin untuk perbaiki permission folder assets/img/avatars/.';
+                            $msg_type = 'danger';
+                        } else {
+                            $curr_av = $conn->query("SELECT avatar FROM users WHERE id=$user_id")->fetchColumn();
+                            $new_filename = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
+
+                            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $base_dir . $new_filename)) {
+                                // Delete old avatar
+                                if ($curr_av && file_exists($base_dir . $curr_av)) {
+                                    unlink($base_dir . $curr_av);
+                                }
+                                $conn->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$new_filename, $user_id]);
+                                $msg = 'Foto profil berhasil diperbarui! ✅';
+                                $msg_type = 'success';
+                            } else {
+                                $msg = 'Gagal menyimpan foto ke server. Coba lagi atau gunakan format/ukuran berbeda.';
+                                $msg_type = 'danger';
                             }
                         }
-                        $conn->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$new_filename, $user_id]);
                     }
                 }
             }
