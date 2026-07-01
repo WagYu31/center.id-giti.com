@@ -173,8 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $u = $conn->query("SELECT * FROM users WHERE id=$user_id")->fetch(PDO::FETCH_ASSOC);
 
-$has_avatar = ($u['avatar'] && file_exists(__DIR__ . '/assets/img/avatars/' . $u['avatar']));
-$avatar_src = $has_avatar ? "assets/img/avatars/" . $u['avatar'] : "https://ui-avatars.com/api/?name=" . urlencode($u['name']);
+$has_avatar = !empty($u['avatar']);
+$avatar_src  = $has_avatar ? 'assets/img/avatars/' . $u['avatar'] : '';
+$fallback_src = 'https://ui-avatars.com/api/?name=' . urlencode($u['name']) . '&background=eab308&color=fff&bold=true&size=128';
 
 $stats = $conn->query("SELECT status, COUNT(*) as c FROM bukti_jobs WHERE user_id=$user_id AND deleted_at IS NULL GROUP BY status")->fetchAll(PDO::FETCH_KEY_PAIR);
 
@@ -348,7 +349,9 @@ require_once 'includes/sidebar.php';
 
         <div class="profile-header">
             <div class="avatar-wrapper">
-                <img src="<?php echo $avatar_src; ?>" class="profile-avatar" id="imgPreview">
+                <img src="<?php echo $avatar_src ?: $fallback_src; ?>" 
+                     onerror="this.onerror=null; this.src='<?php echo $fallback_src; ?>'" 
+                     class="profile-avatar" id="imgPreview">
                 
                 <label for="avatarInput" class="btn-upload" title="Ganti Foto" data-bs-toggle="tooltip">
                     <i class="bi bi-camera-fill"></i>
