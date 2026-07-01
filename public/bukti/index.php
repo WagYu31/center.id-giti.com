@@ -316,14 +316,15 @@ function format_text($text) {
     }
     .status-picker-menu {
         display: none;
-        position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+        position: fixed;          /* escape parent overflow:hidden */
         background: #fff;
         border: 1px solid rgba(0,0,0,0.08);
         border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-        z-index: 200;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+        z-index: 9999;
         overflow: hidden;
         animation: fadeUp 0.15s cubic-bezier(0.16,1,0.3,1);
+        min-width: 180px;
     }
     .status-picker.open .status-picker-menu { display: block; }
     .status-opt {
@@ -1502,7 +1503,14 @@ $(document).ready(()=>{
 
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            picker.classList.toggle('open');
+            const isOpen = picker.classList.toggle('open');
+            if (isOpen) {
+                // Position menu using fixed coords from btn
+                const rect = btn.getBoundingClientRect();
+                menu.style.top   = (rect.bottom + 6) + 'px';
+                menu.style.left  = rect.left + 'px';
+                menu.style.width = rect.width + 'px';
+            }
         });
 
         opts.forEach(opt => {
