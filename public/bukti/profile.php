@@ -6,9 +6,18 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $user_id = $_SESSION['user_id'];
-$msg = "";
-$msg_type = "";
 $show_otp_modal = false;
+
+// Handle PRG redirect messages
+if (isset($_GET['msg'])) {
+    if ($_GET['msg'] === 'saved') {
+        $msg = 'Profil berhasil disimpan. ✅'; $msg_type = 'success';
+    } else {
+        $msg = htmlspecialchars(urldecode($_GET['msg'])); $msg_type = 'danger';
+    }
+} else {
+    $msg = ''; $msg_type = '';
+}
 
 function sendOtpEmail($toEmail, $otp, $userName) {
     $mail = new PHPMailer(true);
@@ -59,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $base_dir = __DIR__ . '/assets/img/avatars/';
+            $avatar_error = null; // track avatar-specific errors
 
             if (isset($_POST['delete_avatar']) && $_POST['delete_avatar'] == '1') {
                 $curr_av = $conn->query("SELECT avatar FROM users WHERE id=$user_id")->fetchColumn();
@@ -82,51 +92,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         UPLOAD_ERR_CANT_WRITE => 'Server tidak bisa menulis file, periksa permission.',
                         UPLOAD_ERR_EXTENSION  => 'Upload diblokir oleh ekstensi PHP.',
                     ];
-                    $msg = $php_err_map[$upload_err] ?? "Upload gagal (kode: $upload_err).";
-                    $msg_type = 'danger';
+                    $avatar_error = $php_err_map[$upload_err] ?? "Upload gagal (kode: $upload_err).";
                 } else {
                     $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
                     $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
 
                     if (!in_array($ext, $allowed)) {
-                        $msg = 'Format foto tidak didukung. Gunakan JPG, PNG, WEBP, atau GIF.';
-                        $msg_type = 'danger';
+                        $avatar_error = 'Format foto tidak didukung. Gunakan JPG, PNG, WEBP, atau GIF.';
                     } else {
-                        // Ensure directory exists & writable
-                        if (!is_dir($base_dir)) {
-                            mkdir($base_dir, 0775, true);
-                        }
+                        if (!is_dir($base_dir)) mkdir($base_dir, 0775, true);
+
                         if (!is_writable($base_dir)) {
-                            $msg = 'Folder foto profil tidak bisa ditulis. Hubungi admin untuk perbaiki permission folder assets/img/avatars/.';
-                            $msg_type = 'danger';
+                            $avatar_error = 'Folder foto profil tidak bisa ditulis. Hubungi admin.';
                         } else {
                             $curr_av = $conn->query("SELECT avatar FROM users WHERE id=$user_id")->fetchColumn();
                             $new_filename = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
 
                             if (move_uploaded_file($_FILES['avatar']['tmp_name'], $base_dir . $new_filename)) {
+                                // Ensure file is world-readable so webserver can serve it
+                                @chmod($base_dir . $new_filename, 0644);
                                 // Delete old avatar
                                 if ($curr_av && file_exists($base_dir . $curr_av)) {
                                     unlink($base_dir . $curr_av);
                                 }
                                 $conn->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$new_filename, $user_id]);
-                                $msg = 'Foto profil berhasil diperbarui! ✅';
-                                $msg_type = 'success';
                             } else {
-                                $msg = 'Gagal menyimpan foto ke server. Coba lagi atau gunakan format/ukuran berbeda.';
-                                $msg_type = 'danger';
+                                $avatar_error = 'Gagal menyimpan foto ke server. Coba lagi.';
                             }
                         }
                     }
                 }
             }
 
+            // Update profile data (non-avatar fields)
             $stmt = $conn->prepare("UPDATE users SET nickname=?, bio=?, division=?, jabatan=?, jobdesk=? WHERE id=?");
             $stmt->execute([$nickname, $bio, $division, $jabatan, $jobdesk, $user_id]);
-            
-            $msg = "Profil berhasil disimpan."; $msg_type = "dark";
+
+            // PRG: redirect to GET to avoid stale POST state & broken relative URLs
+            $redirect_msg = $avatar_error ? urlencode($avatar_error) : 'saved';
+            header('Location: profile.php?msg=' . $redirect_msg);
+            exit;
 
         } catch (Exception $e) { 
-            $msg = "Gagal update profil."; $msg_type = "danger"; 
+            $msg = "Gagal update profil: " . $e->getMessage(); $msg_type = "danger"; 
         }
     } 
     elseif ($action === 'change_password') {
