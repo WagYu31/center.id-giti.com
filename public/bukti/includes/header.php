@@ -198,6 +198,11 @@
             position: relative;
             transition: all 0.3s ease;
         }
+
+        /* Filter sidebar card must allow dropdown to overflow */
+        .widget-area .card-custom {
+            overflow: visible;
+        }
         
         .card-custom:hover {
             box-shadow: var(--shadow-md);
