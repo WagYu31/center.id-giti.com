@@ -286,7 +286,14 @@ function format_text($text) {
     }
     .rich-editor b, .rich-editor strong { font-weight: 700; color: #111827; }
     .rich-editor i, .rich-editor em { font-style: italic; }
-    /* Paste toast notification */
+
+    /* Feed content display — proper bullet/line spacing */
+    .rich-content { margin: 0; }
+    .rich-content br { line-height: 1.1; }
+    /* Prevent Bootstrap's default margin on <p> wrapper */
+    .rich-content + * { margin-top: 0; }
+
+
     .paste-toast {
         position: fixed;
         bottom: 24px;
@@ -366,7 +373,7 @@ function format_text($text) {
                         </div>
                         <div class="px-3 pb-2 cursor-pointer" onclick="openDetail(<?php echo $job['id']; ?>)">
                             <h5 class="fw-bold mb-2" style="color: #111827; font-size: 1rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['title']); ?></h5>
-                            <p style="color: #374151; white-space: pre-wrap; line-height: 1.65; font-size: 0.9rem;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
+                            <p class="rich-content" style="color: #374151; line-height: 1.6; font-size: 0.9rem; margin-bottom: 0;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
                         </div>
                         <div class="px-3 py-2 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(0,0,0,0.04) !important;">
                             <div class="d-flex gap-2">
@@ -1327,7 +1334,12 @@ function richToPlain(html) {
     });
     // Convert <br> and block elements to newlines
     div.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
-    div.querySelectorAll('p, div, ul, ol').forEach(el => {
+    // Add \n before ul/ol so bullet list never merges with preceding text
+    div.querySelectorAll('ul, ol').forEach(el => {
+        el.insertAdjacentText('beforebegin', '\n');
+        el.insertAdjacentText('afterend', '\n');
+    });
+    div.querySelectorAll('p, div').forEach(el => {
         el.insertAdjacentText('afterend', '\n');
     });
     
