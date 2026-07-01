@@ -77,6 +77,10 @@ function format_text($text) {
     $t = preg_replace('/\*([^*]+)\*/', '<strong>$1</strong>', $t); // *bold* → bold
     $t = preg_replace('/_([^_]+)_/', '<em>$1</em>', $t); // _italic_ → italic
     $t = preg_replace('/@(\w+)/', '<span class="text-primary fw-bold">@$1</span>', $t);
+    // Collapse blank lines between bullet items → single newline
+    $t = preg_replace('/\n{2,}(\x{2022})/u', "\n$1", $t);
+    // Collapse 3+ newlines globally → max 2
+    $t = preg_replace('/\n{3,}/', "\n\n", $t);
     return nl2br($t);
 }
 ?>
@@ -1414,6 +1418,8 @@ function richToPlain(html) {
     let text = div.textContent || '';
     // Clean up
     text = text.replace(/\n{3,}/g, '\n\n');
+    // Remove blank lines before bullet/ordered list items
+    text = text.replace(/\n\n([•\d])/g, '\n$1');
     text = text.replace(/^\n+|\n+$/g, '');
     return text;
 }
