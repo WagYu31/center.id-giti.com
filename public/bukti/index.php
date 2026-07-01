@@ -293,6 +293,47 @@ function format_text($text) {
     /* Prevent Bootstrap's default margin on <p> wrapper */
     .rich-content + * { margin-top: 0; }
 
+    /* ── Status Picker ── */
+    .status-picker { position: relative; }
+    .status-picker-btn {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 12px;
+        background: #f1f5f9; border-radius: 10px;
+        border: 1.5px solid transparent;
+        cursor: pointer; user-select: none;
+        font-size: 0.875rem; font-weight: 500; color: #374151;
+        transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .status-picker-btn:hover { border-color: #e2e8f0; }
+    .status-picker.open .status-picker-btn {
+        border-color: #eab308;
+        box-shadow: 0 0 0 3px rgba(234,179,8,0.12);
+    }
+    .status-dot {
+        width: 9px; height: 9px; border-radius: 50%;
+        flex-shrink: 0; display: inline-block;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.06);
+    }
+    .status-picker-menu {
+        display: none;
+        position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+        z-index: 200;
+        overflow: hidden;
+        animation: fadeUp 0.15s cubic-bezier(0.16,1,0.3,1);
+    }
+    .status-picker.open .status-picker-menu { display: block; }
+    .status-opt {
+        display: flex; align-items: center; gap: 9px;
+        padding: 10px 14px;
+        font-size: 0.85rem; font-weight: 500; color: #374151;
+        cursor: pointer; transition: background 0.12s;
+    }
+    .status-opt:hover { background: #f8fafc; }
+    .status-opt.active { background: #f1f5f9; font-weight: 700; }
 
     .paste-toast {
         position: fixed;
@@ -455,7 +496,33 @@ function format_text($text) {
             <form>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">KATA KUNCI</label><input name="q" class="form-control bg-light border-0" placeholder="Cari..." value="<?php echo $search_query; ?>"></div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">KARYAWAN</label><select name="user" class="form-select bg-light border-0"><option value="">Semua Karyawan</option><?php foreach($users_list as $u) echo "<option value='{$u['id']}' ".($filter_user==$u['id']?'selected':'').">{$u['name']}</option>"; ?></select></div>
-                <div class="mb-3"><label class="small fw-bold text-muted mb-1">STATUS</label><select name="status" class="form-select bg-light border-0"><option value="">Semua Status</option><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-1">STATUS</label>
+                    <!-- Custom colored status dropdown -->
+                    <div class="status-picker" id="statusPicker">
+                        <div class="status-picker-btn" id="statusPickerBtn">
+                            <span class="status-dot" id="statusPickerDot" style="background:#3b82f6;"></span>
+                            <span id="statusPickerLabel">Semua Status</span>
+                            <i class="bi bi-chevron-down ms-auto" style="font-size:0.75rem; color:#9ca3af;"></i>
+                        </div>
+                        <div class="status-picker-menu" id="statusPickerMenu">
+                            <div class="status-opt" data-val="" data-color="#3b82f6" data-label="Semua Status">
+                                <span class="status-dot" style="background:#3b82f6;"></span> Semua Status
+                            </div>
+                            <div class="status-opt" data-val="todo" data-color="#ef4444" data-label="Belum Mulai">
+                                <span class="status-dot" style="background:#ef4444;"></span> Belum Mulai
+                            </div>
+                            <div class="status-opt" data-val="in_progress" data-color="#eab308" data-label="Dalam Proses">
+                                <span class="status-dot" style="background:#eab308;"></span> Dalam Proses
+                            </div>
+                            <div class="status-opt" data-val="done" data-color="#22c55e" data-label="Selesai">
+                                <span class="status-dot" style="background:#22c55e;"></span> Selesai
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Hidden input passed in form -->
+                    <input type="hidden" name="status" id="statusHiddenInput" value="<?php echo htmlspecialchars($filter_status); ?>">
+                </div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">RENTANG WAKTU</label>
                     <div class="d-flex gap-1">
                         <input type="date" name="start" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo $filter_date_start; ?>">
@@ -1411,5 +1478,49 @@ $(document).ready(()=>{
         selectedFiles = []; 
         updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); 
     });
+
+    // ── Status Picker Init ──
+    (function() {
+        const picker  = document.getElementById('statusPicker');
+        const btn     = document.getElementById('statusPickerBtn');
+        const menu    = document.getElementById('statusPickerMenu');
+        const dot     = document.getElementById('statusPickerDot');
+        const label   = document.getElementById('statusPickerLabel');
+        const hidden  = document.getElementById('statusHiddenInput');
+        if (!picker) return;
+
+        // Set initial state from hidden input (page load with active filter)
+        const opts = menu.querySelectorAll('.status-opt');
+        const currentVal = hidden ? hidden.value : '';
+        opts.forEach(opt => {
+            if (opt.dataset.val === currentVal) {
+                dot.style.background   = opt.dataset.color;
+                label.textContent      = opt.dataset.label;
+                opt.classList.add('active');
+            }
+        });
+
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            picker.classList.toggle('open');
+        });
+
+        opts.forEach(opt => {
+            opt.addEventListener('click', function() {
+                // Update button
+                dot.style.background  = this.dataset.color;
+                label.textContent     = this.dataset.label;
+                hidden.value          = this.dataset.val;
+                // Mark active
+                opts.forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                picker.classList.remove('open');
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            if (!picker.contains(e.target)) picker.classList.remove('open');
+        });
+    })();
 });
-</script>
