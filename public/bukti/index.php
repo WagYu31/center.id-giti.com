@@ -1523,4 +1523,4 @@ $(document).ready(()=>{
             if (!picker.contains(e.target)) picker.classList.remove('open');
         });
     })();
-});
+});</script>
