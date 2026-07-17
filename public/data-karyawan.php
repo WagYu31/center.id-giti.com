@@ -69,9 +69,12 @@ $page = "Data Karyawan";
         </div>
 
         <?php
-        $sql = "SELECT * FROM users WHERE id != '1' AND id != ? ORDER BY name ASC";
+        // ID yang tidak bisa dihapus (superadmin + diri sendiri)
+        $protected_ids = [1, intval($_SESSION['user_id'])];
+
+        $sql = "SELECT * FROM users ORDER BY name ASC";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$_SESSION['user_id']]);
+        $stmt->execute();
         $users = $stmt->fetchAll();
         ?>
 
@@ -138,9 +141,15 @@ $page = "Data Karyawan";
                             <button class="btn btn-icon-action" style="color:#d97706;" onclick="showResetModal(<?= $row['id'] ?>, '<?= htmlspecialchars(addslashes($row['name'])) ?>')" title="Reset Password">
                                 <i class="bi bi-key"></i>
                             </button>
+                            <?php if (!in_array($row['id'], $protected_ids)): ?>
                             <a href="#" class="btn btn-icon-action text-danger" onclick="confirmDeleteUser(<?= $row['id'] ?>, '<?= htmlspecialchars(addslashes($row['name'])) ?>')" title="Hapus Akun">
                                 <i class="bi bi-trash"></i>
                             </a>
+                            <?php else: ?>
+                            <span class="btn btn-icon-action text-muted" title="Akun dilindungi" style="cursor:default;opacity:0.35;">
+                                <i class="bi bi-shield-lock"></i>
+                            </span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
