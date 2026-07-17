@@ -69,9 +69,9 @@ $page = "Data Karyawan";
         </div>
 
         <?php
-        $sql = "SELECT * FROM users WHERE id != '1' ORDER BY name ASC";
+        $sql = "SELECT * FROM users WHERE id != '1' AND id != ? ORDER BY name ASC";
         $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt->execute([$_SESSION['user_id']]);
         $users = $stmt->fetchAll();
         ?>
 
