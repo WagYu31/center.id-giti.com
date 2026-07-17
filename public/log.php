@@ -81,9 +81,8 @@ $today_fail = $conn->query("SELECT COUNT(*) FROM login_logs WHERE DATE(login_at)
 $unique_ips = $conn->query("SELECT COUNT(DISTINCT ip_address) FROM login_logs WHERE DATE(login_at) = CURDATE()")->fetchColumn();
 
 // ── Fetch rows ─────────────────────────────────────────────────
-$params_paged   = array_merge($params, [$per_page, $offset]);
-$stmt = $conn->prepare("SELECT * FROM login_logs $where_sql ORDER BY login_at DESC LIMIT ? OFFSET ?");
-$stmt->execute($params_paged);
+$stmt = $conn->prepare("SELECT * FROM login_logs $where_sql ORDER BY login_at DESC LIMIT $per_page OFFSET $offset");
+$stmt->execute($params);
 $logs = $stmt->fetchAll();
 
 // ── Utility: parse user-agent ───────────────────────────────────
