@@ -299,7 +299,12 @@ $tanggal = date('d M Y');
                         <p>Manage users, permissions, and system settings.</p>
                     </div>
                 </div>
-                <a href="data-karyawan.php" class="btn btn-light fw-bold px-4 rounded-pill">Open</a>
+                <div class="d-flex gap-2">
+                    <a href="data-karyawan.php" class="btn btn-light fw-bold px-4 rounded-pill">Open</a>
+                    <a href="log.php" class="btn btn-outline-light fw-bold px-4 rounded-pill">
+                        <i class="bi bi-journal-text me-1"></i>Log
+                    </a>
+                </div>
             </div>
         </div>
     </div>
