@@ -24,6 +24,22 @@ if ($_SESSION['user_role'] !== 'admin') {
 
 date_default_timezone_set('Asia/Jakarta');
 
+// ── Auto-create tabel jika belum ada ───────────────────────────
+$conn->exec("CREATE TABLE IF NOT EXISTS login_logs (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT NULL,
+    user_name   VARCHAR(255) NULL,
+    user_email  VARCHAR(255) NOT NULL,
+    ip_address  VARCHAR(45)  NOT NULL,
+    user_agent  TEXT NULL,
+    app         VARCHAR(50)  DEFAULT 'Center',
+    status      ENUM('success','failed') NOT NULL,
+    login_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_login_at (login_at),
+    INDEX idx_status   (status),
+    INDEX idx_user_id  (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
 // ── Filter params ──────────────────────────────────────────────
 $filter_status = $_GET['status'] ?? '';
 $filter_search = trim($_GET['q'] ?? '');
