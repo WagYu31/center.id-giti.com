@@ -95,7 +95,7 @@ $page = "Data Karyawan";
                         $imgFile = $row['avatar'] ?? 'default.png';
                         $imgPath = "assets/img/avatars/" . $imgFile;
                     ?>
-                    <tr class="user-row" data-name="<?= strtolower($row['name']) ?>">
+                    <tr class="user-row" data-name="<?= strtolower($row['name']) ?>" data-user-id="<?= $row['id'] ?>">
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
                                 <img src="<?= $imgPath ?>" class="table-avatar" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=<?= urlencode($row['name']) ?>&background=random';">
@@ -138,7 +138,7 @@ $page = "Data Karyawan";
                             <button class="btn btn-icon-action" style="color:#d97706;" onclick="showResetModal(<?= $row['id'] ?>, '<?= htmlspecialchars(addslashes($row['name'])) ?>')" title="Reset Password">
                                 <i class="bi bi-key"></i>
                             </button>
-                            <a href="#" class="btn btn-icon-action text-danger" onclick="return confirm('Hapus user ini?')">
+                            <a href="#" class="btn btn-icon-action text-danger" onclick="confirmDeleteUser(<?= $row['id'] ?>, '<?= htmlspecialchars(addslashes($row['name'])) ?>')" title="Hapus Akun">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </td>
@@ -324,6 +324,30 @@ $page = "Data Karyawan";
                     alert(res.message);
                 } else {
                     alert(res.message);
+                }
+            })
+            .catch(() => alert('Gagal koneksi ke server'));
+    }
+
+    // 4. HAPUS USER
+    function confirmDeleteUser(userId, userName) {
+        if (!confirm('Hapus akun "' + userName + '"?\nTindakan ini tidak bisa dibatalkan!')) return;
+
+        const fd = new FormData();
+        fd.append('id', userId);
+
+        fetch('delete_user.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    // Hapus baris dari tabel desktop
+                    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                    if (row) { row.style.transition = 'opacity 0.3s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 300); }
+                    // Hapus card mobile jika ada
+                    const mobileCard = document.querySelector(`.mobile-employee-card[data-user-id="${userId}"]`);
+                    if (mobileCard) { mobileCard.style.transition = 'opacity 0.3s'; mobileCard.style.opacity = '0'; setTimeout(() => mobileCard.remove(), 300); }
+                } else {
+                    alert('Gagal hapus: ' + res.message);
                 }
             })
             .catch(() => alert('Gagal koneksi ke server'));
