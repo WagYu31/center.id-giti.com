@@ -98,17 +98,35 @@ if ($action == 'update_progress') {
     $status = $_POST['status'];
     $notes = $_POST['notes'];
     
-    $old = $conn->prepare("SELECT status, title FROM bukti_jobs WHERE id = ?");
-    $old->execute([$job_id]);
-    $job = $old->fetch();
+    // Cek apakah user adalah owner ATAU di-tag di post
+    $chk = $conn->prepare("SELECT j.status, j.title, j.description, j.user_id,
+        (SELECT name FROM users WHERE id = ?) AS my_name,
+        (SELECT nickname FROM users WHERE id = ?) AS my_nick
+        FROM bukti_jobs j WHERE j.id = ?");
+    $chk->execute([$user_id, $user_id, $job_id]);
+    $job = $chk->fetch();
+
+    $is_owner  = ($job['user_id'] == $user_id);
+    $my_tag    = '@' . str_replace(' ', '', $job['my_name']);
+    $my_nick_t = '@' . ($job['my_nick'] ?: str_replace(' ', '', $job['my_name']));
+    $is_tagged = (stripos($job['description'], $my_tag) !== false ||
+                  stripos($job['description'], $my_nick_t) !== false);
+
+    if (!$is_owner && !$is_tagged) {
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
+        exit;
+    }
+
+    // Kalau yang upload bukan owner, tidak ubah status utama post
+    if ($is_owner) {
+        $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
+    }
     
     $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, ?, ?)")
          ->execute([$job_id, $user_id, $job['status'], $status, $notes]);
     $progress_id = $conn->lastInsertId();
-         
-    $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
     
-    // Handle Uploads saat Progress (Fix Masalah 2)
+    // Handle Uploads saat Progress
     if (isset($_FILES['files'])) {
         process_uploads($conn, $job_id, $_FILES['files'], $progress_id);
     }
@@ -281,14 +299,24 @@ if ($action == 'fetch_detail') {
     $view_count = $conn->prepare("SELECT COUNT(*) FROM bukti_post_views WHERE job_id = ?");
     $view_count->execute([$job_id]);
     
+    // Cek apakah user di-tag dalam deskripsi post
+    $me = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
+    $me->execute([$user_id]);
+    $me_data = $me->fetch(PDO::FETCH_ASSOC);
+    $my_tag    = '@' . str_replace(' ', '', $me_data['name']);
+    $my_nick_t = '@' . ($me_data['nickname'] ?: str_replace(' ', '', $me_data['name']));
+    $is_tagged = (stripos($job['description'], $my_tag) !== false ||
+                  stripos($job['description'], $my_nick_t) !== false);
+
     echo json_encode([
-        'status' => 'success',
-        'job' => $job,
-        'history' => $history,
-        'comments' => $com_res,
-        'attachments' => $att->fetchAll(PDO::FETCH_ASSOC),
-        'is_owner' => ($job['user_id'] == $user_id),
-        'viewers' => $viewers,
+        'status'     => 'success',
+        'job'        => $job,
+        'history'    => $history,
+        'comments'   => $com_res,
+        'attachments'=> $att->fetchAll(PDO::FETCH_ASSOC),
+        'is_owner'   => ($job['user_id'] == $user_id),
+        'is_tagged'  => $is_tagged,
+        'viewers'    => $viewers,
         'view_count' => (int)$view_count->fetchColumn()
     ]);
     exit;

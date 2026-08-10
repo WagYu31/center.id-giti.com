@@ -700,11 +700,11 @@ function format_text($text) {
 <div class="modal fade" id="progressModal" tabindex="-1" style="z-index: 1060;">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content border-0 rounded-4">
-            <div class="modal-header border-0 pb-0"><h6 class="fw-bold">Update Progress</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header border-0 pb-0"><h6 class="fw-bold" id="progress-modal-title">Update Progress</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <form id="formProgress">
                     <input type="hidden" name="job_id" id="p-job-id">
-                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
+                    <div class="mb-3" id="p-status-wrap"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
                     <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan</label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3"></textarea></div>
                     <div class="mb-3">
                         <div class="drop-zone" id="progressDropZone" style="padding: 18px 15px;">
@@ -878,7 +878,9 @@ function openDetail(id){
                 btn.css({'background':'#f9fafb', 'color':'#4b5563', 'border-color':'#e5e7eb'});
             }
             
-            $('#btn-update-progress').toggle(res.is_owner);
+            $('#btn-update-progress').toggle(res.is_owner || res.is_tagged);
+            window._curIsOwner  = res.is_owner;
+            window._curIsTagged = res.is_tagged;
             $('#p-job-id').val(id);
             
             // Render viewers section
@@ -1068,6 +1070,17 @@ function showViewers(jobId) {
 function showProgressForm(){ 
     $('#p-job-id').val(curJob); progressFiles = []; 
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
+    // Adapt modal UI berdasarkan role
+    if (window._curIsOwner) {
+        $('#progress-modal-title').text('Update Progress');
+        $('#p-status-wrap').show();
+    } else {
+        // Tagged user: hanya upload, tidak ubah status post
+        $('#progress-modal-title').text('Upload Hasil Kerja');
+        $('#p-status-wrap').hide();
+        $('#p-status').val('in_progress'); // default saja, tidak akan diproses di backend
+    }
+    $('#p-notes').val('');
     new bootstrap.Modal('#progressModal').show(); 
 }
 
