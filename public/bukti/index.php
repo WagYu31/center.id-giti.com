@@ -705,7 +705,7 @@ function format_text($text) {
                 <form id="formProgress">
                     <input type="hidden" name="job_id" id="p-job-id">
                     <div class="mb-3" id="p-status-wrap"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
-                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan</label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3"></textarea></div>
+                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan <span class="fw-normal text-muted">(Ketik @ untuk tag)</span></label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3" placeholder="Tuliskan catatan... Ketik @ untuk tag seseorang"></textarea></div>
                     <div class="mb-3">
                         <div class="drop-zone" id="progressDropZone" style="padding: 18px 15px;">
                             <input type="file" id="progressFileInput" name="files[]" multiple hidden>
@@ -1521,7 +1521,7 @@ function setupRichPaste() {
 }
 
 $(document).ready(()=>{ 
-    setupMentions('#inpDesc'); setupMentions('#d-input');
+    setupMentions('#inpDesc'); setupMentions('#d-input'); setupMentions('#p-notes');
     setupRichMentions('richDesc');
     setupDropZone('dropZone', 'fileInput', selectedFiles, 'selectedFiles', 'file-preview-container');
     setupDropZone('progressDropZone', 'progressFileInput', progressFiles, 'progressFiles', 'progress-preview-container');
