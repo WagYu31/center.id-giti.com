@@ -219,72 +219,280 @@ $tanggal = date('d M Y');
             </div>
         </div>
         
-        <!-- Event Panel -->
+        <!-- Notes Panel -->
         <div class="col-lg-7">
-            <div style="background:white;border-radius:16px;padding:20px;border:1px solid rgba(0,0,0,0.06);height:100%;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <div style="background:white;border-radius:16px;border:1px solid rgba(0,0,0,0.06);height:100%;display:flex;flex-direction:column;overflow:hidden;min-height:340px;">
+                <!-- Notes Header -->
+                <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
                     <div class="d-flex align-items-center gap-2">
                         <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-calendar-event" style="color:white;font-size:0.75rem;"></i>
+                            <i class="bi bi-journal-bookmark-fill" style="color:white;font-size:0.72rem;"></i>
                         </div>
                         <div>
-                            <span id="eventDateTitle" style="font-weight:700;font-size:0.9rem;color:#0f172a;">Hari Ini</span>
-                            <span id="eventDateSub" style="font-size:0.7rem;color:#94a3b8;display:block;line-height:1;"></span>
+                            <span style="font-weight:700;font-size:0.9rem;color:#0f172a;">Catatan Pribadi</span>
+                            <span id="notes-count" style="font-size:0.68rem;color:#94a3b8;display:block;line-height:1;margin-top:1px;"></span>
                         </div>
                     </div>
-                    <button onclick="showAddEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:5px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;">
-                        <i class="bi bi-plus-lg me-1"></i>Tambah
-                    </button>
-                </div>
-                
-                <!-- Add Event Form (hidden) -->
-                <div id="addEventForm" style="display:none;background:#fefce8;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #fef08a;">
-                    <div class="row g-2 mb-2">
-                        <div class="col">
-                            <input type="text" id="evTitle" placeholder="Judul rencana..." style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:0.82rem;outline:none;" onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#e2e8f0'">
+                    <div class="d-flex gap-2 align-items-center">
+                        <div style="position:relative;">
+                            <input id="notes-search" type="text" placeholder="Cari catatan..." style="border:1px solid #e2e8f0;border-radius:20px;padding:5px 10px 5px 28px;font-size:0.75rem;outline:none;width:140px;transition:all 0.2s;" onfocus="this.style.borderColor='#d97706';this.style.width='170px'" onblur="this.style.borderColor='#e2e8f0';this.style.width='140px'" oninput="searchNotes(this.value)">
+                            <i class="bi bi-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.7rem;pointer-events:none;"></i>
                         </div>
-                    </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-auto">
-                            <input type="time" id="evTime" style="border:1px solid #e2e8f0;border-radius:8px;padding:5px 8px;font-size:0.78rem;outline:none;">
-                        </div>
-                        <div class="col-auto d-flex align-items-center">
-                            <div class="form-check form-switch m-0" style="min-height:auto;">
-                                <input class="form-check-input" type="checkbox" id="evMultiDay" onchange="toggleMultiDay()" style="cursor:pointer;">
-                                <label class="form-check-label" for="evMultiDay" style="font-size:0.72rem;font-weight:600;color:#64748b;cursor:pointer;">Multi-hari</label>
-                            </div>
-                        </div>
-                        <div class="col" id="endDateWrap" style="display:none;">
-                            <div class="d-flex align-items-center gap-1">
-                                <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">s/d</span>
-                                <input type="date" id="evEndDate" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:5px 8px;font-size:0.78rem;outline:none;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="d-flex gap-2">
-                            <button type="button" class="ev-color-btn" data-color="#d97706" style="width:24px;height:24px;border-radius:50%;border:none;background:#d97706;cursor:pointer;box-shadow:0 0 0 3px white, 0 0 0 5px #d97706;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
-                            <button type="button" class="ev-color-btn" data-color="#ef4444" style="width:24px;height:24px;border-radius:50%;border:none;background:#ef4444;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
-                            <button type="button" class="ev-color-btn" data-color="#3b82f6" style="width:24px;height:24px;border-radius:50%;border:none;background:#3b82f6;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
-                            <button type="button" class="ev-color-btn" data-color="#059669" style="width:24px;height:24px;border-radius:50%;border:none;background:#059669;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
-                            <button type="button" class="ev-color-btn" data-color="#8b5cf6" style="width:24px;height:24px;border-radius:50%;border:none;background:#8b5cf6;cursor:pointer;box-shadow:none;transition:box-shadow 0.15s;" onclick="pickColor(this)"></button>
-                        </div>
-                        <div class="ms-auto d-flex gap-1">
-                            <button type="button" onclick="cancelAddEvent()" style="background:#f1f5f9;color:#64748b;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">Batal</button>
-                            <button type="button" onclick="submitEvent()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:0.72rem;font-weight:600;cursor:pointer;">
-                                <i class="bi bi-check-lg"></i> Simpan
-                            </button>
-                        </div>
+                        <button onclick="createNewNote()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                            <i class="bi bi-plus-lg"></i> Baru
+                        </button>
                     </div>
                 </div>
-                
-                <!-- Event List -->
-                <div id="eventList" style="max-height:220px;overflow-y:auto;">
-                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+
+                <!-- Notes Body: List + Editor split -->
+                <div style="display:flex;flex:1;overflow:hidden;">
+                    <!-- Note List (left) -->
+                    <div id="notes-list-panel" style="width:200px;flex-shrink:0;border-right:1px solid #f1f5f9;overflow-y:auto;background:#fafafa;">
+                        <div id="notes-list-inner" style="padding:8px 6px;"></div>
+                    </div>
+
+                    <!-- Note Editor (right) -->
+                    <div id="notes-editor-panel" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+                        <!-- Editor Toolbar -->
+                        <div id="notes-editor-toolbar" style="display:none;padding:8px 14px;border-bottom:1px solid #f1f5f9;background:#fffbf0;flex-shrink:0;">
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Color picker -->
+                                    <div class="d-flex gap-1">
+                                        <?php
+                                        $noteColors = ['#f59e0b','#ef4444','#3b82f6','#059669','#8b5cf6','#64748b'];
+                                        foreach ($noteColors as $c): ?>
+                                        <button type="button" class="note-color-dot" data-color="<?= $c ?>" onclick="setNoteColor('<?= $c ?>')"
+                                            style="width:16px;height:16px;border-radius:50%;border:2px solid transparent;background:<?= $c ?>;cursor:pointer;transition:transform 0.15s;"></button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <span style="font-size:0.65rem;color:#94a3b8;">|</span>
+                                    <button onclick="togglePinNote()" id="btn-pin-note" title="Pin catatan" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#94a3b8;transition:color 0.15s;" onmouseenter="this.style.color='#d97706'" onmouseleave="this.style.color=this.dataset.pinned=='1'?'#d97706':'#94a3b8'">
+                                        <i class="bi bi-pin"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span id="note-word-count" style="font-size:0.65rem;color:#94a3b8;"></span>
+                                    <span id="note-save-status" style="font-size:0.65rem;color:#10b981;font-weight:600;"></span>
+                                    <button onclick="deleteCurrentNote()" title="Hapus" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#ef4444;opacity:0.5;transition:opacity 0.15s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Editor Fields -->
+                        <div style="flex:1;display:flex;flex-direction:column;padding:14px 16px;overflow:hidden;" id="notes-editor-fields">
+                            <!-- Empty State -->
+                            <div id="notes-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;text-align:center;">
+                                <div style="width:52px;height:52px;border-radius:16px;background:#f8fafc;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                                    <i class="bi bi-journal-text" style="font-size:1.5rem;color:#cbd5e1;"></i>
+                                </div>
+                                <p style="font-size:0.8rem;font-weight:600;color:#64748b;margin:0 0 4px;">Pilih atau buat catatan</p>
+                                <p style="font-size:0.72rem;margin:0;">Catatan hanya bisa dilihat oleh kamu</p>
+                            </div>
+                            <!-- Title input (hidden until note selected) -->
+                            <input id="note-title-input" type="text" placeholder="Judul catatan..." maxlength="255"
+                                style="display:none;border:none;outline:none;font-size:0.95rem;font-weight:700;color:#0f172a;padding:0 0 8px;border-bottom:1px solid #f1f5f9;margin-bottom:10px;width:100%;background:transparent;"
+                                oninput="scheduleAutoSave()">
+                            <!-- Content textarea -->
+                            <textarea id="note-content-input" placeholder="Mulai menulis... ✍️" 
+                                style="display:none;border:none;outline:none;flex:1;resize:none;font-size:0.83rem;line-height:1.7;color:#374151;width:100%;background:transparent;min-height:160px;"
+                                oninput="onNoteContentInput()"></textarea>
+                            <div id="note-meta-footer" style="display:none;padding-top:8px;border-top:1px solid #f8fafc;flex-shrink:0;">
+                                <span id="note-updated-at" style="font-size:0.65rem;color:#94a3b8;"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Notes JS -->
+    <script>
+    let notesData      = [];
+    let curNoteId      = null;
+    let noteAutoSaveT  = null;
+    let noteColor      = '#f59e0b';
+    let searchTimer    = null;
+
+    // ── Fetch & render list ────────────────────────────────────────
+    function loadNotes(q = '') {
+        fetch(`api_notes.php?action=fetch&q=${encodeURIComponent(q)}`)
+        .then(r => r.json()).then(res => {
+            notesData = res.notes || [];
+            renderNotesList();
+            const c = notesData.length;
+            document.getElementById('notes-count').textContent = c ? `${c} catatan` : '';
+        });
+    }
+
+    function renderNotesList() {
+        const el = document.getElementById('notes-list-inner');
+        if (!notesData.length) {
+            el.innerHTML = `<div style="text-align:center;padding:24px 8px;color:#94a3b8;font-size:0.72rem;">
+                <i class="bi bi-journal-x" style="font-size:1.4rem;display:block;margin-bottom:6px;"></i>Belum ada catatan</div>`;
+            return;
+        }
+        el.innerHTML = notesData.map(n => {
+            const active = n.id == curNoteId ? 'background:#fff7ed;border-left:3px solid ' + n.color + ';' : 'border-left:3px solid transparent;';
+            return `<div class="note-item" onclick="openNote(${n.id})" data-id="${n.id}"
+                style="cursor:pointer;padding:8px 8px 8px 10px;border-radius:8px;margin-bottom:3px;transition:background 0.15s;${active}"
+                onmouseenter="if(${n.id}!=curNoteId) this.style.background='#f8fafc'" 
+                onmouseleave="if(${n.id}!=curNoteId) this.style.background='transparent'">
+                <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+                    ${n.is_pinned ? `<i class="bi bi-pin-fill" style="color:${n.color};font-size:0.6rem;"></i>` : ''}
+                    <span style="font-size:0.78rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${escHtml(n.title || 'Tanpa Judul')}</span>
+                </div>
+                ${n.preview ? `<div style="font-size:0.68rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;">${escHtml(n.preview)}</div>` : ''}
+                <div style="font-size:0.6rem;color:#cbd5e1;margin-top:3px;">${n.updated_fmt}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    // ── Open note ─────────────────────────────────────────────────
+    function openNote(id) {
+        if (curNoteId && curNoteId !== id) saveNote(curNoteId, true);
+        curNoteId = id;
+        const n = notesData.find(x => x.id == id);
+        if (!n) return;
+        noteColor = n.color || '#f59e0b';
+        showEditor(true);
+        document.getElementById('note-title-input').value   = n.title;
+        document.getElementById('note-content-input').value = n.content || '';
+        document.getElementById('note-updated-at').textContent = 'Diperbarui: ' + n.updated_fmt;
+        document.getElementById('note-save-status').textContent = '';
+        updateWordCount();
+        updateColorDots(noteColor);
+        const pinBtn = document.getElementById('btn-pin-note');
+        pinBtn.dataset.pinned = n.is_pinned ? '1' : '0';
+        pinBtn.style.color = n.is_pinned ? '#d97706' : '#94a3b8';
+        pinBtn.innerHTML = n.is_pinned ? '<i class="bi bi-pin-fill"></i>' : '<i class="bi bi-pin"></i>';
+        renderNotesList();
+    }
+
+    function showEditor(show) {
+        const toolbar = document.getElementById('notes-editor-toolbar');
+        const empty   = document.getElementById('notes-empty-state');
+        const title   = document.getElementById('note-title-input');
+        const content = document.getElementById('note-content-input');
+        const footer  = document.getElementById('note-meta-footer');
+        toolbar.style.display = show ? 'block'  : 'none';
+        empty.style.display   = show ? 'none'   : 'flex';
+        title.style.display   = show ? 'block'  : 'none';
+        content.style.display = show ? 'block'  : 'none';
+        footer.style.display  = show ? 'block'  : 'none';
+        if (show) { document.getElementById('note-title-input').focus(); }
+    }
+
+    // ── Create new note ───────────────────────────────────────────
+    function createNewNote() {
+        if (curNoteId) saveNote(curNoteId, true);
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'create',title:'Catatan Baru',content:'',color:noteColor})})
+        .then(r => r.json()).then(res => {
+            if (res.status === 'success') {
+                loadNotes();
+                setTimeout(() => {
+                    openNote(res.id);
+                    document.getElementById('note-title-input').select();
+                }, 200);
+            }
+        });
+    }
+
+    // ── Auto-save ─────────────────────────────────────────────────
+    function scheduleAutoSave() {
+        clearTimeout(noteAutoSaveT);
+        document.getElementById('note-save-status').textContent = '💾 Menyimpan...';
+        noteAutoSaveT = setTimeout(() => { if (curNoteId) saveNote(curNoteId); }, 1200);
+    }
+
+    function onNoteContentInput() {
+        updateWordCount();
+        scheduleAutoSave();
+    }
+
+    function saveNote(id, silent = false) {
+        const title   = document.getElementById('note-title-input').value.trim() || 'Catatan Tanpa Judul';
+        const content = document.getElementById('note-content-input').value;
+        const fd = new URLSearchParams({action:'update', id, title, content, color: noteColor});
+        fetch('api_notes.php', {method:'POST', body: fd})
+        .then(r => r.json()).then(res => {
+            if (!silent && res.status === 'success') {
+                document.getElementById('note-save-status').textContent = '✓ Tersimpan';
+                const now = new Date();
+                document.getElementById('note-updated-at').textContent =
+                    'Diperbarui: ' + now.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                setTimeout(() => { document.getElementById('note-save-status').textContent = ''; }, 2000);
+                // update local data
+                const n = notesData.find(x => x.id == id);
+                if (n) { n.title = title; n.content = content; n.color = noteColor; n.preview = content.substring(0,80); }
+                renderNotesList();
+            }
+        });
+    }
+
+    function updateWordCount() {
+        const txt = document.getElementById('note-content-input').value;
+        const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+        const chars = txt.length;
+        document.getElementById('note-word-count').textContent = words ? `${words} kata · ${chars} kar` : '';
+    }
+
+    // ── Color ─────────────────────────────────────────────────────
+    function setNoteColor(c) {
+        noteColor = c;
+        updateColorDots(c);
+        scheduleAutoSave();
+        // Update border accent in list
+        renderNotesList();
+    }
+
+    function updateColorDots(active) {
+        document.querySelectorAll('.note-color-dot').forEach(d => {
+            d.style.border = d.dataset.color === active ? `2px solid ${d.dataset.color}` : '2px solid transparent';
+            d.style.transform = d.dataset.color === active ? 'scale(1.3)' : 'scale(1)';
+        });
+    }
+
+    // ── Pin ───────────────────────────────────────────────────────
+    function togglePinNote() {
+        if (!curNoteId) return;
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'pin', id: curNoteId})})
+        .then(r => r.json()).then(() => {
+            loadNotes();
+            setTimeout(() => openNote(curNoteId), 250);
+        });
+    }
+
+    // ── Delete ────────────────────────────────────────────────────
+    function deleteCurrentNote() {
+        if (!curNoteId) return;
+        const n = notesData.find(x => x.id == curNoteId);
+        if (!confirm(`Hapus catatan "${n?.title || ''}"?`)) return;
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'delete', id: curNoteId})})
+        .then(() => {
+            curNoteId = null;
+            showEditor(false);
+            loadNotes();
+        });
+    }
+
+    // ── Search ────────────────────────────────────────────────────
+    function searchNotes(q) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadNotes(q), 350);
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
+    loadNotes();
+    // Auto-save on leaving page
+    window.addEventListener('beforeunload', () => { if (curNoteId) saveNote(curNoteId, true); });
+    </script>
+
 
     <?php if($user['role'] === 'admin'): ?>
     <div class="row mb-4 reveal">
