@@ -1031,8 +1031,10 @@ $tanggal = date('d M Y');
         const d = new Date(dateStr + 'T00:00:00');
         const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
         const mNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-        document.getElementById('eventDateTitle').textContent = dayNames[d.getDay()] + ', ' + d.getDate() + ' ' + mNames[d.getMonth()];
-        document.getElementById('eventDateSub').textContent = d.getFullYear();
+        const titleEl = document.getElementById('eventDateTitle');
+        const subEl   = document.getElementById('eventDateSub');
+        if (titleEl) titleEl.textContent = dayNames[d.getDay()] + ', ' + d.getDate() + ' ' + mNames[d.getMonth()];
+        if (subEl)   subEl.textContent   = d.getFullYear();
         
         renderCalendar();
         fetchDateEvents(dateStr);
@@ -1069,6 +1071,7 @@ $tanggal = date('d M Y');
 
     function fetchDateEvents(dateStr) {
         const list = document.getElementById('eventList');
+        if (!list) return; // eventList panel replaced by Notes panel
         list.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
         
         fetch(`api_calendar.php?action=fetch_date&date=${dateStr}`)
@@ -1116,7 +1119,9 @@ $tanggal = date('d M Y');
     }
 
     function showAddEvent() { 
-        document.getElementById('addEventForm').style.display = 'block'; 
+        const form = document.getElementById('addEventForm');
+        if (!form) return;
+        form.style.display = 'block'; 
         document.getElementById('evTitle').focus();
         // Reset color to default
         selectedColor = '#d97706';
@@ -1124,7 +1129,9 @@ $tanggal = date('d M Y');
         document.querySelector('.ev-color-btn[data-color="#d97706"]').style.boxShadow = '0 0 0 3px white, 0 0 0 5px #d97706';
     }
     function cancelAddEvent() { 
-        document.getElementById('addEventForm').style.display = 'none'; 
+        const form = document.getElementById('addEventForm');
+        if (!form) return;
+        form.style.display = 'none'; 
         document.getElementById('evTitle').value = ''; 
         document.getElementById('evTime').value = ''; 
         document.getElementById('evMultiDay').checked = false;
