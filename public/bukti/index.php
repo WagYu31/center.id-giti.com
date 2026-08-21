@@ -1070,16 +1070,8 @@ function showViewers(jobId) {
 function showProgressForm(){ 
     $('#p-job-id').val(curJob); progressFiles = []; 
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
-    // Adapt modal UI berdasarkan role
-    if (window._curIsOwner) {
-        $('#progress-modal-title').text('Update Progress');
-        $('#p-status-wrap').show();
-    } else {
-        // Tagged user: hanya upload, tidak ubah status post
-        $('#progress-modal-title').text('Upload Hasil Kerja');
-        $('#p-status-wrap').hide();
-        $('#p-status').val('in_progress'); // default saja, tidak akan diproses di backend
-    }
+    $('#progress-modal-title').text('Update Progress');
+    $('#p-status-wrap').show();
     $('#p-notes').val('');
     new bootstrap.Modal('#progressModal').show(); 
 }

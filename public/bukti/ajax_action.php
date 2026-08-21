@@ -117,10 +117,8 @@ if ($action == 'update_progress') {
         exit;
     }
 
-    // Kalau yang upload bukan owner, tidak ubah status utama post
-    if ($is_owner) {
-        $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
-    }
+    // Owner DAN tagged user bisa update status post
+    $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
     
     $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, ?, ?)")
          ->execute([$job_id, $user_id, $job['status'], $status, $notes]);
