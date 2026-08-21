@@ -23,14 +23,55 @@ require_once 'includes/sidebar.php';
 $filter_user = $_GET['user'] ?? '';
 $filter_status = $_GET['status'] ?? '';
 $search_query = $_GET['q'] ?? '';
+$filter_date_start = $_GET['start'] ?? '';
+$filter_date_end = $_GET['end'] ?? '';
 $limit = ($view_mode == 'social') ? 15 : 35;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
 $cond = ["j.deleted_at IS NULL"]; $param = [];
-if($filter_user) { $cond[] = "j.user_id = ?"; $param[] = $filter_user; }
-if($filter_status) { $cond[] = "j.status = ?"; $param[] = $filter_status; }
-if($search_query) { $cond[] = "(j.title LIKE ? OR j.description LIKE ?)"; $param[] = "%$search_query%"; $param[] = "%$search_query%"; }
+
+if ($filter_user) {
+    // Ambil info nama & nickname user yang difilter untuk mendeteksi mention/tag
+    $uStmt = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
+    $uStmt->execute([$filter_user]);
+    $uRow = $uStmt->fetch(PDO::FETCH_ASSOC);
+    if ($uRow) {
+        $cleanName = '@' . str_replace(' ', '', $uRow['name']);
+        $cleanNick = !empty($uRow['nickname']) ? '@' . str_replace(' ', '', $uRow['nickname']) : $cleanName;
+        // User adalah pembuat post, ATAU di-tag di post, ATAU mengunggah progress
+        $cond[] = "(j.user_id = ? OR j.description LIKE ? OR j.description LIKE ? OR j.id IN (SELECT job_id FROM bukti_job_progress WHERE user_id = ?))";
+        $param[] = $filter_user;
+        $param[] = "%$cleanName%";
+        $param[] = "%$cleanNick%";
+        $param[] = $filter_user;
+    } else {
+        $cond[] = "j.user_id = ?";
+        $param[] = $filter_user;
+    }
+}
+
+if ($filter_status) { 
+    $cond[] = "j.status = ?"; 
+    $param[] = $filter_status; 
+}
+
+if ($search_query) { 
+    $cond[] = "(j.title LIKE ? OR j.description LIKE ?)"; 
+    $param[] = "%$search_query%"; 
+    $param[] = "%$search_query%"; 
+}
+
+if (!empty($filter_date_start)) {
+    $cond[] = "DATE(j.created_at) >= ?";
+    $param[] = $filter_date_start;
+}
+
+if (!empty($filter_date_end)) {
+    $cond[] = "DATE(j.created_at) <= ?";
+    $param[] = $filter_date_end;
+}
+
 $where = implode(" AND ", $cond);
 
 $stmt_count = $conn->prepare("SELECT COUNT(*) FROM bukti_jobs j WHERE $where");
@@ -530,15 +571,32 @@ function format_text($text) {
         <?php endif; ?>
 
         <?php if($total_pages > 1): ?>
-        <nav class="mt-4"><ul class="pagination justify-content-center"><?php for($i=1; $i<=$total_pages; $i++): ?><li class="page-item <?php echo $page==$i?'active':''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li><?php endfor; ?></ul></nav>
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <?php for($i=1; $i<=$total_pages; $i++): 
+                    $pgParams = $_GET;
+                    $pgParams['page'] = $i;
+                    $pgUrl = '?' . http_build_query($pgParams);
+                ?>
+                <li class="page-item <?php echo $page==$i?'active':''; ?>">
+                    <a class="page-link" href="<?php echo htmlspecialchars($pgUrl); ?>"><?php echo $i; ?></a>
+                </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
         <?php endif; ?>
     </div>
 
     <div class="widget-area">
         <div class="card-custom p-4">
-            <h6 class="fw-bold mb-3">Filter & Pencarian</h6>
-            <form>
-                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KATA KUNCI</label><input name="q" class="form-control bg-light border-0" placeholder="Cari..." value="<?php echo $search_query; ?>"></div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0">Filter & Pencarian</h6>
+                <?php if(!empty($filter_user) || !empty($filter_status) || !empty($search_query) || !empty($filter_date_start) || !empty($filter_date_end)): ?>
+                <a href="index.php" class="small text-danger fw-bold text-decoration-none" title="Reset Filter"><i class="bi bi-x-circle me-1"></i>Reset</a>
+                <?php endif; ?>
+            </div>
+            <form method="GET" action="index.php">
+                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KATA KUNCI</label><input name="q" class="form-control bg-light border-0" placeholder="Cari..." value="<?php echo htmlspecialchars($search_query); ?>"></div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">KARYAWAN</label><select name="user" class="form-select bg-light border-0"><option value="">Semua Karyawan</option><?php foreach($users_list as $u) echo "<option value='{$u['id']}' ".($filter_user==$u['id']?'selected':'').">{$u['name']}</option>"; ?></select></div>
                 <div class="mb-3">
                     <label class="small fw-bold text-muted mb-1">STATUS</label>
@@ -569,8 +627,8 @@ function format_text($text) {
                 </div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">RENTANG WAKTU</label>
                     <div class="d-flex gap-1">
-                        <input type="date" name="start" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo $filter_date_start; ?>">
-                        <input type="date" name="end" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo $filter_date_end; ?>">
+                        <input type="date" name="start" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo htmlspecialchars($filter_date_start); ?>">
+                        <input type="date" name="end" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo htmlspecialchars($filter_date_end); ?>">
                     </div>
                 </div>
                 <button class="btn btn-primary w-100 fw-bold">Terapkan Filter</button>
