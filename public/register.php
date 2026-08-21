@@ -13,9 +13,18 @@ session_start();
 require_once '../config/database.php';
 require_once '../src/send_email.php';
 
+// Cek apakah user yang login adalah admin
+$is_admin_register = false;
 if (isset($_SESSION['user_id'])) {
-    header("Location: index.php");
-    exit();
+    $roleChk = $conn->prepare("SELECT role FROM users WHERE id = ?");
+    $roleChk->execute([$_SESSION['user_id']]);
+    $roleRow = $roleChk->fetch();
+    if ($roleRow && $roleRow['role'] === 'admin') {
+        $is_admin_register = true; // Admin boleh akses untuk tambah user
+    } else {
+        header("Location: index.php");
+        exit();
+    }
 }
 
 $error = '';
@@ -57,7 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':exp'  => $otp_expires
                 ]);
 
-                if (sendOTP($email, $otp, $name)) {
+                if ($is_admin_register) {
+                    // Admin buat user → langsung verified, tidak perlu OTP
+                    $conn->prepare("UPDATE users SET is_verified = 1, verification_code = NULL WHERE email = ?")
+                         ->execute([$email]);
+                    $_SESSION['admin_reg_success'] = "User {$name} berhasil ditambahkan.";
+                    header("Location: data-karyawan.php");
+                    exit();
+                } elseif (sendOTP($email, $otp, $name)) {
                     $_SESSION['verify_email'] = $email;
                     header("Location: verify-otp.php");
                     exit();

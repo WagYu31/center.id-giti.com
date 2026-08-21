@@ -67,6 +67,13 @@ $page = "Data Karyawan";
                 </a>
             </div>
         </div>
+        <?php if (!empty($_SESSION['admin_reg_success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert" style="border-radius:12px;font-size:0.88rem;">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <?= htmlspecialchars($_SESSION['admin_reg_success']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['admin_reg_success']); endif; ?>
 
         <?php
         // ID yang tidak bisa dihapus (superadmin + diri sendiri)
