@@ -58,60 +58,75 @@ $tanggal = date('d M Y');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Center Loewix</title>
+    <title>Grav Center — Workspace</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=12.0">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css?v=13.0">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
 </head>
 <body>
 
 <div class="container mb-5">
     
-    <div class="d-flex justify-content-between align-items-center navbar-wander mb-5">
+    <!-- ═══════════════════════════════════════════════════
+         FLOATING NAVBAR (Taste Skill Luxury Pill)
+         ═══════════════════════════════════════════════════ -->
+    <div class="navbar-wander mb-4">
         <a href="#" class="brand-wander">
-            <div class="bg-white text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <div class="brand-icon-box">
                 <i class="bi bi-grid-fill"></i>
             </div>
             <span>Grav Center</span>
+            <span class="brand-badge d-none d-md-inline-flex">
+                <span class="ping-dot-emerald"></span> Live Workspace
+            </span>
         </a>
         <div class="user-pill">
-            <span class="small fw-bold px-2 d-none d-sm-inline"><?= htmlspecialchars($user['name']) ?></span>
-            <a href="logout.php" class="btn-logout-circle" title="Logout">
+            <span class="user-name d-none d-sm-inline"><?= htmlspecialchars($user['name']) ?></span>
+            <span class="role-tag d-none d-md-inline"><?= strtoupper($user['role'] ?? 'USER') ?></span>
+            <a href="logout.php" class="btn-logout-circle" title="Keluar dari akun">
                 <i class="bi bi-power"></i>
             </a>
         </div>
     </div>
 
-    <div class="row g-4 mb-5 reveal" id="calendarSection">
+    <!-- ═══════════════════════════════════════════════════
+         HERO SECTION (Bento Greeting & Widgets)
+         ═══════════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4 reveal" id="calendarSection">
         <div class="col-lg-8 d-flex flex-column">
-            <div class="card-wander h-100 d-flex flex-column justify-content-center">
-                <div class="mb-4">
-                    <h1 class="fw-bold display-6 mb-1 text-dark greeting-text">
+            <div class="card-wander h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="hero-tag">
+                        <i class="bi bi-stars" style="color: #f59e0b;"></i> PT. Loewix Indonesia
+                    </div>
+                    <h1 class="greeting-text mb-2">
                         <?= $sapa ?>, <span><?= htmlspecialchars(explode(' ', $user['name'])[0]) ?></span>
                     </h1>
-                    <p class="text-secondary">Have a productive day at Grav Technology!</p>
+                    <p class="hero-subtitle mb-4">Have a productive and focused day at Grav Technology workspace.</p>
                 </div>
                 
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="widget-dark h-100">
                             <div>
-                                <small class="opacity-75 d-block mb-1">Local Time</small>
-                                <h2 class="m-0 fw-bold" id="clock">--:--<span id="clockSec" style="font-size: 0.5em; opacity: 0.5; font-weight: 500;"></span></h2>
+                                <small style="color: #94a3b8; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; display: block; margin-bottom: 4px;">Local Time • WIB</small>
+                                <h2 id="clock">--:--<span id="clockSec" style="font-size: 0.55em; opacity: 0.6; font-weight: 500; color: #fbbf24;"></span></h2>
                             </div>
-                            <i class="bi bi-clock-history fs-1 opacity-50"></i>
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 1.25rem;">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="widget-light h-100">
                             <div>
-                                <small class="text-muted d-block mb-1"><?= $hari ?></small>
-                                <h4 class="m-0 fw-bold"><?= $tanggal ?></h4>
+                                <small style="color: #64748b; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; display: block; margin-bottom: 4px;"><?= $hari ?></small>
+                                <h4><?= $tanggal ?></h4>
                             </div>
-                            <div class="bg-white p-2 rounded-circle shadow-sm">
-                                <i class="bi bi-calendar-event fs-4 text-dark"></i>
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: #fffbeb; border: 1px solid #fef3c7; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.25rem; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);">
+                                <i class="bi bi-calendar4-event"></i>
                             </div>
                         </div>
                     </div>
@@ -121,21 +136,21 @@ $tanggal = date('d M Y');
         
         <div class="col-lg-4 d-flex flex-column gap-3">
             <!-- Pengumuman Widget -->
-            <div class="card-notes d-flex flex-column" style="flex: 1;">
-                <div class="notes-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 12px; margin-bottom: 0;">
-                    <div class="notes-title">
-                        <div class="icon-note-yellow">
-                            <i class="bi bi-megaphone"></i>
+            <div class="ts-card p-3 d-flex flex-column" style="flex: 1; min-height: 170px;">
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-2" style="border-bottom: 1px solid #f1f5f9;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-megaphone-fill"></i>
                         </div>
-                        <span>Pengumuman</span>
+                        <span style="font-weight: 700; font-size: 0.88rem; color: #0a0a0a;">Pengumuman</span>
                     </div>
                     <?php if($user['role'] === 'admin'): ?>
-                    <button class="btn btn-sm px-2 py-0" style="background: linear-gradient(135deg,#d97706,#f59e0b); color:white; border:none; border-radius:6px; font-size:0.7rem; font-weight:600;" onclick="showCreateAnnouncement()">
-                        <i class="bi bi-plus"></i> Buat
+                    <button class="btn btn-sm px-2 py-1" style="background: linear-gradient(135deg, #f59e0b, #d97706); color:white; border:none; border-radius:6px; font-size:0.68rem; font-weight:700; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);" onclick="showCreateAnnouncement()">
+                        <i class="bi bi-plus-lg me-1"></i>Buat
                     </button>
                     <?php endif; ?>
                 </div>
-                <div id="announcementList" style="flex:1; overflow-y:auto; max-height: 200px; padding: 8px 0;">
+                <div id="announcementList" style="flex:1; overflow-y:auto; max-height: 140px; padding: 2px 0;">
                     <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>
                 </div>
             </div>
@@ -161,16 +176,16 @@ $tanggal = date('d M Y');
             $pct = $target > 0 ? min(100, round(($monthlyDone / $target) * 100)) : 0;
             $bulanNama = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][(int)$month];
             ?>
-            <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid rgba(0,0,0,0.06);">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="ts-card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2">
-                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-trophy-fill" style="color:white;font-size:0.75rem;"></i>
+                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;box-shadow:0 2px 6px rgba(16,185,129,0.3);">
+                            <i class="bi bi-trophy-fill"></i>
                         </div>
-                        <span style="font-weight:700;font-size:0.88rem;color:#0f172a;">Target <?= $bulanNama ?> <?= $year ?></span>
+                        <span style="font-weight:700;font-size:0.88rem;color:#0a0a0a;">Target <?= $bulanNama ?> <?= $year ?></span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span id="targetPct" style="font-size:0.75rem;font-weight:700;color:<?= $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#64748b') ?>;"><?= $pct ?>%</span>
+                        <span id="targetPct" style="font-size:0.75rem;font-weight:700;color:<?= $pct >= 80 ? '#059669' : ($pct >= 50 ? '#d97706' : '#64748b') ?>;background:<?= $pct >= 80 ? '#ecfdf5' : ($pct >= 50 ? '#fefce8' : '#f1f5f9') ?>;padding:2px 8px;border-radius:var(--radius-full);"><?= $pct ?>%</span>
                         <?php if($user['role'] === 'admin'): ?>
                         <button onclick="editTarget()" style="background:none;border:none;color:#94a3b8;font-size:0.75rem;cursor:pointer;padding:2px;" title="Ubah target">
                             <i class="bi bi-pencil-square"></i>
@@ -178,11 +193,11 @@ $tanggal = date('d M Y');
                         <?php endif; ?>
                     </div>
                 </div>
-                <div style="background:#f1f5f9;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px;">
-                    <div id="targetBar" style="width:<?= $pct ?>%;height:100%;border-radius:8px;background:linear-gradient(90deg,#059669,#10b981);transition:width 1s ease;"></div>
+                <div style="background:#f1f5f9;border-radius:8px;height:8px;overflow:hidden;margin-bottom:8px;">
+                    <div id="targetBar" style="width:<?= $pct ?>%;height:100%;border-radius:8px;background:linear-gradient(90deg,#059669,#10b981);transition:width 1s ease;box-shadow:0 0 10px rgba(16,185,129,0.5);"></div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center" style="font-size:0.75rem;color:#64748b;">
-                    <span><strong style="color:#0f172a;"><?= $monthlyDone ?></strong> selesai dari <strong id="targetNum"><?= $target ?></strong> target</span>
+                <div class="d-flex justify-content-between align-items-center" style="font-size:0.72rem;color:#64748b;">
+                    <span><strong style="color:#0a0a0a;"><?= $monthlyDone ?></strong> selesai dari <strong id="targetNum"><?= $target ?></strong> target</span>
                     <span><?= $monthlyTotal ?> total tugas</span>
                 </div>
                 <!-- Inline edit (hidden by default) -->
@@ -201,80 +216,82 @@ $tanggal = date('d M Y');
         </div>
     </div>
 
-    <!-- Calendar & Planner -->
-    <div class="row mb-4 g-3">
-        <!-- Mini Calendar -->
+    <!-- ═══════════════════════════════════════════════════
+         CALENDAR & PERSONAL NOTES BENTO SECTION
+         ═══════════════════════════════════════════════════ -->
+    <div class="row mb-4 g-3 reveal">
+        <!-- Mini Calendar (Left) -->
         <div class="col-lg-5">
-            <div style="background:white;border-radius:16px;padding:20px;border:1px solid rgba(0,0,0,0.06);height:100%;">
+            <div class="ts-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button onclick="calNav(-1)" style="background:none;border:none;color:#64748b;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
+                    <button onclick="calNav(-1)" style="background:none;border:none;color:#64748b;font-size:0.9rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all 0.2s;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
                         <i class="bi bi-chevron-left"></i>
                     </button>
-                    <span id="calMonthYear" style="font-weight:700;font-size:0.95rem;color:#0f172a;"></span>
-                    <button onclick="calNav(1)" style="background:none;border:none;color:#64748b;font-size:1rem;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
+                    <span id="calMonthYear" style="font-weight:800;font-size:0.95rem;color:#0a0a0a;letter-spacing:-0.01em;"></span>
+                    <button onclick="calNav(1)" style="background:none;border:none;color:#64748b;font-size:0.9rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all 0.2s;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='none'">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>
-                <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;"></div>
+                <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;"></div>
             </div>
         </div>
         
-        <!-- Notes Panel -->
+        <!-- Catatan Pribadi (Right Productivity Studio) -->
         <div class="col-lg-7">
-            <div style="background:white;border-radius:16px;border:1px solid rgba(0,0,0,0.06);height:100%;display:flex;flex-direction:column;overflow:hidden;min-height:340px;">
+            <div class="ts-card h-100 d-flex flex-column" style="min-height:340px;">
                 <!-- Notes Header -->
-                <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#ffffff;">
                     <div class="d-flex align-items-center gap-2">
-                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-journal-bookmark-fill" style="color:white;font-size:0.72rem;"></i>
+                        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;box-shadow:0 2px 6px rgba(245,158,11,0.3);">
+                            <i class="bi bi-journal-bookmark-fill"></i>
                         </div>
                         <div>
-                            <span style="font-weight:700;font-size:0.9rem;color:#0f172a;">Catatan Pribadi</span>
+                            <span style="font-weight:700;font-size:0.9rem;color:#0a0a0a;">Catatan Pribadi</span>
                             <span id="notes-count" style="font-size:0.68rem;color:#94a3b8;display:block;line-height:1;margin-top:1px;"></span>
                         </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center">
                         <div style="position:relative;">
-                            <input id="notes-search" type="text" placeholder="Cari catatan..." style="border:1px solid #e2e8f0;border-radius:20px;padding:5px 10px 5px 28px;font-size:0.75rem;outline:none;width:140px;transition:all 0.2s;" onfocus="this.style.borderColor='#d97706';this.style.width='170px'" onblur="this.style.borderColor='#e2e8f0';this.style.width='140px'" oninput="searchNotes(this.value)">
+                            <input id="notes-search" type="text" placeholder="Cari catatan..." style="border:1px solid #e2e8f0;border-radius:20px;padding:5px 10px 5px 28px;font-size:0.75rem;outline:none;width:130px;transition:all 0.25s;" onfocus="this.style.borderColor='#d97706';this.style.width='160px'" onblur="this.style.borderColor='#e2e8f0';this.style.width='130px'" oninput="searchNotes(this.value)">
                             <i class="bi bi-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.7rem;pointer-events:none;"></i>
                         </div>
-                        <button onclick="createNewNote()" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                        <button onclick="createNewNote()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(245,158,11,0.3);">
                             <i class="bi bi-plus-lg"></i> Baru
                         </button>
                     </div>
                 </div>
 
                 <!-- Notes Body: List + Editor split -->
-                <div style="display:flex;flex:1;overflow:hidden;">
+                <div style="display:flex;flex:1;overflow:hidden;background:#fafafa;">
                     <!-- Note List (left) -->
                     <div id="notes-list-panel" style="width:200px;flex-shrink:0;border-right:1px solid #f1f5f9;overflow-y:auto;background:#fafafa;">
                         <div id="notes-list-inner" style="padding:8px 6px;"></div>
                     </div>
 
                     <!-- Note Editor (right) -->
-                    <div id="notes-editor-panel" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+                    <div id="notes-editor-panel" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#ffffff;">
                         <!-- Editor Toolbar -->
-                        <div id="notes-editor-toolbar" style="display:none;padding:8px 14px;border-bottom:1px solid #f1f5f9;background:#fffbf0;flex-shrink:0;">
+                        <div id="notes-editor-toolbar" style="display:none;padding:8px 14px;border-bottom:1px solid #f1f5f9;background:#fffdfa;flex-shrink:0;">
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <!-- Color picker -->
                                     <div class="d-flex gap-1">
                                         <?php
-                                        $noteColors = ['#f59e0b','#ef4444','#3b82f6','#059669','#8b5cf6','#64748b'];
+                                        $noteColors = ['#f59e0b','#ef4444','#3b82f6','#10b981','#8b5cf6','#64748b'];
                                         foreach ($noteColors as $c): ?>
                                         <button type="button" class="note-color-dot" data-color="<?= $c ?>" onclick="setNoteColor('<?= $c ?>')"
                                             style="width:16px;height:16px;border-radius:50%;border:2px solid transparent;background:<?= $c ?>;cursor:pointer;transition:transform 0.15s;"></button>
                                         <?php endforeach; ?>
                                     </div>
-                                    <span style="font-size:0.65rem;color:#94a3b8;">|</span>
-                                    <button onclick="togglePinNote()" id="btn-pin-note" title="Pin catatan" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#94a3b8;transition:color 0.15s;" onmouseenter="this.style.color='#d97706'" onmouseleave="this.style.color=this.dataset.pinned=='1'?'#d97706':'#94a3b8'">
+                                    <span style="font-size:0.65rem;color:#cbd5e1;">|</span>
+                                    <button onclick="togglePinNote()" id="btn-pin-note" title="Pin catatan" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#94a3b8;transition:color 0.15s;">
                                         <i class="bi bi-pin"></i>
                                     </button>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <span id="note-word-count" style="font-size:0.65rem;color:#94a3b8;"></span>
-                                    <span id="note-save-status" style="font-size:0.65rem;color:#10b981;font-weight:600;"></span>
-                                    <button onclick="deleteCurrentNote()" title="Hapus" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#ef4444;opacity:0.5;transition:opacity 0.15s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'">
+                                    <span id="note-save-status" style="font-size:0.65rem;color:#10b981;font-weight:700;"></span>
+                                    <button onclick="deleteCurrentNote()" title="Hapus catatan" style="background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:0.78rem;color:#ef4444;opacity:0.6;transition:opacity 0.15s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.6'">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </div>
@@ -288,16 +305,16 @@ $tanggal = date('d M Y');
                                 <div style="width:52px;height:52px;border-radius:16px;background:#f8fafc;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
                                     <i class="bi bi-journal-text" style="font-size:1.5rem;color:#cbd5e1;"></i>
                                 </div>
-                                <p style="font-size:0.8rem;font-weight:600;color:#64748b;margin:0 0 4px;">Pilih atau buat catatan</p>
-                                <p style="font-size:0.72rem;margin:0;">Catatan hanya bisa dilihat oleh kamu</p>
+                                <p style="font-size:0.82rem;font-weight:700;color:#334155;margin:0 0 4px;">Pilih atau buat catatan</p>
+                                <p style="font-size:0.72rem;margin:0;color:#94a3b8;">Catatan hanya bisa dilihat oleh kamu</p>
                             </div>
                             <!-- Title input (hidden until note selected) -->
                             <input id="note-title-input" type="text" placeholder="Judul catatan..." maxlength="255"
-                                style="display:none;border:none;outline:none;font-size:0.95rem;font-weight:700;color:#0f172a;padding:0 0 8px;border-bottom:1px solid #f1f5f9;margin-bottom:10px;width:100%;background:transparent;"
+                                style="display:none;border:none;outline:none;font-size:0.95rem;font-weight:700;color:#0a0a0a;padding:0 0 8px;border-bottom:1px solid #f1f5f9;margin-bottom:10px;width:100%;background:transparent;"
                                 oninput="scheduleAutoSave()">
                             <!-- Content textarea -->
                             <textarea id="note-content-input" placeholder="Mulai menulis... ✍️" 
-                                style="display:none;border:none;outline:none;flex:1;resize:none;font-size:0.83rem;line-height:1.7;color:#374151;width:100%;background:transparent;min-height:160px;"
+                                style="display:none;border:none;outline:none;flex:1;resize:none;font-size:0.83rem;line-height:1.7;color:#334155;width:100%;background:transparent;min-height:160px;"
                                 oninput="onNoteContentInput()"></textarea>
                             <div id="note-meta-footer" style="display:none;padding-top:8px;border-top:1px solid #f8fafc;flex-shrink:0;">
                                 <span id="note-updated-at" style="font-size:0.65rem;color:#94a3b8;"></span>
@@ -309,208 +326,28 @@ $tanggal = date('d M Y');
         </div>
     </div>
 
-    <!-- Notes JS -->
-    <script>
-    let notesData      = [];
-    let curNoteId      = null;
-    let noteAutoSaveT  = null;
-    let noteColor      = '#f59e0b';
-    let searchTimer    = null;
-
-    // ── Fetch & render list ────────────────────────────────────────
-    function loadNotes(q = '') {
-        fetch(`api_notes.php?action=fetch&q=${encodeURIComponent(q)}`)
-        .then(r => r.json()).then(res => {
-            notesData = res.notes || [];
-            renderNotesList();
-            const c = notesData.length;
-            document.getElementById('notes-count').textContent = c ? `${c} catatan` : '';
-        });
-    }
-
-    function renderNotesList() {
-        const el = document.getElementById('notes-list-inner');
-        if (!notesData.length) {
-            el.innerHTML = `<div style="text-align:center;padding:24px 8px;color:#94a3b8;font-size:0.72rem;">
-                <i class="bi bi-journal-x" style="font-size:1.4rem;display:block;margin-bottom:6px;"></i>Belum ada catatan</div>`;
-            return;
-        }
-        el.innerHTML = notesData.map(n => {
-            const active = n.id == curNoteId ? 'background:#fff7ed;border-left:3px solid ' + n.color + ';' : 'border-left:3px solid transparent;';
-            return `<div class="note-item" onclick="openNote(${n.id})" data-id="${n.id}"
-                style="cursor:pointer;padding:8px 8px 8px 10px;border-radius:8px;margin-bottom:3px;transition:background 0.15s;${active}"
-                onmouseenter="if(${n.id}!=curNoteId) this.style.background='#f8fafc'" 
-                onmouseleave="if(${n.id}!=curNoteId) this.style.background='transparent'">
-                <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
-                    ${n.is_pinned ? `<i class="bi bi-pin-fill" style="color:${n.color};font-size:0.6rem;"></i>` : ''}
-                    <span style="font-size:0.78rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${escHtml(n.title || 'Tanpa Judul')}</span>
-                </div>
-                ${n.preview ? `<div style="font-size:0.68rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;">${escHtml(n.preview)}</div>` : ''}
-                <div style="font-size:0.6rem;color:#cbd5e1;margin-top:3px;">${n.updated_fmt}</div>
-            </div>`;
-        }).join('');
-    }
-
-    function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-    // ── Open note ─────────────────────────────────────────────────
-    function openNote(id) {
-        if (curNoteId && curNoteId !== id) saveNote(curNoteId, true);
-        curNoteId = id;
-        const n = notesData.find(x => x.id == id);
-        if (!n) return;
-        noteColor = n.color || '#f59e0b';
-        showEditor(true);
-        document.getElementById('note-title-input').value   = n.title;
-        document.getElementById('note-content-input').value = n.content || '';
-        document.getElementById('note-updated-at').textContent = 'Diperbarui: ' + n.updated_fmt;
-        document.getElementById('note-save-status').textContent = '';
-        updateWordCount();
-        updateColorDots(noteColor);
-        const pinBtn = document.getElementById('btn-pin-note');
-        pinBtn.dataset.pinned = n.is_pinned ? '1' : '0';
-        pinBtn.style.color = n.is_pinned ? '#d97706' : '#94a3b8';
-        pinBtn.innerHTML = n.is_pinned ? '<i class="bi bi-pin-fill"></i>' : '<i class="bi bi-pin"></i>';
-        renderNotesList();
-    }
-
-    function showEditor(show) {
-        const toolbar = document.getElementById('notes-editor-toolbar');
-        const empty   = document.getElementById('notes-empty-state');
-        const title   = document.getElementById('note-title-input');
-        const content = document.getElementById('note-content-input');
-        const footer  = document.getElementById('note-meta-footer');
-        toolbar.style.display = show ? 'block'  : 'none';
-        empty.style.display   = show ? 'none'   : 'flex';
-        title.style.display   = show ? 'block'  : 'none';
-        content.style.display = show ? 'block'  : 'none';
-        footer.style.display  = show ? 'block'  : 'none';
-        if (show) { document.getElementById('note-title-input').focus(); }
-    }
-
-    // ── Create new note ───────────────────────────────────────────
-    function createNewNote() {
-        if (curNoteId) saveNote(curNoteId, true);
-        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'create',title:'Catatan Baru',content:'',color:noteColor})})
-        .then(r => r.json()).then(res => {
-            if (res.status === 'success') {
-                loadNotes();
-                setTimeout(() => {
-                    openNote(res.id);
-                    document.getElementById('note-title-input').select();
-                }, 200);
-            }
-        });
-    }
-
-    // ── Auto-save ─────────────────────────────────────────────────
-    function scheduleAutoSave() {
-        clearTimeout(noteAutoSaveT);
-        document.getElementById('note-save-status').textContent = '💾 Menyimpan...';
-        noteAutoSaveT = setTimeout(() => { if (curNoteId) saveNote(curNoteId); }, 1200);
-    }
-
-    function onNoteContentInput() {
-        updateWordCount();
-        scheduleAutoSave();
-    }
-
-    function saveNote(id, silent = false) {
-        const title   = document.getElementById('note-title-input').value.trim() || 'Catatan Tanpa Judul';
-        const content = document.getElementById('note-content-input').value;
-        const fd = new URLSearchParams({action:'update', id, title, content, color: noteColor});
-        fetch('api_notes.php', {method:'POST', body: fd})
-        .then(r => r.json()).then(res => {
-            if (!silent && res.status === 'success') {
-                document.getElementById('note-save-status').textContent = '✓ Tersimpan';
-                const now = new Date();
-                document.getElementById('note-updated-at').textContent =
-                    'Diperbarui: ' + now.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-                setTimeout(() => { document.getElementById('note-save-status').textContent = ''; }, 2000);
-                // update local data
-                const n = notesData.find(x => x.id == id);
-                if (n) { n.title = title; n.content = content; n.color = noteColor; n.preview = content.substring(0,80); }
-                renderNotesList();
-            }
-        });
-    }
-
-    function updateWordCount() {
-        const txt = document.getElementById('note-content-input').value;
-        const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
-        const chars = txt.length;
-        document.getElementById('note-word-count').textContent = words ? `${words} kata · ${chars} kar` : '';
-    }
-
-    // ── Color ─────────────────────────────────────────────────────
-    function setNoteColor(c) {
-        noteColor = c;
-        updateColorDots(c);
-        scheduleAutoSave();
-        // Update border accent in list
-        renderNotesList();
-    }
-
-    function updateColorDots(active) {
-        document.querySelectorAll('.note-color-dot').forEach(d => {
-            d.style.border = d.dataset.color === active ? `2px solid ${d.dataset.color}` : '2px solid transparent';
-            d.style.transform = d.dataset.color === active ? 'scale(1.3)' : 'scale(1)';
-        });
-    }
-
-    // ── Pin ───────────────────────────────────────────────────────
-    function togglePinNote() {
-        if (!curNoteId) return;
-        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'pin', id: curNoteId})})
-        .then(r => r.json()).then(() => {
-            loadNotes();
-            setTimeout(() => openNote(curNoteId), 250);
-        });
-    }
-
-    // ── Delete ────────────────────────────────────────────────────
-    function deleteCurrentNote() {
-        if (!curNoteId) return;
-        const n = notesData.find(x => x.id == curNoteId);
-        if (!confirm(`Hapus catatan "${n?.title || ''}"?`)) return;
-        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'delete', id: curNoteId})})
-        .then(() => {
-            curNoteId = null;
-            showEditor(false);
-            loadNotes();
-        });
-    }
-
-    // ── Search ────────────────────────────────────────────────────
-    function searchNotes(q) {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => loadNotes(q), 350);
-    }
-
-    // ── Init ─────────────────────────────────────────────────────
-    loadNotes();
-    // Auto-save on leaving page
-    window.addEventListener('beforeunload', () => { if (curNoteId) saveNote(curNoteId, true); });
-    </script>
-
-
+    <!-- ═══════════════════════════════════════════════════
+         ADMIN CONTROL CENTER BANNER
+         ═══════════════════════════════════════════════════ -->
     <?php if($user['role'] === 'admin'): ?>
     <div class="row mb-4 reveal">
         <div class="col-12">
             <div class="admin-banner">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-25 p-3 rounded-circle">
-                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                    <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(217,119,6,0.3));border:1px solid rgba(245,158,11,0.4);display:flex;align-items:center;justify-content:center;color:#fbbf24;font-size:1.35rem;box-shadow:0 4px 16px rgba(245,158,11,0.25);">
+                        <i class="bi bi-shield-lock-fill"></i>
                     </div>
                     <div>
                         <h5>Admin Control Center</h5>
-                        <p>Manage users, permissions, and system settings.</p>
+                        <p>Manage employee access, database privileges, and security audit logs.</p>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="data-karyawan.php" class="btn btn-light fw-bold px-4 rounded-pill">Open</a>
-                    <a href="log.php" class="btn btn-outline-light fw-bold px-4 rounded-pill">
-                        <i class="bi bi-journal-text me-1"></i>Log
+                    <a href="data-karyawan.php" class="btn-admin-primary">
+                        <i class="bi bi-person-gear me-1"></i>Kelola Akses
+                    </a>
+                    <a href="log.php" class="btn-admin-secondary">
+                        <i class="bi bi-journal-text me-1"></i>Audit Log
                     </a>
                 </div>
             </div>
@@ -518,129 +355,143 @@ $tanggal = date('d M Y');
     </div>
     <?php endif; ?>
 
+    <!-- ═══════════════════════════════════════════════════
+         YOUR APPLICATIONS GRID (Bento Tickets)
+         ═══════════════════════════════════════════════════ -->
     <div class="row mb-3 reveal">
-        <div class="col-12">
-            <h5 class="fw-bold text-dark section-title"><i class="bi bi-grid-1x2-fill me-2"></i>Your Applications</h5>
+        <div class="col-12 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>
+                <h5 class="fw-bold text-dark m-0" style="letter-spacing:-0.02em;font-size:1.05rem;">Your Applications</h5>
+            </div>
+            <span style="font-size:0.75rem;color:#94a3b8;font-weight:600;">Single Sign-On (SSO) Portal</span>
         </div>
     </div>
 
-    <div class="row g-4 pb-5 reveal reveal-delay-1">
+    <div class="row g-3 pb-5 reveal">
         
+        <!-- Salary -->
         <div class="col-md-6 col-xl-4">
             <a href="https://ssll.id-giti.com/" target="_blank" class="app-ticket">
-                <div class="ticket-stub color-ssll">
-                    <i class="bi bi-cash"></i>
+                <div class="app-icon-squircle color-salary">
+                    <i class="bi bi-cash-stack"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Salary</div>
-                    <div class="app-desc">Kerja Untuk Jajan</div>
+                    <div class="app-desc">Slip Gaji & Kompensasi</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         
+        <!-- Bukti -->
         <?php if ($user['app_bukti']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="<?= getSSOLink($conn, $user['id'], 'https://center.id-giti.com/bukti/auth-sso.php') ?>" target="_blank" class="app-ticket">
-                <div class="ticket-stub color-bukti">
-                    <i class="bi bi-journal-text"></i>
+                <div class="app-icon-squircle color-bukti">
+                    <i class="bi bi-journal-check"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Bukti</div>
-                    <div class="app-desc">Semua Akan Kukerjakan</div>
+                    <div class="app-desc">Timeline Kerja & Progress</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Sales -->
         <?php if ($user['app_sales']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="https://sales.id-giti.com/center-login.php?nama=<?= htmlspecialchars($user['name']) ?>" target="_blank" class="app-ticket">
-            <!--<a href="<?= getSSOLink($conn, $user['id'], 'https://center.id-giti.com/sales/auth-sso.php') ?>" target="_blank" class="app-ticket">-->
-                <div class="ticket-stub color-sales">
+                <div class="app-icon-squircle color-sales">
                     <i class="bi bi-graph-up-arrow"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Sales</div>
-                    <div class="app-desc">Target & Omset</div>
+                    <div class="app-desc">Target Penjualan & Omset</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Quotation -->
         <?php if ($user['app_quotation']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="https://quo.id-giti.com/center-login.php?nama=<?= htmlspecialchars($user['name']) ?>" target="_blank" class="app-ticket">
-                <div class="ticket-stub color-quo">
-                    <i class="bi bi-file-earmark-text"></i>
+                <div class="app-icon-squircle color-quotation">
+                    <i class="bi bi-file-earmark-spreadsheet"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Quotation</div>
-                    <div class="app-desc">Buat Penawaran</div>
+                    <div class="app-desc">Pembuatan Penawaran Harga</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Service [OLD] -->
         <?php if ($user['app_produksi']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="https://service.id-giti.com/src/html/process/center-login.php?nama=<?= htmlspecialchars($user['name']) ?>" class="app-ticket" target="_blank">
-                <div class="ticket-stub color-prod">
-                    <i class="bi bi-box-seam"></i>
+                <div class="app-icon-squircle color-service-old">
+                    <i class="bi bi-box-seam-fill"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Service [OLD]</div>
-                    <div class="app-desc">Web Service Lama</div>
+                    <div class="app-desc">Web Service & RMA Lama</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Service & Production [NEW] -->
         <?php if ($user['app_service']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="<?= getSSOLink($conn, $user['id'], 'https://center.id-giti.com/service/auth-sso.php') ?>" target="_blank" class="app-ticket">
-                <div class="ticket-stub bg-soft-info text-info">
-                    <i class="bi bi-wrench-adjustable"></i>
+                <div class="app-icon-squircle color-service-new">
+                    <i class="bi bi-wrench-adjustable-circle-fill"></i>
                 </div>
-                <div class="ticket-body">
-                    <div class="app-name">Service & Production [NEW]</div>
-                    <div class="app-desc">Perbaikan Unit</div>
+                <div class="app-body">
+                    <div class="app-name">Service & Production</div>
+                    <div class="app-desc">Perbaikan Unit & Perakitan</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Teknisi -->
         <?php if ($user['app_teknisi']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="https://jadwal.id-giti.com/center-login.php?nama=<?= htmlspecialchars($user['name']) ?>" target="_blank" class="app-ticket">
-                <div class="ticket-stub color-tech">
+                <div class="app-icon-squircle color-teknisi">
                     <i class="bi bi-tools"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Teknisi</div>
-                    <div class="app-desc">Manajemen Jadwal</div>
+                    <div class="app-desc">Manajemen Jadwal Lapangan</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
 
+        <!-- Garansi -->
         <?php if ($user['app_giti']): ?>
         <div class="col-md-6 col-xl-4">
             <a href="https://id-giti.com/admin/dashboard" target="_blank" class="app-ticket">
-                <div class="ticket-stub color-warranty">
+                <div class="app-icon-squircle color-garansi">
                     <i class="bi bi-qr-code-scan"></i>
                 </div>
-                <div class="ticket-body">
+                <div class="app-body">
                     <div class="app-name">Garansi</div>
-                    <div class="app-desc">Garansi Produk</div>
+                    <div class="app-desc">Validasi & Garansi Produk</div>
                 </div>
-                <div class="ticket-arrow"><i class="bi bi-chevron-right"></i></div>
+                <div class="app-arrow"><i class="bi bi-arrow-up-right"></i></div>
             </a>
         </div>
         <?php endif; ?>
@@ -648,7 +499,11 @@ $tanggal = date('d M Y');
     </div> 
 </div> 
 
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT SUITE
+     ═══════════════════════════════════════════════════ -->
 <script>
+    // === LIVE CLOCK ===
     function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -656,8 +511,12 @@ $tanggal = date('d M Y');
         const seconds = String(now.getSeconds()).padStart(2, '0');
         const clockEl = document.getElementById('clock');
         const secEl = document.getElementById('clockSec');
-        clockEl.childNodes[0].textContent = `${hours}:${minutes}`;
-        if (secEl) secEl.textContent = `:${seconds}`;
+        if (clockEl) {
+            clockEl.childNodes[0].textContent = `${hours}:${minutes}`;
+        }
+        if (secEl) {
+            secEl.textContent = `:${seconds}`;
+        }
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -679,10 +538,11 @@ $tanggal = date('d M Y');
             .then(r => r.json())
             .then(res => {
                 const el = document.getElementById('announcementList');
+                if (!el) return;
                 if (!res.data || res.data.length === 0) {
-                    el.innerHTML = `<div class="text-center py-4" style="color:#94a3b8;">
-                        <i class="bi bi-megaphone" style="font-size:1.5rem;opacity:0.3;"></i>
-                        <p style="font-size:0.8rem;margin:6px 0 0;">Belum ada pengumuman</p>
+                    el.innerHTML = `<div class="text-center py-3" style="color:#94a3b8;">
+                        <i class="bi bi-megaphone" style="font-size:1.3rem;opacity:0.35;"></i>
+                        <p style="font-size:0.75rem;margin:4px 0 0;">Belum ada pengumuman</p>
                     </div>`;
                     return;
                 }
@@ -691,16 +551,16 @@ $tanggal = date('d M Y');
                     const pColors = {urgent:'#ef4444',important:'#d97706',normal:'#64748b'};
                     const pLabels = {urgent:'URGENT',important:'PENTING',normal:''};
                     const pBg = {urgent:'#fef2f2',important:'#fffbeb',normal:'transparent'};
-                    html += `<div style="padding:10px 16px;border-bottom:1px solid rgba(0,0,0,0.03);cursor:default;transition:background 0.15s;" 
-                                onmouseenter="this.style.background='#fafbfc'" onmouseleave="this.style.background='transparent'">
+                    html += `<div style="padding:8px 10px;border-radius:10px;margin-bottom:4px;background:#f8fafc;cursor:default;transition:all 0.15s;" 
+                                onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='#f8fafc'">
                         <div class="d-flex justify-content-between align-items-start">
                             <div style="flex:1;min-width:0;">
                                 <div class="d-flex align-items-center gap-1 mb-1">
-                                    ${a.priority!=='normal'?`<span style="font-size:0.6rem;font-weight:700;color:${pColors[a.priority]};background:${pBg[a.priority]};padding:1px 6px;border-radius:4px;letter-spacing:0.5px;">${pLabels[a.priority]}</span>`:''}
-                                    <span style="font-weight:700;font-size:0.82rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.title}</span>
+                                    ${a.priority!=='normal'?`<span style="font-size:0.58rem;font-weight:800;color:${pColors[a.priority]};background:${pBg[a.priority]};padding:1px 6px;border-radius:4px;letter-spacing:0.5px;">${pLabels[a.priority]}</span>`:''}
+                                    <span style="font-weight:700;font-size:0.8rem;color:#0a0a0a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.title}</span>
                                 </div>
-                                <p style="font-size:0.75rem;color:#64748b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.content}</p>
-                                <div style="font-size:0.65rem;color:#94a3b8;margin-top:3px;">
+                                <p style="font-size:0.72rem;color:#64748b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.content}</p>
+                                <div style="font-size:0.62rem;color:#94a3b8;margin-top:2px;">
                                     ${a.author_name} · ${timeAgo(a.created_at)}
                                     ${isAdmin ? ` · <span style="color:${a.target_all==='1'||a.target_all===1?'#059669':'#d97706'};font-weight:600;">
                                         <i class="bi bi-${a.target_all==='1'||a.target_all===1?'people-fill':'person-check'}"></i> 
@@ -715,7 +575,8 @@ $tanggal = date('d M Y');
                 el.innerHTML = html;
             })
             .catch(() => {
-                document.getElementById('announcementList').innerHTML = '<div class="text-center py-3" style="color:#94a3b8;font-size:0.8rem;">Gagal memuat</div>';
+                const el = document.getElementById('announcementList');
+                if (el) el.innerHTML = '<div class="text-center py-3" style="color:#94a3b8;font-size:0.75rem;">Gagal memuat</div>';
             });
     }
     loadAnnouncements();
@@ -730,7 +591,7 @@ $tanggal = date('d M Y');
             .then(() => loadAnnouncements());
     }
 
-    let annUsers = []; // cached user list
+    let annUsers = [];
     let annSelectedUsers = new Set();
     let annTargetAll = true;
 
@@ -744,7 +605,7 @@ $tanggal = date('d M Y');
                     <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
                         <div class="modal-header border-0 px-4 pt-4 pb-2">
                             <div>
-                                <h6 class="fw-bold mb-0" style="color:#0f172a;"><i class="bi bi-megaphone me-2" style="color:#d97706;"></i>Buat Pengumuman</h6>
+                                <h6 class="fw-bold mb-0" style="color:#0a0a0a;"><i class="bi bi-megaphone-fill me-2" style="color:#d97706;"></i>Buat Pengumuman</h6>
                                 <small style="color:#94a3b8;">Pilih siapa yang menerima pengumuman ini</small>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -759,11 +620,9 @@ $tanggal = date('d M Y');
                                 <textarea id="annContent" class="form-control" rows="3" placeholder="Detail pengumuman..." style="border-radius:10px;border-color:#e2e8f0;font-size:0.88rem;"></textarea>
                             </div>
                             
-                            <!-- PENERIMA SECTION -->
                             <div class="mb-3">
                                 <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Penerima</label>
                                 <div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#fafafa;">
-                                    <!-- Toggle Semua -->
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <div class="d-flex align-items-center gap-2">
                                             <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;">
@@ -778,17 +637,12 @@ $tanggal = date('d M Y');
                                         </label>
                                     </div>
                                     
-                                    <!-- User Picker (hidden when target all) -->
                                     <div id="annUserPicker" style="display:none;">
                                         <div style="position:relative;margin-bottom:8px;">
                                             <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.75rem;"></i>
                                             <input type="text" id="annUserSearch" placeholder="Cari karyawan..." oninput="filterAnnUsers(this.value)" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px 6px 30px;font-size:0.78rem;outline:none;">
                                         </div>
-                                        
-                                        <!-- Selected Pills -->
                                         <div id="annSelectedPills" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
-                                        
-                                        <!-- User List -->
                                         <div id="annUserList" style="max-height:150px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;background:white;">
                                             <div class="text-center py-2"><div class="spinner-border spinner-border-sm text-warning"></div></div>
                                         </div>
@@ -811,7 +665,7 @@ $tanggal = date('d M Y');
                                 </div>
                             </div>
                             <button onclick="submitAnnouncement()" class="btn w-100 fw-bold" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;border-radius:10px;padding:10px;">
-                                <i class="bi bi-send me-1"></i>Kirim Pengumuman
+                                <i class="bi bi-send-fill me-1"></i>Kirim Pengumuman
                             </button>
                         </div>
                     </div>
@@ -821,7 +675,6 @@ $tanggal = date('d M Y');
             modal = document.getElementById('createAnnouncementModal');
         }
         
-        // Reset state
         annTargetAll = true;
         annSelectedUsers.clear();
         document.getElementById('annTargetAll').checked = true;
@@ -830,7 +683,6 @@ $tanggal = date('d M Y');
         document.getElementById('annUserPicker').style.display = 'none';
         document.getElementById('annSelectedPills').innerHTML = '';
         
-        // Load users
         if (annUsers.length === 0) {
             fetch('api_announcement.php?action=list_users')
                 .then(r => r.json())
@@ -943,29 +795,32 @@ $tanggal = date('d M Y');
             });
     }
 
-    // === CALENDAR PLANNER ===
+    // === CALENDAR SYSTEM ===
     const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
     const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
     let calMonth = <?= (int)date('m') - 1 ?>;
     let calYear = <?= (int)date('Y') ?>;
     let selectedDate = '<?= date('Y-m-d') ?>';
     let monthEvents = [];
-    let selectedColor = '#d97706';
 
     function calNav(dir) {
         calMonth += dir;
         if (calMonth > 11) { calMonth = 0; calYear++; }
         if (calMonth < 0) { calMonth = 11; calYear--; }
         const grid = document.getElementById('calGrid');
-        grid.classList.remove('cal-slide-left', 'cal-slide-right');
-        void grid.offsetWidth; // force reflow
-        grid.classList.add(dir > 0 ? 'cal-slide-left' : 'cal-slide-right');
+        if (grid) {
+            grid.classList.remove('cal-slide-left', 'cal-slide-right');
+            void grid.offsetWidth;
+            grid.classList.add(dir > 0 ? 'cal-slide-left' : 'cal-slide-right');
+        }
         renderCalendar();
     }
 
     function renderCalendar() {
-        document.getElementById('calMonthYear').textContent = MONTHS[calMonth] + ' ' + calYear;
+        const myEl = document.getElementById('calMonthYear');
+        if (myEl) myEl.textContent = MONTHS[calMonth] + ' ' + calYear;
         const grid = document.getElementById('calGrid');
+        if (!grid) return;
         grid.innerHTML = '';
         
         // Day headers
@@ -1002,22 +857,22 @@ $tanggal = date('d M Y');
             cell.style.cssText = `padding:4px;cursor:pointer;border-radius:10px;transition:all 0.15s;position:relative;`;
             cell.dataset.date = dateStr;
             
-            let bg = 'transparent', color = '#334155', fw = '500';
-            if (isSelected) { bg = '#d97706'; color = 'white'; fw = '700'; }
-            else if (isToday) { bg = '#fef3c7'; color = '#92400e'; fw = '700'; }
+            let bg = 'transparent', color = '#334155', fw = '600';
+            if (isSelected) { bg = '#d97706'; color = 'white'; fw = '800'; }
+            else if (isToday) { bg = '#fef3c7'; color = '#92400e'; fw = '800'; }
             
             const dotsHtml = eventColors.length > 0 
-                ? `<div class="cal-dots" style="display:flex;justify-content:center;gap:2px;margin-top:2px;">${eventColors.map(c => `<div style="width:5px;height:5px;border-radius:50%;background:${c};"></div>`).join('')}</div>` 
-                : '<div class="cal-dots" style="height:7px;"></div>';
+                ? `<div class="cal-dots" style="display:flex;justify-content:center;gap:2px;margin-top:2px;">${eventColors.map(c => `<div style="width:4px;height:4px;border-radius:50%;background:${c};"></div>`).join('')}</div>` 
+                : '<div class="cal-dots" style="height:6px;"></div>';
             
             cell.innerHTML = `
-                <div style="width:32px;height:32px;line-height:32px;margin:auto;border-radius:10px;font-size:0.78rem;font-weight:${fw};color:${color};background:${bg};transition:all 0.15s;">${d}</div>
+                <div style="width:30px;height:30px;line-height:30px;margin:auto;border-radius:9px;font-size:0.78rem;font-weight:${fw};color:${color};background:${bg};transition:all 0.15s;">${d}</div>
                 ${dotsHtml}
             `;
             
             cell.onclick = () => selectDate(dateStr);
             if (!isSelected) {
-                cell.onmouseenter = () => { if(!isToday) cell.querySelector('div').style.background='#f8fafc'; };
+                cell.onmouseenter = () => { if(!isToday) cell.querySelector('div').style.background='#f1f5f9'; };
                 cell.onmouseleave = () => { if(!isToday) cell.querySelector('div').style.background=bg; };
             }
             grid.appendChild(cell);
@@ -1028,16 +883,7 @@ $tanggal = date('d M Y');
 
     function selectDate(dateStr) {
         selectedDate = dateStr;
-        const d = new Date(dateStr + 'T00:00:00');
-        const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-        const mNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-        const titleEl = document.getElementById('eventDateTitle');
-        const subEl   = document.getElementById('eventDateSub');
-        if (titleEl) titleEl.textContent = dayNames[d.getDay()] + ', ' + d.getDate() + ' ' + mNames[d.getMonth()];
-        if (subEl)   subEl.textContent   = d.getFullYear();
-        
         renderCalendar();
-        fetchDateEvents(dateStr);
     }
 
     function fetchMonthEvents() {
@@ -1048,7 +894,8 @@ $tanggal = date('d M Y');
                     monthEvents = res.data;
                     updateDots();
                 }
-            });
+            })
+            .catch(() => {});
     }
 
     function updateDots() {
@@ -1062,145 +909,13 @@ $tanggal = date('d M Y');
             const dotContainer = cell.querySelector('.cal-dots');
             if (dotContainer) {
                 dotContainer.innerHTML = eventColors.length > 0
-                    ? eventColors.map(c => `<div style="width:5px;height:5px;border-radius:50%;background:${c};"></div>`).join('')
+                    ? eventColors.map(c => `<div style="width:4px;height:4px;border-radius:50%;background:${c};"></div>`).join('')
                     : '';
-                dotContainer.style.height = eventColors.length > 0 ? 'auto' : '7px';
+                dotContainer.style.height = eventColors.length > 0 ? 'auto' : '6px';
             }
         });
     }
 
-    function fetchDateEvents(dateStr) {
-        const list = document.getElementById('eventList');
-        if (!list) return; // eventList panel replaced by Notes panel
-        list.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
-        
-        fetch(`api_calendar.php?action=fetch_date&date=${dateStr}`)
-            .then(r => r.json())
-            .then(res => {
-                if (res.status === 'success') {
-                    if (res.data.length === 0) {
-                        list.innerHTML = `
-                            <div class="text-center py-4">
-                                <i class="bi bi-calendar2-check" style="font-size:2rem;color:#e2e8f0;"></i>
-                                <p style="font-size:0.78rem;color:#94a3b8;margin:8px 0 0;">Tidak ada rencana</p>
-                            </div>`;
-                        return;
-                    }
-                    list.innerHTML = res.data.map(ev => {
-                        const mN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-                        let dateInfo = '';
-                        if (ev.end_date && ev.end_date !== ev.event_date) {
-                            const s = new Date(ev.event_date + 'T00:00:00');
-                            const e = new Date(ev.end_date + 'T00:00:00');
-                            dateInfo = `<span style="font-size:0.68rem;background:#f1f5f9;color:#64748b;padding:1px 6px;border-radius:4px;font-weight:600;"><i class="bi bi-calendar-range me-1"></i>${s.getDate()} ${mN[s.getMonth()]} → ${e.getDate()} ${mN[e.getMonth()]}</span>`;
-                        }
-                        return `
-                        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc;${ev.is_done == 1 ? 'opacity:0.5;' : ''}" id="ev-${ev.id}">
-                            <div style="width:4px;min-height:32px;border-radius:4px;background:${ev.color};margin-top:2px;flex-shrink:0;"></div>
-                            <div style="flex:1;min-width:0;">
-                                <div style="font-weight:600;font-size:0.82rem;color:#0f172a;${ev.is_done == 1 ? 'text-decoration:line-through;' : ''}">${ev.title}</div>
-                                <div class="d-flex gap-2 flex-wrap align-items-center" style="margin-top:2px;">
-                                    ${ev.event_time ? `<span style="font-size:0.7rem;color:#94a3b8;"><i class="bi bi-clock me-1"></i>${ev.event_time.substring(0,5)}</span>` : ''}
-                                    ${dateInfo}
-                                </div>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <button onclick="toggleEvent(${ev.id})" style="background:none;border:none;cursor:pointer;color:${ev.is_done == 1 ? '#059669' : '#cbd5e1'};font-size:0.9rem;" title="${ev.is_done == 1 ? 'Batalkan' : 'Selesai'}">
-                                    <i class="bi bi-check-circle${ev.is_done == 1 ? '-fill' : ''}"></i>
-                                </button>
-                                <button onclick="deleteEvent(${ev.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.8rem;" title="Hapus">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-            });
-    }
-
-    function showAddEvent() { 
-        const form = document.getElementById('addEventForm');
-        if (!form) return;
-        form.style.display = 'block'; 
-        document.getElementById('evTitle').focus();
-        // Reset color to default
-        selectedColor = '#d97706';
-        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.boxShadow = 'none');
-        document.querySelector('.ev-color-btn[data-color="#d97706"]').style.boxShadow = '0 0 0 3px white, 0 0 0 5px #d97706';
-    }
-    function cancelAddEvent() { 
-        const form = document.getElementById('addEventForm');
-        if (!form) return;
-        form.style.display = 'none'; 
-        document.getElementById('evTitle').value = ''; 
-        document.getElementById('evTime').value = ''; 
-        document.getElementById('evMultiDay').checked = false;
-        document.getElementById('endDateWrap').style.display = 'none';
-        document.getElementById('evEndDate').value = '';
-    }
-
-    function toggleMultiDay() {
-        const isMulti = document.getElementById('evMultiDay').checked;
-        document.getElementById('endDateWrap').style.display = isMulti ? 'block' : 'none';
-        if (!isMulti) document.getElementById('evEndDate').value = '';
-    }
-
-    function pickColor(btn) {
-        document.querySelectorAll('.ev-color-btn').forEach(b => b.style.boxShadow = 'none');
-        btn.style.boxShadow = '0 0 0 3px white, 0 0 0 5px ' + btn.dataset.color;
-        selectedColor = btn.dataset.color;
-    }
-
-    function submitEvent() {
-        const title = document.getElementById('evTitle').value.trim();
-        if (!title) { alert('Judul wajib diisi'); return; }
-        
-        const isMulti = document.getElementById('evMultiDay').checked;
-        const endDate = document.getElementById('evEndDate').value;
-        
-        if (isMulti && !endDate) { alert('Pilih tanggal selesai'); return; }
-        if (isMulti && endDate < selectedDate) { alert('Tanggal selesai harus setelah tanggal mulai'); return; }
-        
-        const fd = new FormData();
-        fd.append('action', 'create');
-        fd.append('title', title);
-        fd.append('event_date', selectedDate);
-        fd.append('event_time', document.getElementById('evTime').value);
-        fd.append('color', selectedColor);
-        if (isMulti && endDate) fd.append('end_date', endDate);
-        
-        fetch('api_calendar.php', {method:'POST', body: fd})
-            .then(r => r.json())
-            .then(res => {
-                if (res.status === 'success') {
-                    cancelAddEvent();
-                    renderCalendar();
-                    fetchDateEvents(selectedDate);
-                } else { alert(res.message); }
-            });
-    }
-
-    function toggleEvent(id) {
-        const fd = new FormData();
-        fd.append('action', 'toggle');
-        fd.append('id', id);
-        fetch('api_calendar.php', {method:'POST', body: fd})
-            .then(r => r.json())
-            .then(() => fetchDateEvents(selectedDate));
-    }
-
-    function deleteEvent(id) {
-        if (!confirm('Hapus rencana ini?')) return;
-        const fd = new FormData();
-        fd.append('action', 'delete');
-        fd.append('id', id);
-        fetch('api_calendar.php', {method:'POST', body: fd})
-            .then(r => r.json())
-            .then(() => { renderCalendar(); fetchDateEvents(selectedDate); });
-    }
-
-    // Init calendar
-    selectDate(selectedDate);
     renderCalendar();
 
     // === TARGET EDIT ===
@@ -1233,6 +948,192 @@ $tanggal = date('d M Y');
             })
             .catch(() => alert('Gagal koneksi'));
     }
+
+    // === CATATAN PRIBADI (PERSONAL NOTES STUDIO) ===
+    let notesData      = [];
+    let curNoteId      = null;
+    let noteAutoSaveT  = null;
+    let noteColor      = '#f59e0b';
+    let searchTimer    = null;
+
+    function loadNotes(q = '') {
+        fetch(`api_notes.php?action=fetch&q=${encodeURIComponent(q)}`)
+        .then(r => r.json()).then(res => {
+            notesData = res.notes || [];
+            renderNotesList();
+            const c = notesData.length;
+            const countEl = document.getElementById('notes-count');
+            if (countEl) countEl.textContent = c ? `${c} catatan` : '';
+        }).catch(() => {});
+    }
+
+    function renderNotesList() {
+        const el = document.getElementById('notes-list-inner');
+        if (!el) return;
+        if (!notesData.length) {
+            el.innerHTML = `<div style="text-align:center;padding:24px 8px;color:#94a3b8;font-size:0.72rem;">
+                <i class="bi bi-journal-x" style="font-size:1.4rem;display:block;margin-bottom:6px;opacity:0.5;"></i>Belum ada catatan</div>`;
+            return;
+        }
+        el.innerHTML = notesData.map(n => {
+            const active = n.id == curNoteId ? 'background:#fff7ed;border-left:3px solid ' + n.color + ';' : 'border-left:3px solid transparent;';
+            return `<div class="note-item" onclick="openNote(${n.id})" data-id="${n.id}"
+                style="cursor:pointer;padding:8px 8px 8px 10px;border-radius:8px;margin-bottom:3px;transition:all 0.15s;${active}"
+                onmouseenter="if(${n.id}!=curNoteId) this.style.background='#f1f5f9'" 
+                onmouseleave="if(${n.id}!=curNoteId) this.style.background='transparent'">
+                <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+                    ${n.is_pinned ? `<i class="bi bi-pin-fill" style="color:${n.color};font-size:0.6rem;"></i>` : ''}
+                    <span style="font-size:0.78rem;font-weight:700;color:#0a0a0a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${escHtml(n.title || 'Tanpa Judul')}</span>
+                </div>
+                ${n.preview ? `<div style="font-size:0.68rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;">${escHtml(n.preview)}</div>` : ''}
+                <div style="font-size:0.6rem;color:#94a3b8;margin-top:3px;">${n.updated_fmt}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    function openNote(id) {
+        if (curNoteId && curNoteId !== id) saveNote(curNoteId, true);
+        curNoteId = id;
+        const n = notesData.find(x => x.id == id);
+        if (!n) return;
+        noteColor = n.color || '#f59e0b';
+        showEditor(true);
+        document.getElementById('note-title-input').value   = n.title;
+        document.getElementById('note-content-input').value = n.content || '';
+        document.getElementById('note-updated-at').textContent = 'Diperbarui: ' + n.updated_fmt;
+        document.getElementById('note-save-status').textContent = '';
+        updateWordCount();
+        updateColorDots(noteColor);
+        const pinBtn = document.getElementById('btn-pin-note');
+        if (pinBtn) {
+            pinBtn.dataset.pinned = n.is_pinned ? '1' : '0';
+            pinBtn.style.color = n.is_pinned ? '#d97706' : '#94a3b8';
+            pinBtn.innerHTML = n.is_pinned ? '<i class="bi bi-pin-fill"></i>' : '<i class="bi bi-pin"></i>';
+        }
+        renderNotesList();
+    }
+
+    function showEditor(show) {
+        const toolbar = document.getElementById('notes-editor-toolbar');
+        const empty   = document.getElementById('notes-empty-state');
+        const title   = document.getElementById('note-title-input');
+        const content = document.getElementById('note-content-input');
+        const footer  = document.getElementById('note-meta-footer');
+        if (toolbar) toolbar.style.display = show ? 'block'  : 'none';
+        if (empty)   empty.style.display   = show ? 'none'   : 'flex';
+        if (title)   title.style.display   = show ? 'block'  : 'none';
+        if (content) content.style.display = show ? 'block'  : 'none';
+        if (footer)  footer.style.display  = show ? 'block'  : 'none';
+        if (show && title) { title.focus(); }
+    }
+
+    function createNewNote() {
+        if (curNoteId) saveNote(curNoteId, true);
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'create',title:'Catatan Baru',content:'',color:noteColor})})
+        .then(r => r.json()).then(res => {
+            if (res.status === 'success') {
+                loadNotes();
+                setTimeout(() => {
+                    openNote(res.id);
+                    const titleEl = document.getElementById('note-title-input');
+                    if (titleEl) titleEl.select();
+                }, 200);
+            }
+        });
+    }
+
+    function scheduleAutoSave() {
+        clearTimeout(noteAutoSaveT);
+        const statusEl = document.getElementById('note-save-status');
+        if (statusEl) statusEl.textContent = '💾 Menyimpan...';
+        noteAutoSaveT = setTimeout(() => { if (curNoteId) saveNote(curNoteId); }, 1000);
+    }
+
+    function onNoteContentInput() {
+        updateWordCount();
+        scheduleAutoSave();
+    }
+
+    function saveNote(id, silent = false) {
+        const titleEl   = document.getElementById('note-title-input');
+        const contentEl = document.getElementById('note-content-input');
+        if (!titleEl || !contentEl) return;
+        const title   = titleEl.value.trim() || 'Catatan Tanpa Judul';
+        const content = contentEl.value;
+        const fd = new URLSearchParams({action:'update', id, title, content, color: noteColor});
+        fetch('api_notes.php', {method:'POST', body: fd})
+        .then(r => r.json()).then(res => {
+            if (!silent && res.status === 'success') {
+                const statusEl = document.getElementById('note-save-status');
+                if (statusEl) statusEl.textContent = '✓ Tersimpan';
+                const now = new Date();
+                const updatedEl = document.getElementById('note-updated-at');
+                if (updatedEl) {
+                    updatedEl.textContent = 'Diperbarui: ' + now.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                }
+                setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
+                const n = notesData.find(x => x.id == id);
+                if (n) { n.title = title; n.content = content; n.color = noteColor; n.preview = content.substring(0,80); }
+                renderNotesList();
+            }
+        });
+    }
+
+    function updateWordCount() {
+        const contentEl = document.getElementById('note-content-input');
+        if (!contentEl) return;
+        const txt = contentEl.value;
+        const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+        const chars = txt.length;
+        const countEl = document.getElementById('note-word-count');
+        if (countEl) countEl.textContent = words ? `${words} kata · ${chars} kar` : '';
+    }
+
+    function setNoteColor(c) {
+        noteColor = c;
+        updateColorDots(c);
+        scheduleAutoSave();
+        renderNotesList();
+    }
+
+    function updateColorDots(active) {
+        document.querySelectorAll('.note-color-dot').forEach(d => {
+            d.style.border = d.dataset.color === active ? `2px solid ${d.dataset.color}` : '2px solid transparent';
+            d.style.transform = d.dataset.color === active ? 'scale(1.3)' : 'scale(1)';
+        });
+    }
+
+    function togglePinNote() {
+        if (!curNoteId) return;
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'pin', id: curNoteId})})
+        .then(r => r.json()).then(() => {
+            loadNotes();
+            setTimeout(() => openNote(curNoteId), 250);
+        });
+    }
+
+    function deleteCurrentNote() {
+        if (!curNoteId) return;
+        const n = notesData.find(x => x.id == curNoteId);
+        if (!confirm(`Hapus catatan "${n?.title || ''}"?`)) return;
+        fetch('api_notes.php', {method:'POST', body: new URLSearchParams({action:'delete', id: curNoteId})})
+        .then(() => {
+            curNoteId = null;
+            showEditor(false);
+            loadNotes();
+        });
+    }
+
+    function searchNotes(q) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadNotes(q), 300);
+    }
+
+    loadNotes();
+    window.addEventListener('beforeunload', () => { if (curNoteId) saveNote(curNoteId, true); });
+
     // === SCROLL REVEAL ===
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -1241,21 +1142,9 @@ $tanggal = date('d M Y');
                 revealObserver.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
     
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-    // === MOUSE-FOLLOW RIPPLE ON APP CARDS ===
-    document.querySelectorAll('.app-ticket').forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            card.style.setProperty('--ripple-x', x + '%');
-            card.style.setProperty('--ripple-y', y + '%');
-        });
-    });
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
