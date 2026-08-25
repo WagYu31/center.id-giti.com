@@ -478,7 +478,15 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
             <p class="text-muted small m-0 mt-1">Pantau keaktifan update progres, inisiatif pekerjaan baru, dan penyelesaian tugas tim.</p>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- View Switcher -->
+            <div class="btn-group shadow-sm bg-white rounded-pill p-1">
+                <a href="index.php?switch_mode=social" class="btn btn-sm rounded-pill px-3 text-muted"><i class="bi bi-grid-fill me-1"></i> Sosial</a>
+                <a href="index.php?switch_mode=formal" class="btn btn-sm rounded-pill px-3 text-muted"><i class="bi bi-list-ul me-1"></i> Tabel</a>
+                <a href="analytics.php" class="btn btn-sm rounded-pill px-3 btn-dark" style="font-weight: 600;"><i class="bi bi-trophy-fill me-1 text-warning"></i> KPI</a>
+            </div>
+
+            <!-- Period Filter -->
             <div class="period-tab-group">
                 <a href="?period=this_month" class="period-tab <?= $period === 'this_month' ? 'active' : '' ?>">
                     <i class="bi bi-calendar-check"></i> Bulan Ini
