@@ -109,8 +109,54 @@ foreach($jobs as &$jb) {
 $users_list = $conn->query("SELECT id, name FROM users ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 $stmt_me = $conn->prepare("SELECT avatar, name FROM users WHERE id=?"); $stmt_me->execute([$current_user_id]); $me = $stmt_me->fetch();
 $myName = $me['name'] ?? 'User'; 
-$my_av = ($me['avatar'] && file_exists("assets/img/avatars/" . $me['avatar'])) ? "assets/img/avatars/" . $me['avatar'] : "https://ui-avatars.com/api/?name=" . urlencode($myName);
 $sapa = date('H')<11?"Selamat Pagi": (date('H')<15?"Selamat Siang": (date('H')<18?"Selamat Sore":"Selamat Malam"));
+
+// Fetch Monthly KPI Metrics & Top 3 Performers for the dashboard spotlight
+$month_created_cnt = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE deleted_at IS NULL AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+$month_updates_cnt = (int)$conn->query("SELECT COUNT(*) FROM bukti_job_progress WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+$month_done_cnt    = (int)$conn->query("SELECT COUNT(*) FROM bukti_jobs WHERE deleted_at IS NULL AND status = 'done' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+
+$top3_kpi = [];
+try {
+    $kpi_spotlight_stmt = $conn->query("SELECT 
+        u.id, 
+        u.name, 
+        u.avatar, 
+        u.nickname, 
+        u.jabatan,
+        u.division,
+        COALESCE(j_created.total_created, 0) as total_created,
+        COALESCE(j_done.total_done, 0) as total_done,
+        COALESCE(p_updates.total_updates, 0) as total_updates,
+        (COALESCE(j_created.total_created, 0)*15 + COALESCE(p_updates.total_updates, 0)*20 + COALESCE(j_done.total_done, 0)*25) as kpi_score
+    FROM users u
+    LEFT JOIN (
+        SELECT user_id, COUNT(*) as total_created 
+        FROM bukti_jobs 
+        WHERE deleted_at IS NULL AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())
+        GROUP BY user_id
+    ) j_created ON u.id = j_created.user_id
+    LEFT JOIN (
+        SELECT user_id, COUNT(*) as total_done 
+        FROM bukti_jobs 
+        WHERE deleted_at IS NULL AND status = 'done' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())
+        GROUP BY user_id
+    ) j_done ON u.id = j_done.user_id
+    LEFT JOIN (
+        SELECT user_id, COUNT(*) as total_updates 
+        FROM bukti_job_progress 
+        WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())
+        GROUP BY user_id
+    ) p_updates ON u.id = p_updates.user_id
+    WHERE (COALESCE(j_created.total_created, 0) > 0 OR COALESCE(p_updates.total_updates, 0) > 0 OR COALESCE(j_done.total_done, 0) > 0)
+    ORDER BY kpi_score DESC
+    LIMIT 3");
+    $top3_kpi = $kpi_spotlight_stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach($top3_kpi as &$tk) {
+        $tk['avatar_url'] = ($tk['avatar'] && file_exists("assets/img/avatars/" . $tk['avatar'])) ? "assets/img/avatars/" . $tk['avatar'] : "https://ui-avatars.com/api/?name=" . urlencode($tk['name']) . "&background=f59e0b&color=ffffff&bold=true";
+    }
+    unset($tk);
+} catch(Exception $e) {}
 
 function time_ago($datetime) { return tgl_indo($datetime); }
 function format_text($text) { 
@@ -455,6 +501,68 @@ function format_text($text) {
             </div>
         </div>
 
+        <!-- ══════════════════════════════════════════════════════════════
+             KPI & LEADERBOARD SPOTLIGHT BANNER (TASTE SKILL BENTO)
+             ══════════════════════════════════════════════════════════════ -->
+        <?php if (!empty($top3_kpi)): ?>
+        <div class="card-custom p-3 p-md-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%); border: 1px solid rgba(245, 158, 11, 0.22); box-shadow: 0 4px 20px -4px rgba(245, 158, 11, 0.08);">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 1.15rem;">🏆</span>
+                    <span class="fw-bold" style="color: #0a0a0a; font-size: 0.95rem; letter-spacing: -0.01em;">Top Leaderboard Bulan Ini</span>
+                    <span class="badge rounded-pill" style="background: rgba(245, 158, 11, 0.12); color: #d97706; font-size: 0.68rem; font-weight: 700;"><?= date('F Y') ?></span>
+                </div>
+                <a href="analytics.php" class="small fw-bold text-decoration-none d-inline-flex align-items-center gap-1" style="color: #d97706;">
+                    Lihat Dashboard KPI Lengkap <i class="bi bi-arrow-right-short" style="font-size: 1.1rem;"></i>
+                </a>
+            </div>
+
+            <!-- Mini 3D Podium Row -->
+            <div class="row g-3 align-items-center">
+                <!-- Podiums -->
+                <div class="col-lg-7">
+                    <div class="d-flex gap-2 justify-content-center justify-content-md-start">
+                        <?php 
+                        $medals = ['🥇', '🥈', '🥉'];
+                        $bgs = ['#fffbeb', '#f8fafc', '#fff7ed'];
+                        $borders = ['rgba(245, 158, 11, 0.35)', 'rgba(203, 213, 225, 0.5)', 'rgba(251, 146, 60, 0.35)'];
+                        $colors = ['#d97706', '#475569', '#c2410c'];
+                        
+                        foreach($top3_kpi as $ki => $top_u): 
+                        ?>
+                        <div class="flex-grow-1 p-2 rounded-4 text-center" style="background: <?= $bgs[$ki] ?>; border: 1px solid <?= $borders[$ki] ?>; min-width: 90px; max-width: 140px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div style="font-size: 1.2rem; line-height: 1;"><?= $medals[$ki] ?></div>
+                            <img src="<?= $top_u['avatar_url'] ?>" class="rounded-circle my-1 shadow-sm" width="40" height="40" style="object-fit:cover; border: 2px solid white;">
+                            <div class="fw-bold text-truncate px-1" style="font-size: 0.78rem; color: #0a0a0a;" title="<?= htmlspecialchars($top_u['name']) ?>"><?= htmlspecialchars(explode(' ', $top_u['name'])[0]) ?></div>
+                            <span class="badge rounded-pill fw-bold" style="background: <?= $colors[$ki] ?>; color: white; font-size: 0.65rem; padding: 2px 8px;">
+                                <?= $top_u['kpi_score'] ?> pts
+                            </span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Monthly Stats Pill Column -->
+                <div class="col-lg-5">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center p-2 px-3 rounded-3" style="background: white; border: 1px solid rgba(15,15,15,0.06);">
+                            <span class="small text-muted fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-journal-plus text-info me-1"></i> Tugas Dibuat</span>
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0a0a0a;"><?= $month_created_cnt ?> Tasks</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-2 px-3 rounded-3" style="background: white; border: 1px solid rgba(15,15,15,0.06);">
+                            <span class="small text-muted fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Update Progres</span>
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0a0a0a;"><?= $month_updates_cnt ?> Updates</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-2 px-3 rounded-3" style="background: white; border: 1px solid rgba(15,15,15,0.06);">
+                            <span class="small text-muted fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-check2-circle text-success me-1"></i> Selesai</span>
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0a0a0a;"><?= $month_done_cnt ?> Selesai</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="card-custom p-3 cursor-pointer mb-4" data-bs-toggle="modal" data-bs-target="#createModal">
             <div class="d-flex gap-3 align-items-center"><img src="<?php echo $my_av; ?>" class="rounded-circle" width="40" height="40"><div class="form-control border-0 bg-light rounded-pill text-muted">Apa yang sedang dikerjakan? (Ketik @ untuk tag)</div></div>
         </div>
@@ -678,6 +786,32 @@ function format_text($text) {
             <div class="d-flex justify-content-between mb-2"><span><i class="bi bi-play-circle-fill text-primary me-2"></i> Dalam Proses</span><b><?php echo $stats['in_progress']??0; ?></b></div>
             <div class="d-flex justify-content-between"><span><i class="bi bi-check-circle-fill text-success me-2"></i> Selesai</span><b><?php echo $stats['done']??0; ?></b></div>
         </div>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             MINI KPI LEADERBOARD WIDGET
+             ══════════════════════════════════════════════════════════════ -->
+        <?php if(!empty($top3_kpi)): ?>
+        <div class="card-custom p-4 mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0"><i class="bi bi-trophy-fill text-warning me-1"></i> Top Performer</h6>
+                <a href="analytics.php" class="small fw-bold text-decoration-none" style="color: #d97706; font-size: 0.75rem;">Detail →</a>
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <?php foreach($top3_kpi as $tidx => $tu): ?>
+                <div class="d-flex align-items-center justify-content-between p-2 rounded-3" style="background: <?= $tidx===0?'#fffbeb':'#f8fafc' ?>; border: 1px solid <?= $tidx===0?'rgba(245,158,11,0.2)':'rgba(0,0,0,0.04)' ?>;">
+                    <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+                        <span style="font-size: 1rem;"><?= ['🥇','🥈','🥉'][$tidx] ?></span>
+                        <img src="<?= $tu['avatar_url'] ?>" class="rounded-circle" width="28" height="28" style="object-fit:cover;">
+                        <div class="text-truncate" style="font-size: 0.8rem; font-weight: 700; color: #1e293b;"><?= htmlspecialchars($tu['name']) ?></div>
+                    </div>
+                    <span class="badge rounded-pill" style="background: <?= $tidx===0?'#d97706':'#475569' ?>; color: white; font-size: 0.68rem; font-weight: 700;">
+                        <?= $tu['kpi_score'] ?> pts
+                    </span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 
