@@ -10,29 +10,35 @@
     
     <style>
         :root {
-            /* ISO 9241-151: Neutral cool palette - reduces eye strain */
+            /* Taste Skill Modern 3D Vibrant Theme */
             --sidebar-bg: #ffffff;
             --sidebar-text: #64748b;
             --sidebar-hover: #1e293b;
-            --body-bg: #f1f5f9;
+            --body-bg: #f8fafc;
             --card-bg: #ffffff;
             --primary: #d97706;
             --primary-light: #f59e0b;
-            --primary-glow: rgba(217, 119, 6, 0.08);
+            --primary-glow: rgba(245, 158, 11, 0.12);
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
-            --radius: 14px;
-            --radius-sm: 10px;
+            --border-color: rgba(226, 232, 240, 0.9);
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
+            --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+            --shadow-3d: 0 1px 3px rgba(15, 23, 42, 0.03), 0 8px 24px -4px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            --shadow-3d-hover: 0 4px 8px -2px rgba(15, 23, 42, 0.04), 0 18px 38px -6px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
+            --radius: 18px;
+            --radius-sm: 12px;
         }
         
         * { box-sizing: border-box; }
         
         body {
             background-color: var(--body-bg);
+            background-image: 
+                radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.035) 0px, transparent 50%),
+                radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.035) 0px, transparent 50%);
+            background-attachment: fixed;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
             color: var(--text-dark);

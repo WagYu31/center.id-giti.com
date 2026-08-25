@@ -127,316 +127,414 @@ function format_text($text) {
 ?>
 
 <style>
-    /* Loading Overlay - Premium Gold */
-    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(245,243,239,0.92); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
-    .loader { width: 48px; height: 48px; border: 4px solid rgba(234,179,8,0.2); border-top-color: #eab308; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 0.8s linear infinite; }
+<style>
+    /* ══════════════════════════════════════════════════════════════
+       TASTE SKILL 3D MODERN DESIGN SYSTEM
+       ══════════════════════════════════════════════════════════════ */
+    
+    /* Loading Overlay - Premium Gold Glassmorphism */
+    #loading-overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(248, 250, 252, 0.85); 
+        backdrop-filter: blur(12px); 
+        z-index: 99999; 
+        display: none; align-items: center; justify-content: center; flex-direction: column; 
+    }
+    .loader { 
+        width: 52px; height: 52px; 
+        border: 4px solid rgba(245, 158, 11, 0.15); 
+        border-top-color: #f59e0b; 
+        border-radius: 50%; 
+        display: inline-block; box-sizing: border-box; 
+        animation: rotation 0.75s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite; 
+    }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Preview Files Grid */
-    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px; }
-    .preview-item { position: relative; width: 100%; padding-top: 100%; background: #fefce8; border-radius: 12px; overflow: hidden; border: 1px solid rgba(234,179,8,0.15); transition: transform 0.2s ease; }
-    .preview-item:hover { transform: scale(1.03); }
-    .preview-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-    .preview-content img, .preview-content video { width: 100%; height: 100%; object-fit: cover; }
-    .preview-content i { font-size: 2rem; color: #eab308; }
+    /* ── 3D Feed Cards & Interactive Depth ── */
+    .card-custom {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 6px 18px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        margin-bottom: 20px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-custom:hover {
+        border-color: rgba(245, 158, 11, 0.3);
+        box-shadow: 0 8px 26px -4px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1);
+        transform: translateY(-2px);
+    }
 
-    /* ── File Lightbox ── */
-    #fileLightbox {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.82);
-        backdrop-filter: blur(6px);
-        z-index: 99999;
+    /* ── 3D Status Badges with Glowing Pulse ── */
+    .badge-3d-status {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.18s ease;
+        gap: 6px;
+        padding: 5px 13px;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.7);
+        transition: transform 0.2s ease;
     }
-    #fileLightbox.show { display: flex; }
-    #fileLightbox .lb-close {
-        position: absolute; top: 18px; right: 22px;
-        background: rgba(255,255,255,0.12);
-        border: none; color: #fff;
-        width: 38px; height: 38px;
-        border-radius: 50%; font-size: 1.2rem;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        transition: background 0.15s;
+    .badge-3d-status:hover { transform: scale(1.03); }
+    
+    .badge-3d-done {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
-    #fileLightbox .lb-close:hover { background: rgba(255,255,255,0.25); }
-    #fileLightbox .lb-img {
-        max-width: 90vw; max-height: 85vh;
+    .badge-3d-done .pulse-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        animation: pulseGreen 2s infinite;
+    }
+    @keyframes pulseGreen {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25); }
+        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1); }
+    }
+
+    .badge-3d-progress {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        color: #b45309;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-3d-progress .pulse-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+        animation: pulseAmber 2s infinite;
+    }
+    @keyframes pulseAmber {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25); }
+        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.1); }
+    }
+
+    .badge-3d-todo {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        color: #475569;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .badge-3d-todo .pulse-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+    }
+
+    /* ── 3D Tactile Buttons ── */
+    .btn-3d-primary {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        border: none !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
         border-radius: 12px;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-        object-fit: contain;
-        animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        box-shadow: 0 4px 14px -2px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
-    #fileLightbox .lb-name {
-        position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.55);
-        color: #fff; font-size: 0.82rem;
-        padding: 5px 14px; border-radius: 20px;
-        white-space: nowrap; max-width: 80vw;
-        overflow: hidden; text-overflow: ellipsis;
+    .btn-3d-primary:hover {
+        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+        box-shadow: 0 8px 20px -3px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+        transform: translateY(-2px);
     }
-    .preview-item img { cursor: zoom-in; }
-    .btn-remove-file { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; transition: all 0.2s ease; }
-    .btn-remove-file:hover { background: #ef4444; transform: scale(1.15); }
-    .file-name-small { font-size: 0.6rem; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; color: #6b7280; }
-    
-    /* Custom Scrollbar */
-    .custom-scroll::-webkit-scrollbar { width: 5px; }
-    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-    .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(234,179,8,0.25); border-radius: 10px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(234,179,8,0.45); }
+    .btn-3d-primary:active {
+        transform: translateY(1px) scale(0.98);
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35), inset 0 2px 4px rgba(0,0,0,0.15) !important;
+    }
 
-    /* Mention Autocomplete - Gold Theme */
-    .mention-list {
-        position: absolute;
-        background: white;
-        border: 1px solid rgba(0,0,0,0.06);
-        border-radius: 14px;
-        max-height: 220px;
-        overflow-y: auto;
-        width: 280px;
-        z-index: 9999;
-        box-shadow: 0 12px 36px rgba(0,0,0,0.12);
-        display: none;
-        padding: 6px 0;
+    .btn-3d-pill {
+        background: #f8fafc;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .mention-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 15px;
+    .btn-3d-pill:hover {
+        background: #ffffff;
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.3);
+        box-shadow: 0 4px 12px -2px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255,255,255,1);
+        transform: translateY(-1px);
+    }
+    .btn-3d-pill.liked {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        color: #d97706;
+        border-color: rgba(245, 158, 11, 0.4);
+        box-shadow: 0 2px 8px -1px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    /* ── Post Input / Creator Bar ── */
+    .post-creator-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        padding: 14px 18px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
         cursor: pointer;
-        transition: all 0.15s ease;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .mention-item:hover { background: rgba(234,179,8,0.08); }
-    .mention-item:last-child { border-bottom: none; }
-    .mention-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        object-fit: cover;
-        flex-shrink: 0;
-        border: 2px solid rgba(234,179,8,0.2);
+    .post-creator-card:hover {
+        border-color: rgba(245, 158, 11, 0.4);
+        box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+        transform: translateY(-2px);
     }
-    .mention-info { display: flex; flex-direction: column; justify-content: center; }
-    .mention-name { font-size: 0.88rem; font-weight: 600; color: #1a1a1a; line-height: 1.2; }
-    .mention-nick { font-size: 0.73rem; color: #9ca3af; }
+    .post-creator-input {
+        background: #f8fafc;
+        border: 1px solid rgba(226, 232, 240, 0.7);
+        border-radius: 9999px;
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        color: #64748b;
+        flex-grow: 1;
+        transition: background 0.2s;
+    }
+    .post-creator-card:hover .post-creator-input {
+        background: #f1f5f9;
+        color: #334155;
+    }
 
-    /* Premium Page-Level Overrides */
-    .text-primary { color: #eab308 !important; }
-    .bg-primary { background-color: #eab308 !important; }
-    .btn-primary { background: linear-gradient(135deg, #eab308, #facc15) !important; border: none !important; color: #1a1a1a !important; font-weight: 600 !important; }
-    .btn-primary:hover { box-shadow: 0 4px 16px rgba(234,179,8,0.35) !important; transform: translateY(-1px); }
-    .btn-outline-primary { border-color: #eab308 !important; color: #eab308 !important; }
-    .btn-outline-primary:hover { background: #eab308 !important; color: #1a1a1a !important; }
-    .page-link { color: #eab308; }
-    .page-item.active .page-link { background: #eab308; border-color: #eab308; color: #1a1a1a; }
-    .badge.bg-success { background: #16a34a !important; }
-    .badge.bg-primary { background: linear-gradient(135deg, #eab308, #facc15) !important; color: #1a1a1a !important; }
-    .form-control:focus, .form-select:focus { border-color: #eab308; box-shadow: 0 0 0 3px rgba(234,179,8,0.15); }
-    .cursor-pointer { cursor: pointer; }
-    
-    /* Greeting section */
-    .greeting-emoji { font-size: 1.8rem; animation: wave 1.5s ease-in-out infinite; display: inline-block; }
-    @keyframes wave { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-10deg); } }
-
-    /* Drag & Drop Zone */
+    /* ── 3D Animated Upload Drop Zone ── */
     .drop-zone {
-        border: 2px dashed rgba(234,179,8,0.3);
-        border-radius: 16px;
-        padding: 28px 20px;
+        border: 2px dashed rgba(245, 158, 11, 0.35);
+        border-radius: 18px;
+        padding: 26px 20px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
-        background: #fffef5;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        background: linear-gradient(135deg, #ffffff 0%, #fffdfa 100%);
         position: relative;
+        box-shadow: inset 0 2px 6px rgba(245, 158, 11, 0.03);
     }
     .drop-zone:hover {
-        border-color: #eab308;
-        background: #fefce8;
+        border-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255,255,255,0.9);
     }
     .drop-zone.drag-over {
-        border-color: #eab308;
-        background: rgba(234,179,8,0.08);
-        transform: scale(1.01);
-        box-shadow: 0 0 0 4px rgba(234,179,8,0.1);
+        border-color: #d97706;
+        background: rgba(245, 158, 11, 0.1);
+        transform: scale(1.02);
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
     }
     .drop-zone .drop-icon {
-        font-size: 2.2rem;
-        color: #eab308;
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #d97706;
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        font-size: 1.5rem;
         margin-bottom: 8px;
-        transition: transform 0.3s ease;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .drop-zone:hover .drop-icon,
     .drop-zone.drag-over .drop-icon {
-        transform: translateY(-4px) scale(1.1);
+        transform: translateY(-4px) scale(1.12);
     }
     .drop-zone .drop-text {
         font-size: 0.88rem;
-        color: #6b7280;
-        font-weight: 500;
+        color: #475569;
+        font-weight: 600;
     }
     .drop-zone .drop-text strong {
-        color: #eab308;
+        color: #d97706;
         cursor: pointer;
     }
     .drop-zone .drop-hint {
         font-size: 0.72rem;
-        color: #9ca3af;
+        color: #94a3b8;
         margin-top: 4px;
+    }
+
+    /* ── Preview Grid ── */
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin-top: 15px; }
+    .preview-item { 
+        position: relative; width: 100%; padding-top: 100%; 
+        background: #f8fafc; border-radius: 14px; overflow: hidden; 
+        border: 1px solid rgba(226, 232, 240, 0.9); 
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
+    .preview-item:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .preview-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .preview-content img, .preview-content video { width: 100%; height: 100%; object-fit: cover; }
+    .preview-content i { font-size: 2rem; color: #f59e0b; }
+    .btn-remove-file { 
+        position: absolute; top: 4px; right: 4px; 
+        background: rgba(15, 23, 42, 0.75); color: white; 
+        border: none; border-radius: 50%; width: 22px; height: 22px; 
+        font-size: 11px; display: flex; align-items: center; justify-content: center; 
+        cursor: pointer; z-index: 5; transition: all 0.2s ease; 
+        backdrop-filter: blur(4px);
+    }
+    .btn-remove-file:hover { background: #ef4444; transform: scale(1.18); }
+
+    /* ── 3D Modal Windows (Detail & Progress) ── */
+    .modal-content {
+        border-radius: 24px !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.2), 0 8px 24px -4px rgba(0,0,0,0.06) !important;
+        overflow: hidden;
+    }
+    .modal-backdrop.show {
+        backdrop-filter: blur(8px);
+        background-color: rgba(15, 23, 42, 0.45);
+    }
+
+    /* ── Timeline Stepper in Modal ── */
+    .timeline-node {
+        position: relative;
+        padding-left: 28px;
+        margin-bottom: 20px;
+    }
+    .timeline-node:last-child { margin-bottom: 0; }
+    .timeline-node::before {
+        content: '';
+        position: absolute;
+        left: 8px; top: 22px; bottom: -18px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+    .timeline-node:last-child::before { display: none; }
+    .timeline-icon-dot {
+        position: absolute;
+        left: 0; top: 4px;
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 3px solid #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        z-index: 2;
+    }
+
+    /* ── Modern Chat Bubbles in Detail Modal ── */
+    .chat-bubble-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 12px 16px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        transition: border-color 0.2s;
+    }
+    .chat-bubble-card:hover {
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Tag Mentions in Text */
+    .mention-badge {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0284c7;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.88em;
     }
 
     /* Description Editor */
     .desc-editor {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
         overflow: hidden;
-        transition: all 0.3s ease;
-        background: #fafafa;
+        transition: all 0.25s ease;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
     .desc-editor:focus-within {
-        border-color: #eab308;
-        box-shadow: 0 0 0 3px rgba(234,179,8,0.12);
-        background: white;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
     }
     .desc-toolbar {
         display: flex;
         align-items: center;
-        gap: 2px;
-        padding: 6px 10px;
-        background: #f9fafb;
-        border-bottom: 1px solid #f3f4f6;
+        gap: 4px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-bottom: 1px solid #edf2f7;
     }
     .desc-tool {
         background: none;
         border: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #6b7280;
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: #64748b;
         cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.9rem;
+        transition: all 0.15s ease;
+        font-size: 0.92rem;
     }
     .desc-tool:hover {
-        background: rgba(234,179,8,0.1);
-        color: #eab308;
+        background: rgba(245, 158, 11, 0.12);
+        color: #d97706;
     }
-    .desc-divider {
-        width: 1px;
-        height: 18px;
-        background: #e5e7eb;
-        margin: 0 6px;
-    }
-    .desc-hint {
-        font-size: 0.68rem;
-        color: #9ca3af;
-        margin-left: auto;
-    }
-    .desc-editor textarea {
-        background: transparent !important;
-        resize: vertical;
-        min-height: 100px;
-        max-height: 400px;
-        font-size: 0.9rem !important;
-        line-height: 1.65;
-        color: #374151;
-    }
-    .desc-editor textarea::placeholder {
-        color: #9ca3af;
-    }
-    /* Contenteditable rich editor */
+    .desc-divider { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
+    .desc-hint { font-size: 0.7rem; color: #94a3b8; margin-left: auto; font-weight: 500; }
     .rich-editor {
         min-height: 120px;
-        max-height: 400px;
+        max-height: 380px;
         overflow-y: auto;
-        padding: 12px 16px;
-        font-size: 0.9rem;
+        padding: 14px 18px;
+        font-size: 0.92rem;
         line-height: 1.65;
-        color: #374151;
+        color: #1e293b;
         outline: none;
-        background: transparent;
     }
     .rich-editor:empty::before {
-        content: 'Deskripsi... Gunakan @ untuk tag';
-        color: #9ca3af;
+        content: 'Tuliskan deskripsi pekerjaan... Gunakan @ untuk tag rekan tim';
+        color: #94a3b8;
         pointer-events: none;
     }
-    .rich-editor b, .rich-editor strong { font-weight: 700; color: #111827; }
-    .rich-editor i, .rich-editor em { font-style: italic; }
 
-    /* Feed content display — proper bullet/line spacing */
-    .rich-content { margin: 0; }
-    .rich-content br { line-height: 1.1; }
-    /* Prevent Bootstrap's default margin on <p> wrapper */
-    .rich-content + * { margin-top: 0; }
+    /* ── Custom Scrollbar ── */
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(203, 213, 225, 0.8); border-radius: 9999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(245, 158, 11, 0.5); }
 
-    /* ── Status Picker ── */
-    .status-picker { position: relative; }
-    .status-picker-btn {
-        display: flex; align-items: center; gap: 8px;
-        padding: 9px 12px;
-        background: #f1f5f9; border-radius: 10px;
-        border: 1.5px solid transparent;
-        cursor: pointer; user-select: none;
-        font-size: 0.875rem; font-weight: 500; color: #374151;
-        transition: border-color 0.18s, box-shadow 0.18s;
-    }
-    .status-picker-btn:hover { border-color: #e2e8f0; }
-    .status-picker.open .status-picker-btn {
-        border-color: #eab308;
-        box-shadow: 0 0 0 3px rgba(234,179,8,0.12);
-    }
-    .status-dot {
-        width: 9px; height: 9px; border-radius: 50%;
-        flex-shrink: 0; display: inline-block;
-        box-shadow: 0 0 0 2px rgba(0,0,0,0.06);
-    }
-    .status-picker-menu {
-        display: none;
-        position: absolute; top: calc(100% + 6px); left: 0; right: 0;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.08);
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.14);
-        z-index: 500;
-        overflow: hidden;
-        animation: fadeUp 0.15s cubic-bezier(0.16,1,0.3,1);
-        min-width: 180px;
-    }
-    .status-picker.open .status-picker-menu { display: block; }
-    .status-opt {
-        display: flex; align-items: center; gap: 9px;
-        padding: 10px 14px;
-        font-size: 0.85rem; font-weight: 500; color: #374151;
-        cursor: pointer; transition: background 0.12s;
-    }
-    .status-opt:hover { background: #f8fafc; }
-    .status-opt.active { background: #f1f5f9; font-weight: 700; }
-
-    .paste-toast {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background: #1a1a1a;
-        color: white;
-        padding: 10px 18px;
-        border-radius: 10px;
-        font-size: 0.82rem;
-        font-weight: 500;
+    /* ── Mention Autocomplete ── */
+    .mention-list {
+        position: absolute;
+        background: white;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 16px;
+        max-height: 220px;
+        overflow-y: auto;
+        width: 280px;
         z-index: 99999;
-        animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.15);
+        display: none;
+        padding: 6px 0;
     }
-    .paste-toast i { color: #eab308; margin-right: 6px; }
-    @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+    .mention-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px; cursor: pointer;
+        transition: all 0.15s ease;
+        border-bottom: 1px solid #f8fafc;
+    }
+    .mention-item:hover { background: rgba(245, 158, 11, 0.08); }
+    .mention-item:last-child { border-bottom: none; }
+    .mention-avatar {
+        width: 36px; height: 36px;
+        border-radius: 10px; object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid rgba(245, 158, 11, 0.25);
+    }
+    .mention-name { font-size: 0.88rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+    .mention-nick { font-size: 0.73rem; color: #64748b; }
+
+    /* Page link & Button Overrides */
+    .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706) !important; border: none !important; color: #ffffff !important; font-weight: 700 !important; box-shadow: 0 4px 14px -2px rgba(245,158,11,0.45) !important; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -3px rgba(245,158,11,0.55) !important; }
+    .btn-outline-primary { border-color: #f59e0b !important; color: #d97706 !important; font-weight: 600; }
+    .btn-outline-primary:hover { background: #f59e0b !important; color: #ffffff !important; }
 </style>
 
 <div id="loading-overlay">
@@ -455,71 +553,80 @@ function format_text($text) {
             </div>
         </div>
 
-        <div class="card-custom p-3 cursor-pointer mb-4" data-bs-toggle="modal" data-bs-target="#createModal">
-            <div class="d-flex gap-3 align-items-center"><img src="<?php echo $my_av; ?>" class="rounded-circle" width="40" height="40" style="object-fit: cover;"><div class="form-control border-0 bg-light rounded-pill text-muted">Apa yang sedang dikerjakan? (Ketik @ untuk tag)</div></div>
+        <div class="post-creator-card d-flex align-items-center gap-3 mb-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <div style="position: relative;">
+                <img src="<?php echo $my_av; ?>" class="rounded-circle shadow-sm" width="44" height="44" style="object-fit: cover; border: 2px solid rgba(245, 158, 11, 0.4);">
+                <span style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid white;"><i class="bi bi-plus-lg"></i></span>
+            </div>
+            <div class="post-creator-input">
+                Apa yang sedang dikerjakan? (Ketik @ untuk tag rekan kerja...)
+            </div>
+            <button class="btn btn-sm btn-3d-primary px-3 rounded-pill d-none d-sm-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-circle-fill"></i> Buat
+            </button>
         </div>
 
         <?php if($view_mode == 'social'): ?>
             <div class="row">
             <?php foreach($jobs as $job): 
                 $uName = $job['user_name'] ?? 'User'; $uAvatar = $job['user_avatar'] ?? '';
-                $avatarSrc = ($uAvatar && file_exists("assets/img/avatars/".$uAvatar)) ? "assets/img/avatars/".$uAvatar : "https://ui-avatars.com/api/?name=".urlencode($uName);
+                $avatarSrc = ($uAvatar && file_exists("assets/img/avatars/".$uAvatar)) ? "assets/img/avatars/".$uAvatar : "https://ui-avatars.com/api/?name=".urlencode($uName)."&background=f59e0b&color=ffffff&bold=true";
             ?>
                 <div class="col-12">
-                    <div class="card-custom p-0" id="post-<?php echo $job['id']; ?>" data-status="<?php echo $job['status']; ?>">
-                        <div class="p-3 d-flex justify-content-between align-items-start">
+                    <div class="card-custom" id="post-<?php echo $job['id']; ?>" data-status="<?php echo $job['status']; ?>">
+                        <div class="p-3 px-4 d-flex justify-content-between align-items-start">
                             <div class="d-flex gap-3 align-items-center">
-                                <img src="<?php echo $avatarSrc; ?>" class="rounded-3 shadow-sm" width="46" height="46" style="object-fit:cover; border: 2px solid rgba(234,179,8,0.15);">
+                                <div style="position: relative;">
+                                    <img src="<?php echo $avatarSrc; ?>" class="rounded-4 shadow-sm" width="46" height="46" style="object-fit:cover; border: 2px solid rgba(245, 158, 11, 0.25); box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
+                                </div>
                                 <div>
-                                    <div class="fw-bold" style="color: #111827; font-size: 0.92rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></div>
-                                    <div style="font-size: 0.76rem; color: #6b7280;"><?php echo time_ago($job['created_at']); ?><?php if($job['is_edited']): ?><span class="fst-italic ms-1" style="font-size:0.68rem; color: #9ca3af;">• Diedit</span><?php endif; ?></div>
+                                    <div class="fw-bold" style="color: #0f172a; font-size: 0.95rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></div>
+                                    <div style="font-size: 0.76rem; color: #64748b;"><?php echo time_ago($job['created_at']); ?><?php if($job['is_edited']): ?><span class="fst-italic ms-1" style="font-size:0.68rem; color: #94a3b8;">• Diedit</span><?php endif; ?></div>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <?php 
-                                    $statusConfig = [
-                                        'done' => ['bg' => '#f0fdf4', 'color' => '#15803d', 'icon' => 'check-circle-fill', 'label' => 'SELESAI'],
-                                        'in_progress' => ['bg' => '#fefce8', 'color' => '#a16207', 'icon' => 'play-circle-fill', 'label' => 'ON PROGRESS'],
-                                        'todo' => ['bg' => '#f1f5f9', 'color' => '#475569', 'icon' => 'circle', 'label' => 'BELUM MULAI']
-                                    ];
-                                    $sc = $statusConfig[$job['status']] ?? $statusConfig['todo'];
+                                    if ($job['status'] == 'done') {
+                                        echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> SELESAI</span>';
+                                    } elseif ($job['status'] == 'in_progress') {
+                                        echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> ON PROGRESS</span>';
+                                    } else {
+                                        echo '<span class="badge-3d-status badge-3d-todo"><span class="pulse-dot"></span> BELUM MULAI</span>';
+                                    }
                                 ?>
-                                <span class="px-3 py-2 rounded-pill fw-bold" style="background: <?php echo $sc['bg']; ?>; color: <?php echo $sc['color']; ?>; font-size: 0.72rem; letter-spacing: 0.3px;">
-                                    <i class="bi bi-<?php echo $sc['icon']; ?> me-1"></i><?php echo $sc['label']; ?>
-                                </span>
                                 <?php if($job['user_id'] == $current_user_id): ?>
                                 <div class="dropdown">
-                                    <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-three-dots-vertical" style="color:#6b7280;"></i></button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3" style="min-width: 160px;">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="openEditModal(<?php echo $job['id']; ?>)" style="font-size:0.88rem; color:#374151;"><i class="bi bi-pencil me-2" style="color:#eab308;"></i> Edit</a></li>
-                                        <li><a class="dropdown-item py-2" href="#" onclick="deletePost(<?php echo $job['id']; ?>)" style="font-size:0.88rem; color:#dc2626;"><i class="bi bi-trash me-2"></i> Hapus</a></li>
+                                    <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#f8fafc;"><i class="bi bi-three-dots-vertical" style="color:#64748b;"></i></button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" style="min-width: 160px; box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;">
+                                        <li><a class="dropdown-item rounded-3 py-2" href="#" onclick="openEditModal(<?php echo $job['id']; ?>)" style="font-size:0.88rem; color:#334155; font-weight:600;"><i class="bi bi-pencil-square me-2 text-warning"></i> Edit</a></li>
+                                        <li><a class="dropdown-item rounded-3 py-2 text-danger" href="#" onclick="deletePost(<?php echo $job['id']; ?>)" style="font-size:0.88rem; font-weight:600;"><i class="bi bi-trash3 me-2"></i> Hapus</a></li>
                                     </ul>
                                 </div>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="px-3 pb-2 cursor-pointer" onclick="openDetail(<?php echo $job['id']; ?>)">
-                            <h5 class="fw-bold mb-2" style="color: #111827; font-size: 1rem; letter-spacing: -0.01em;"><?php echo htmlspecialchars($job['title']); ?></h5>
-                            <p class="rich-content" style="color: #374151; line-height: 1.6; font-size: 0.9rem; margin-bottom: 0;"><?php echo (strlen($job['description'])>200) ? substr(format_text($job['description']),0,200).'...' : format_text($job['description']); ?></p>
+                        <div class="px-4 pb-3 cursor-pointer" onclick="openDetail(<?php echo $job['id']; ?>)">
+                            <h5 class="fw-bold mb-2" style="color: #0f172a; font-size: 1.05rem; letter-spacing: -0.015em; line-height: 1.4;"><?php echo htmlspecialchars($job['title']); ?></h5>
+                            <div class="rich-content" style="color: #475569; line-height: 1.65; font-size: 0.9rem; margin-bottom: 0;"><?php echo (strlen($job['description'])>220) ? substr(format_text($job['description']),0,220).'...' : format_text($job['description']); ?></div>
                         </div>
-                        <div class="px-3 py-2 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(0,0,0,0.04) !important;">
+                        <div class="px-4 py-3 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(226, 232, 240, 0.6) !important; background: #fafbfc;">
                             <div class="d-flex gap-2">
-                                <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn btn-sm <?php echo $job['is_liked']?'text-white':''; ?> fw-bold px-3 rounded-pill" style="<?php echo $job['is_liked'] ? 'background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;' : 'background: #f9fafb; color: #4b5563;'; ?> font-size: 0.82rem;">
-                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> <span class="count"><?php echo $job['l_count']; ?></span> Suka
+                                <button onclick="toggleLike(<?php echo $job['id']; ?>, this)" class="btn-3d-pill <?php echo $job['is_liked']?'liked':''; ?> d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-hand-thumbs-up-fill" style="<?php echo $job['is_liked']?'color:#d97706;':'color:#94a3b8;'; ?>"></i> <span class="count"><?php echo $job['l_count']; ?></span> Suka
                                 </button>
-                                <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn btn-sm fw-bold px-3 rounded-pill" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem;">
-                                    <i class="bi bi-chat-dots me-1"></i> <?php echo $job['c_count']; ?> Komentar
+                                <button onclick="openDetail(<?php echo $job['id']; ?>)" class="btn-3d-pill d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-chat-dots-fill text-muted"></i> <?php echo $job['c_count']; ?> Komentar
                                 </button>
                             </div>
-                            <div class="d-flex align-items-center gap-1" style="cursor:pointer;" onclick="showViewers(<?php echo $job['id']; ?>)" title="Klik untuk lihat siapa saja">
+                            <div class="d-flex align-items-center gap-1" style="cursor:pointer;" onclick="showViewers(<?php echo $job['id']; ?>)" title="Klik untuk lihat viewer">
                                 <?php if(!empty($job['viewers'])): ?>
                                 <div class="d-flex" style="margin-right: 4px;">
                                     <?php foreach(array_slice($job['viewers'], 0, 3) as $vi => $viewer): ?>
-                                    <img src="<?php echo $viewer['avatar']; ?>" class="rounded-circle" width="20" height="20" style="object-fit:cover; border: 2px solid white; margin-left: <?php echo $vi > 0 ? '-6px' : '0'; ?>; position:relative; z-index:<?php echo 5-$vi; ?>;" title="<?php echo htmlspecialchars($viewer['name']); ?>">
+                                    <img src="<?php echo $viewer['avatar']; ?>" class="rounded-circle" width="22" height="22" style="object-fit:cover; border: 2px solid white; margin-left: <?php echo $vi > 0 ? '-6px' : '0'; ?>; position:relative; z-index:<?php echo 5-$vi; ?>; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" title="<?php echo htmlspecialchars($viewer['name']); ?>">
                                     <?php endforeach; ?>
                                 </div>
                                 <?php endif; ?>
-                                <span style="font-size: 0.72rem; color: #9ca3af;"><i class="bi bi-eye me-1"></i><?php echo $job['v_count']; ?></span>
+                                <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;"><i class="bi bi-eye me-1"></i><?php echo $job['v_count']; ?></span>
                             </div>
                         </div>
                     </div>
@@ -535,16 +642,15 @@ function format_text($text) {
                         <tr>
                             <td class="ps-4"><div class="fw-bold"><?php echo htmlspecialchars($job['title']); ?></div><small class="text-muted"><?php echo time_ago($job['created_at']); ?></small></td>
                             <td>
-                                <span class="badge rounded-pill border fw-bold 
-                                    <?php echo ($job['status']=='done' ? 'bg-success bg-opacity-10 text-success border-success border-opacity-25' : 
-                                              ($job['status']=='in_progress' ? 'bg-primary bg-opacity-10 text-primary border-primary border-opacity-25' : 
-                                              'bg-secondary bg-opacity-10 text-secondary border-secondary border-opacity-25')); ?> px-2 py-1" style="font-size: 0.75rem;">
-                                    <?php 
-                                        if($job['status']=='done') echo '<i class="bi bi-check-circle-fill me-1"></i> Selesai'; 
-                                        elseif($job['status']=='in_progress') echo '<i class="bi bi-play-circle-fill me-1"></i> On Progress'; 
-                                        else echo '<i class="bi bi-circle me-1"></i> Belum Mulai'; 
-                                    ?>
-                                </span>
+                                <?php 
+                                    if ($job['status'] == 'done') {
+                                        echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> Selesai</span>';
+                                    } elseif ($job['status'] == 'in_progress') {
+                                        echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> On Progress</span>';
+                                    } else {
+                                        echo '<span class="badge-3d-status badge-3d-todo"><span class="pulse-dot"></span> Belum Mulai</span>';
+                                    }
+                                ?>
                             </td>
                             <td><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></td>
                             <td class="text-end pe-4">
@@ -597,13 +703,12 @@ function format_text($text) {
                 <?php endif; ?>
             </div>
             <form method="GET" action="index.php">
-                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KATA KUNCI</label><input name="q" class="form-control bg-light border-0" placeholder="Cari..." value="<?php echo htmlspecialchars($search_query); ?>"></div>
-                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KARYAWAN</label><select name="user" class="form-select bg-light border-0"><option value="">Semua Karyawan</option><?php foreach($users_list as $u) echo "<option value='{$u['id']}' ".($filter_user==$u['id']?'selected':'').">{$u['name']}</option>"; ?></select></div>
+                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KATA KUNCI</label><input name="q" class="form-control bg-light border-0" placeholder="Cari..." value="<?php echo htmlspecialchars($search_query); ?>" style="border-radius:12px; padding:10px 14px;"></div>
+                <div class="mb-3"><label class="small fw-bold text-muted mb-1">KARYAWAN</label><select name="user" class="form-select bg-light border-0" style="border-radius:12px; padding:10px 14px;"><option value="">Semua Karyawan</option><?php foreach($users_list as $u) echo "<option value='{$u['id']}' ".($filter_user==$u['id']?'selected':'').">{$u['name']}</option>"; ?></select></div>
                 <div class="mb-3">
                     <label class="small fw-bold text-muted mb-1">STATUS</label>
-                    <!-- Custom colored status dropdown -->
                     <div class="status-picker" id="statusPicker">
-                        <div class="status-picker-btn" id="statusPickerBtn">
+                        <div class="status-picker-btn" id="statusPickerBtn" style="border-radius:12px; padding:10px 14px;">
                             <span class="status-dot" id="statusPickerDot" style="background:#3b82f6;"></span>
                             <span id="statusPickerLabel">Semua Status</span>
                             <i class="bi bi-chevron-down ms-auto" style="font-size:0.75rem; color:#9ca3af;"></i>
@@ -623,16 +728,15 @@ function format_text($text) {
                             </div>
                         </div>
                     </div>
-                    <!-- Hidden input passed in form -->
                     <input type="hidden" name="status" id="statusHiddenInput" value="<?php echo htmlspecialchars($filter_status); ?>">
                 </div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">RENTANG WAKTU</label>
                     <div class="d-flex gap-1">
-                        <input type="date" name="start" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo htmlspecialchars($filter_date_start); ?>">
-                        <input type="date" name="end" class="form-control form-control-sm bg-light border-0" style="font-size: 0.7rem;" value="<?php echo htmlspecialchars($filter_date_end); ?>">
+                        <input type="date" name="start" class="form-control form-control-sm bg-light border-0" style="font-size: 0.75rem; border-radius:10px;" value="<?php echo htmlspecialchars($filter_date_start); ?>">
+                        <input type="date" name="end" class="form-control form-control-sm bg-light border-0" style="font-size: 0.75rem; border-radius:10px;" value="<?php echo htmlspecialchars($filter_date_end); ?>">
                     </div>
                 </div>
-                <button class="btn btn-primary w-100 fw-bold">Terapkan Filter</button>
+                <button class="btn btn-3d-primary w-100 fw-bold py-2" style="border-radius:12px;">Terapkan Filter</button>
             </form>
         </div>
         <?php
@@ -683,53 +787,59 @@ function format_text($text) {
 
 <div class="modal fade" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg" style="height: 85vh;">
+        <div class="modal-content border-0 overflow-hidden shadow-lg" style="height: 86vh;">
             <div class="modal-body p-0 h-100">
                 <div class="row g-0 h-100">
-                    <!-- Left Panel: Content -->
-                    <div class="col-lg-8 h-100 d-flex flex-column" style="background: #fafafa;">
+                    <!-- Left Panel: Content & Progress Timeline -->
+                    <div class="col-lg-8 h-100 d-flex flex-column" style="background: #fafbfc;">
                         <!-- Header -->
-                        <div class="p-4 flex-shrink-0" style="background: white; border-bottom: 1px solid rgba(0,0,0,0.04);">
+                        <div class="p-4 flex-shrink-0" style="background: #ffffff; border-bottom: 1px solid rgba(226, 232, 240, 0.8);">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex gap-3 align-items-center">
-                                    <img src="" id="d-avatar" class="rounded-3 shadow-sm" width="50" height="50" style="object-fit: cover; border: 2px solid rgba(234,179,8,0.2);">
+                                    <img src="" id="d-avatar" class="rounded-4 shadow-sm" width="52" height="52" style="object-fit: cover; border: 2px solid rgba(245,158,11,0.3); box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
                                     <div>
-                                        <h6 class="fw-bold mb-0" id="d-name" style="color: #111827; font-size: 0.95rem; letter-spacing: -0.01em;"></h6>
-                                        <small id="d-date" style="color: #6b7280; font-size: 0.78rem;"></small>
+                                        <h6 class="fw-bold mb-0" id="d-name" style="color: #0f172a; font-size: 1rem; letter-spacing: -0.01em;"></h6>
+                                        <small id="d-date" style="color: #64748b; font-size: 0.78rem;"></small>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-3"><div id="d-status-badge"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div id="d-status-badge"></div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
                             </div>
                             <div id="d-viewers"></div>
                         </div>
                         <!-- Body -->
                         <div class="p-4 overflow-auto custom-scroll flex-grow-1" style="min-height: 0;">
-                            <h3 class="fw-bold mb-3" id="d-title" style="color: #111827; letter-spacing: -0.02em; font-size: 1.5rem; line-height: 1.3;"></h3>
-                            <div id="d-desc" class="mb-4" style="white-space: pre-wrap; font-size: 0.92rem; line-height: 1.7; color: #374151;"></div>
+                            <h3 class="fw-bold mb-3" id="d-title" style="color: #0f172a; letter-spacing: -0.02em; font-size: 1.45rem; line-height: 1.35;"></h3>
+                            <div id="d-desc" class="mb-4" style="white-space: pre-wrap; font-size: 0.94rem; line-height: 1.7; color: #334155;"></div>
+                            
+                            <!-- Attachments Preview Grid -->
                             <div id="d-att" class="row g-2 mb-4"></div>
-                            <!-- Timeline Section -->
-                            <div style="background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; overflow: hidden;">
-                                <div class="d-flex justify-content-between align-items-center p-3 px-4" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
-                                    <h6 class="fw-bold m-0" style="color: #111827; font-size: 0.92rem;"><i class="bi bi-activity me-2" style="color: #eab308;"></i>Timeline Progress</h6>
-                                    <button class="btn btn-sm rounded-pill px-3 fw-bold" id="btn-update-progress" style="display:none; background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a; font-size: 0.78rem;" onclick="showProgressForm()"><i class="bi bi-plus-lg me-1"></i> Update</button>
+                            
+                            <!-- 3D Timeline Progress Stepper -->
+                            <div style="background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 20px; overflow: hidden; box-shadow: 0 2px 10px rgba(15,23,42,0.03);">
+                                <div class="d-flex justify-content-between align-items-center p-3 px-4" style="border-bottom: 1px solid rgba(226, 232, 240, 0.7); background: #f8fafc;">
+                                    <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 0.92rem;"><i class="bi bi-activity me-2 text-warning"></i>Timeline Progress</h6>
+                                    <button class="btn btn-sm btn-3d-primary px-3 rounded-pill" id="btn-update-progress" style="display:none; font-size: 0.78rem;" onclick="showProgressForm()"><i class="bi bi-plus-lg me-1"></i> Update Progres</button>
                                 </div>
                                 <div id="d-timeline" class="p-4"></div>
                             </div>
                         </div>
                     </div>
                     <!-- Right Panel: Discussion -->
-                    <div class="col-lg-4 h-100 d-flex flex-column" style="background: #f9fafb; border-left: 1px solid rgba(0,0,0,0.04);">
-                        <div class="p-3 px-4 d-flex justify-content-between align-items-center flex-shrink-0" style="background: white; border-bottom: 1px solid rgba(0,0,0,0.04); height: 83px;">
-                            <h6 class="fw-bold m-0" style="color: #111827; font-size: 0.95rem;"><i class="bi bi-chat-dots me-2" style="color: #eab308;"></i>Diskusi</h6>
-                            <button class="btn btn-sm rounded-pill fw-bold px-3" id="d-like-btn" onclick="toggleLikeInModal()" style="background: #f9fafb; color: #4b5563; font-size: 0.82rem; border: 1px solid #e5e7eb;"><i class="bi bi-hand-thumbs-up-fill"></i>
-                            <!--<span id="d-like-count">0</span>-->
+                    <div class="col-lg-4 h-100 d-flex flex-column" style="background: #f8fafc; border-left: 1px solid rgba(226, 232, 240, 0.8);">
+                        <div class="p-3 px-4 d-flex justify-content-between align-items-center flex-shrink-0" style="background: #ffffff; border-bottom: 1px solid rgba(226, 232, 240, 0.8); height: 83px;">
+                            <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 0.95rem;"><i class="bi bi-chat-dots-fill me-2 text-warning"></i>Diskusi</h6>
+                            <button class="btn btn-sm btn-3d-pill px-3" id="d-like-btn" onclick="toggleLikeInModal()">
+                                <i class="bi bi-hand-thumbs-up-fill me-1"></i> <span id="d-like-count">0</span>
                             </button>
                         </div>
                         <div id="d-comments" class="flex-grow-1 p-3 overflow-auto custom-scroll" style="min-height: 0;"></div>
-                        <div class="p-3 flex-shrink-0" style="background: white; border-top: 1px solid rgba(0,0,0,0.04);">
+                        <div class="p-3 flex-shrink-0" style="background: #ffffff; border-top: 1px solid rgba(226, 232, 240, 0.8);">
                             <div class="position-relative">
-                                <input id="d-input" class="form-control rounded-pill bg-light border-0 pe-5" placeholder="Ketik @ untuk tag..." style="padding: 10px 50px 10px 16px; font-size: 0.88rem; color: #374151;">
-                                <button class="btn rounded-circle position-absolute top-50 end-0 translate-middle-y me-2" style="width:36px;height:36px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a1a;" onclick="sendComment()"><i class="bi bi-send-fill" style="font-size: 0.85rem;"></i></button>
+                                <input id="d-input" class="form-control rounded-pill bg-light border-0 pe-5" placeholder="Ketik @ untuk tag rekan kerja..." style="padding: 11px 52px 11px 18px; font-size: 0.88rem; color: #1e293b;">
+                                <button class="btn btn-3d-primary rounded-circle position-absolute top-50 end-0 translate-middle-y me-2" style="width:36px; height:36px; display: flex; align-items: center; justify-content: center;" onclick="sendComment()"><i class="bi bi-send-fill" style="font-size: 0.82rem;"></i></button>
                             </div>
                         </div>
                     </div>
@@ -740,19 +850,19 @@ function format_text($text) {
 </div>
 
 <div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content rounded-4 border-0">
-            <div class="modal-header border-0 pb-0"><h5 class="fw-bold" id="modalTitle">Buat Pekerjaan Baru</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+            <div class="modal-header border-0 pb-0 px-4 pt-4"><h5 class="fw-bold m-0" id="modalTitle" style="color: #0f172a;"><i class="bi bi-plus-circle-fill text-warning me-2"></i>Buat Pekerjaan Baru</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body px-4 py-3">
                 <form id="formJob">
                     <input type="hidden" name="action" value="create_post" id="formAction">
                     <input type="hidden" name="job_id" id="formJobId">
                     <div class="d-flex gap-2 mb-3 align-items-center">
-                        <img src="<?php echo $my_av; ?>" class="rounded-circle" width="40">
-                        <div class="fw-bold"><?php echo $myName; ?></div>
-                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-primary w-auto"><option value="todo">To Do List</option><option value="in_progress">On Progress</option><option value="done">Done</option></select>
+                        <img src="<?php echo $my_av; ?>" class="rounded-circle shadow-sm" width="38" height="38" style="object-fit: cover; border: 2px solid rgba(245,158,11,0.3);">
+                        <div class="fw-bold" style="color: #0f172a; font-size: 0.95rem;"><?php echo $myName; ?></div>
+                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-warning w-auto" style="border-radius: 10px; margin-left: auto;"><option value="todo">Belum Mulai</option><option value="in_progress">On Progress</option><option value="done">Selesai</option></select>
                     </div>
-                    <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-2" placeholder="Judul Pekerjaan..." required>
+                    <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-3" placeholder="Judul Pekerjaan..." required style="color: #0f172a; letter-spacing: -0.02em;">
                     <div class="desc-editor">
                         <div class="desc-toolbar">
                             <button type="button" class="desc-tool" onclick="execFmt('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
@@ -767,8 +877,8 @@ function format_text($text) {
                         <textarea name="description" id="inpDesc" hidden></textarea>
                     </div>
                     <div class="bg-light p-3 rounded-4 mt-3 row g-2">
-                        <div class="col-6"><label class="small text-muted fw-bold">Mulai</label><input type="date" name="start_date" id="inpStart" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
-                        <div class="col-6"><label class="small text-muted fw-bold">Selesai</label><input type="date" name="end_date" id="inpEnd" class="form-control border-0 bg-transparent" value="<?php echo date('Y-m-d'); ?>"></div>
+                        <div class="col-6"><label class="small text-muted fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Tanggal Mulai</label><input type="date" name="start_date" id="inpStart" class="form-control border-0 bg-white rounded-3" value="<?php echo date('Y-m-d'); ?>"></div>
+                        <div class="col-6"><label class="small text-muted fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Target Selesai</label><input type="date" name="end_date" id="inpEnd" class="form-control border-0 bg-white rounded-3" value="<?php echo date('Y-m-d'); ?>"></div>
                     </div>
                     <div class="mt-3">
                         <div class="drop-zone" id="dropZone">
@@ -779,7 +889,6 @@ function format_text($text) {
                         </div>
                         <div id="file-preview-container" class="preview-grid"></div>
                         
-                        <!-- Container untuk file-file lama saat edit -->
                         <div id="existing-files-container" class="mt-3" style="display:none;">
                             <label class="small text-muted fw-bold mb-2">File Terupload Sebelumnya</label>
                             <div id="existing-files-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
@@ -787,30 +896,46 @@ function format_text($text) {
                     </div>
                 </form>
             </div>
-            <div class="modal-footer border-0 pt-0"><button class="btn btn-primary w-100 rounded-pill fw-bold py-2" onclick="submitJob()">Simpan</button></div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0"><button class="btn btn-3d-primary w-100 rounded-pill py-2" onclick="submitJob()"><i class="bi bi-cloud-check-fill me-1"></i> Simpan Pekerjaan</button></div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="progressModal" tabindex="-1" style="z-index: 1060;">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
-            <div class="modal-header border-0 pb-0"><h6 class="fw-bold" id="progress-modal-title">Update Progress</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header border-0 px-4 pt-4 pb-2" style="background: #ffffff;">
+                <div class="d-flex align-items-center gap-2">
+                    <span style="width: 34px; height: 34px; border-radius: 12px; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; box-shadow: 0 4px 10px rgba(245,158,11,0.2);"><i class="bi bi-lightning-charge-fill"></i></span>
+                    <h6 class="fw-bold m-0" id="progress-modal-title" style="color: #0f172a; font-size: 1rem;">Update Progress Kerja</h6>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4 pt-2" style="background: #ffffff;">
                 <form id="formProgress">
                     <input type="hidden" name="job_id" id="p-job-id">
-                    <div class="mb-3" id="p-status-wrap"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
-                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan <span class="fw-normal text-muted">(Ketik @ untuk tag)</span></label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3" placeholder="Tuliskan catatan... Ketik @ untuk tag seseorang"></textarea></div>
+                    <div class="mb-3" id="p-status-wrap">
+                        <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Status Baru</label>
+                        <select name="status" id="p-status" class="form-select bg-light border-0 fw-bold" style="border-radius: 12px; padding: 10px 14px; font-size: 0.88rem; color: #1e293b;">
+                            <option value="todo">⚪ Belum Mulai</option>
+                            <option value="in_progress">🟡 Dalam Proses</option>
+                            <option value="done">🟢 Selesai</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
-                        <div class="drop-zone" id="progressDropZone" style="padding: 18px 15px;">
+                        <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Catatan <span class="fw-normal text-muted">(Ketik @ untuk tag)</span></label>
+                        <textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3" placeholder="Tuliskan catatan progres atau update..." style="border-radius: 14px; padding: 12px 14px; font-size: 0.88rem; color: #1e293b; resize: none;"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="drop-zone" id="progressDropZone" style="padding: 20px 15px;">
                             <input type="file" id="progressFileInput" name="files[]" multiple hidden>
-                            <div class="drop-icon" style="font-size: 1.5rem; margin-bottom: 4px;"><i class="bi bi-cloud-arrow-up"></i></div>
-                            <div class="drop-text" style="font-size: 0.8rem;">Drop file atau <strong onclick="document.getElementById('progressFileInput').click()">pilih</strong></div>
+                            <div class="drop-icon" style="width: 38px; height: 38px; font-size: 1.2rem; margin-bottom: 6px;"><i class="bi bi-cloud-arrow-up"></i></div>
+                            <div class="drop-text" style="font-size: 0.82rem;">Drop file atau <strong onclick="document.getElementById('progressFileInput').click()">pilih file</strong></div>
                         </div>
                         <div id="progress-preview-container" class="preview-grid mt-2"></div>
                     </div>
                 </form>
-                <button class="btn btn-primary w-100 rounded-pill" onclick="saveProgress()">Simpan Update</button>
+                <button class="btn btn-3d-primary w-100 rounded-pill py-2 mt-2" onclick="saveProgress()" style="font-size: 0.92rem;"><i class="bi bi-check2-circle me-1"></i> Simpan Update</button>
             </div>
         </div>
     </div>
@@ -893,20 +1018,22 @@ function openDetail(id){
             $('#d-title').text(j.title); $('#d-desc').html(formatText(j.description));
             $('#d-name').text(j.nickname||j.name); $('#d-date').text(j.date_fmt); $('#d-avatar').attr('src',j.avatar_url);
             
-            // Premium status badges
+            // 3D Status Badges
             let sc = {
-                todo: {bg:'#f1f5f9', color:'#475569', icon:'circle', label:'Belum Mulai'},
-                in_progress: {bg:'#fefce8', color:'#a16207', icon:'play-circle-fill', label:'Dalam Proses'},
-                done: {bg:'#f0fdf4', color:'#15803d', icon:'check-circle-fill', label:'Selesai'}
+                todo: {class:'badge-3d-todo', label:'Belum Mulai'},
+                in_progress: {class:'badge-3d-progress', label:'Dalam Proses'},
+                done: {class:'badge-3d-done', label:'Selesai'}
             };
             let s = sc[j.status] || sc.todo;
-            $('#d-status-badge').html(`<span class="px-3 py-2 rounded-pill fw-bold" style="background:${s.bg}; color:${s.color}; font-size:0.75rem; letter-spacing:0.3px;"><i class="bi bi-${s.icon} me-1"></i>${s.label}</span>`);
+            $('#d-status-badge').html(`<span class="badge-3d-status ${s.class}"><span class="pulse-dot"></span> ${s.label}</span>`);
             
-            // Timeline with premium cards
+            // 3D Timeline Stepper
             let th=''; 
             if(res.history.length){ 
+                th += '<div class="ps-1">';
                 res.history.forEach((h, i)=>{ 
-                    let sColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#3b82f6' : '#6b7280');
+                    let sClass = h.status_after === 'done' ? 'badge-3d-done' : (h.status_after === 'in_progress' ? 'badge-3d-progress' : 'badge-3d-todo');
+                    let dotColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#f59e0b' : '#94a3b8');
                     
                     // Render progress attachments HTML
                     let pattHtml = '';
@@ -915,49 +1042,49 @@ function openDetail(id){
                         h.attachments.forEach(a => {
                             let p = 'assets/uploads/bukti/' + a.file_path;
                             if (a.file_type == 'image') {
-                                pattHtml += `<div class="col-4"><div style="position:relative; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover;"></div></div>`;
+                                pattHtml += `<div class="col-4"><div style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f8fafc; border:1px solid rgba(226,232,240,0.9); box-shadow:0 2px 6px rgba(0,0,0,0.04);" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover;"></div></div>`;
                             } else if (a.file_type == 'video') {
-                                pattHtml += `<div class="col-12"><video src="${p}" controls class="w-100 rounded" style="max-height:150px; background:#000;"></video></div>`;
+                                pattHtml += `<div class="col-12"><video src="${p}" controls class="w-100 rounded-3 shadow-sm" style="max-height:160px; background:#000;"></video></div>`;
                             } else {
-                                pattHtml += `<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-2 p-2 text-decoration-none border rounded-3" style="background:#fafafa; font-size:0.75rem;"><i class="bi bi-file-earmark-text text-warning"></i> <span style="font-weight:600; color:#374151;">${a.file_name}</span></a></div>`;
+                                pattHtml += `<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-2 p-2 px-3 text-decoration-none border rounded-3" style="background:#ffffff; font-size:0.78rem; border-color:rgba(226,232,240,0.9)!important;"><i class="bi bi-file-earmark-text-fill text-warning"></i> <span style="font-weight:600; color:#334155;">${a.file_name}</span></a></div>`;
                             }
                         });
                         pattHtml += `</div>`;
                     }
 
-                    th+=`<div class="d-flex gap-3 mb-3 ${i > 0 ? 'pt-3' : ''}" ${i > 0 ? 'style="border-top: 1px solid rgba(0,0,0,0.04);"' : ''}>
-                        <div style="width:8px; height:8px; border-radius:50%; background:${sColor}; margin-top:6px; flex-shrink:0; box-shadow: 0 0 0 3px ${sColor}22;"></div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <span class="fw-bold" style="font-size:0.85rem; color:#111827;">${h.name}</span>
-                                <small style="font-size:0.7rem; color:#9ca3af;">${h.date}</small>
+                    th+=`<div class="timeline-node">
+                        <div class="timeline-icon-dot" style="border-color:${dotColor}; box-shadow: 0 0 0 3px ${dotColor}25;"></div>
+                        <div class="chat-bubble-card">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold" style="font-size:0.88rem; color:#0f172a;">${h.name}</span>
+                                <small style="font-size:0.72rem; color:#94a3b8;">${h.date}</small>
                             </div>
-                            <span class="px-2 py-1 rounded-pill d-inline-block mt-1" style="font-size:0.68rem; font-weight:600; background:${sColor}10; color:${sColor}; text-transform:uppercase; letter-spacing:0.5px;">${h.status_after}</span>
-                            ${h.notes ? `<p class="mt-2 mb-0" style="font-size:0.85rem; color:#4b5563; line-height:1.55;">${h.notes}</p>` : ''}
+                            <span class="badge-3d-status ${sClass} my-1" style="font-size:0.65rem; padding:3px 8px;"><span class="pulse-dot" style="width:5px;height:5px;"></span> ${h.status_after}</span>
+                            ${h.notes ? `<div class="mt-2 mb-0" style="font-size:0.88rem; color:#334155; line-height:1.6;">${formatText(h.notes)}</div>` : ''}
                             ${pattHtml}
                         </div>
                     </div>`; 
                 }); 
+                th += '</div>';
             } else { 
-                th='<div class="text-center py-3"><i class="bi bi-clock-history" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada progress</p></div>'; 
+                th='<div class="text-center py-4 px-3" style="background:#f8fafc; border-radius:16px; border:1px dashed rgba(226,232,240,0.9);"><div style="width:44px; height:44px; border-radius:14px; background:#fffbeb; color:#d97706; display:inline-flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:8px;"><i class="bi bi-lightning-charge-fill"></i></div><h6 class="fw-bold m-0" style="font-size:0.9rem; color:#0f172a;">Belum ada update progres</h6><p class="mt-1 mb-0" style="font-size:0.78rem; color:#94a3b8;">Klik tombol "+ Update Progres" untuk mencatat progres pekerjaan.</p></div>'; 
             }
             $('#d-timeline').html(th);
             
-            // Premium attachment gallery
+            // 3D Attachment gallery
             let ah=''; 
             res.attachments.forEach(a=>{ 
                 let p='assets/uploads/bukti/'+a.file_path; 
                 if(a.file_type=='image') {
-                    ah+=`<div class="col-4"><div style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,0.3));opacity:0;transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><i class="bi bi-zoom-in position-absolute bottom-0 end-0 m-2 text-white"></i></div></div></div>`; 
+                    ah+=`<div class="col-4"><div style="position:relative; border-radius:14px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f8fafc; border:1px solid rgba(226,232,240,0.9); box-shadow:0 2px 8px rgba(0,0,0,0.04);" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'"><div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,0.4));opacity:0;transition:opacity 0.25s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><i class="bi bi-arrows-fullscreen position-absolute bottom-0 end-0 m-2 text-white" style="font-size:0.85rem;"></i></div></div></div>`; 
                 } else if(a.file_type=='video') {
-                    ah+=`<div class="col-12"><video src="${p}" controls class="w-100" style="border-radius:12px; max-height:300px; background:#000;"></video></div>`; 
+                    ah+=`<div class="col-12"><video src="${p}" controls class="w-100 rounded-4 shadow-sm" style="max-height:300px; background:#000;"></video></div>`; 
                 } else {
-                    ah+=`<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:white; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s;" onmouseover="this.style.borderColor='#eab308'" onmouseout="this.style.borderColor='#e5e7eb'"><div style="width:40px;height:40px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;"><i class="bi bi-file-earmark-text" style="color:#eab308; font-size:1.1rem;"></i></div><div><div style="font-size:0.85rem; font-weight:600; color:#111827;">${a.file_name}</div><div style="font-size:0.7rem; color:#9ca3af;">Klik untuk download</div></div></a></div>`; 
+                    ah+=`<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:#ffffff; border:1px solid rgba(226,232,240,0.9); border-radius:16px; box-shadow:0 2px 6px rgba(0,0,0,0.03); transition:all 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(226,232,240,0.9)'; this.style.transform='translateY(0)'"><div style="width:42px;height:42px;border-radius:12px;background:#fef3c7;display:flex;align-items:center;justify-content:center; flex-shrink:0;"><i class="bi bi-file-earmark-text-fill" style="color:#d97706; font-size:1.2rem;"></i></div><div><div style="font-size:0.88rem; font-weight:700; color:#0f172a;">${a.file_name}</div><div style="font-size:0.72rem; color:#94a3b8;">Klik untuk buka / download</div></div></a></div>`; 
                 }
             });
             $('#d-att').html(ah);
             
-            // Hide main attachment container if empty
             if (res.attachments.length === 0) {
                 $('#d-att').hide();
             } else {
@@ -968,9 +1095,11 @@ function openDetail(id){
             $('#d-like-count').text(j.like_count);
             let btn=$('#d-like-btn'); 
             if(j.is_liked) {
-                btn.css({'background':'linear-gradient(135deg, #eab308, #facc15)', 'color':'#1a1a1a', 'border-color':'transparent'});
+                btn.addClass('liked');
+                btn.find('i').css('color', '#d97706');
             } else {
-                btn.css({'background':'#f9fafb', 'color':'#4b5563', 'border-color':'#e5e7eb'});
+                btn.removeClass('liked');
+                btn.find('i').css('color', '#94a3b8');
             }
             
             $('#btn-update-progress').toggle(res.is_owner || res.is_tagged);
@@ -982,12 +1111,12 @@ function openDetail(id){
             let vh = '';
             if(res.viewers && res.viewers.length > 0) {
                 let avatars = res.viewers.slice(0, 5).map((v, i) => 
-                    `<img src="${v.avatar}" class="rounded-circle" width="24" height="24" style="object-fit:cover; border:2px solid white; margin-left:${i > 0 ? '-8px' : '0'}; position:relative; z-index:${10-i};" title="${v.name} • ${v.viewed_at_fmt}">`
+                    `<img src="${v.avatar}" class="rounded-circle" width="24" height="24" style="object-fit:cover; border:2px solid white; margin-left:${i > 0 ? '-8px' : '0'}; position:relative; z-index:${10-i}; box-shadow:0 1px 3px rgba(0,0,0,0.1);" title="${v.name} • ${v.viewed_at_fmt}">`
                 ).join('');
-                let extra = res.view_count > 5 ? `<span style="margin-left:-4px; width:24px; height:24px; border-radius:50%; background:#f3f4f6; display:inline-flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:700; color:#6b7280; border:2px solid white; position:relative; z-index:1;">+${res.view_count - 5}</span>` : '';
+                let extra = res.view_count > 5 ? `<span style="margin-left:-4px; width:24px; height:24px; border-radius:50%; background:#f1f5f9; display:inline-flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:#64748b; border:2px solid white; position:relative; z-index:1;">+${res.view_count - 5}</span>` : '';
                 vh = `<div class="d-flex align-items-center gap-2 mt-2">
                     <div class="d-flex align-items-center">${avatars}${extra}</div>
-                    <span style="font-size:0.75rem; color:#6b7280;">${res.view_count} orang melihat</span>
+                    <span style="font-size:0.75rem; color:#64748b; font-weight:500;">${res.view_count} orang melihat</span>
                 </div>`;
             }
             $('#d-viewers').html(vh);
@@ -1000,19 +1129,19 @@ function openDetail(id){
 function renderComments(arr){
     let h=''; 
     if(arr.length === 0) {
-        h = '<div class="text-center py-4"><i class="bi bi-chat-text" style="font-size:2rem; color:#e5e7eb;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada komentar</p></div>';
+        h = '<div class="text-center py-5 px-3"><div style="width:48px; height:48px; border-radius:16px; background:linear-gradient(135deg, #fef3c7, #fde68a); color:#d97706; display:inline-flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:10px; box-shadow:0 4px 12px rgba(245,158,11,0.2);"><i class="bi bi-chat-dots-fill"></i></div><h6 class="fw-bold m-0" style="font-size:0.92rem; color:#0f172a;">Belum ada diskusi</h6><p class="mt-1 mb-0" style="font-size:0.78rem; color:#94a3b8;">Tuliskan tanggapan atau tag rekan tim di bawah.</p></div>';
     } else {
         arr.forEach(c=>{
-            let delBtn = c.is_mine ? `<div class="mt-1 d-flex gap-2"><button class="btn btn-link p-0 text-decoration-none" style="font-size:0.7rem; color:#eab308;" onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">Edit</button><button class="btn btn-link p-0 text-decoration-none" style="font-size:0.7rem; color:#dc2626;" onclick="delComment(${c.id})">Hapus</button></div>` : '';
+            let delBtn = c.is_mine ? `<div class="mt-1 d-flex gap-2"><button class="btn btn-link p-0 text-decoration-none fw-bold" style="font-size:0.7rem; color:#d97706;" onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">Edit</button><button class="btn btn-link p-0 text-decoration-none fw-bold" style="font-size:0.7rem; color:#ef4444;" onclick="delComment(${c.id})">Hapus</button></div>` : '';
             h+=`<div class="d-flex gap-2 mb-3">
-                <img src="${c.avatar}" class="rounded-circle" width="30" height="30" style="object-fit:cover; flex-shrink:0;">
+                <img src="${c.avatar}" class="rounded-circle shadow-sm" width="32" height="32" style="object-fit:cover; flex-shrink:0; border:2px solid white;">
                 <div class="w-100">
-                    <div style="background:white; border:1px solid rgba(0,0,0,0.04); border-radius:12px; padding:10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold" style="font-size:0.82rem; color:#111827;">${c.name}</span>
-                            <small style="font-size:0.62rem; color:#9ca3af;">${c.date}</small>
+                    <div class="chat-bubble-card p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold" style="font-size:0.85rem; color:#0f172a;">${c.name}</span>
+                            <small style="font-size:0.68rem; color:#94a3b8;">${c.date}</small>
                         </div>
-                        <div style="font-size:0.85rem; color:#374151; margin-top:4px; line-height:1.5;">${formatText(c.content)}</div>
+                        <div style="font-size:0.88rem; color:#334155; line-height:1.55;">${formatText(c.content)}</div>
                     </div>
                     ${delBtn}
                 </div>
@@ -1118,7 +1247,13 @@ function toggleLike(id, btn){
     $.post('ajax_action.php', {action:'like', job_id:id}, function(res){
         if(res.status=='success') {
             $(btn).find('.count').text(res.count);
-            res.liked ? $(btn).removeClass('btn-light text-muted').addClass('btn-primary text-white') : $(btn).removeClass('btn-primary text-white').addClass('btn-light text-muted');
+            if(res.liked) {
+                $(btn).addClass('liked');
+                $(btn).find('i').css('color', '#d97706');
+            } else {
+                $(btn).removeClass('liked');
+                $(btn).find('i').css('color', '#94a3b8');
+            }
         }
     },'json');
 }
@@ -1131,7 +1266,6 @@ function showMedia(p,t){
 }
 
 function showViewers(jobId) {
-    // Show modal with loading
     $('#viewers-list').html('<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>');
     $('#viewers-count').text('');
     new bootstrap.Modal('#viewersModal').show();
@@ -1139,33 +1273,37 @@ function showViewers(jobId) {
     // Fetch viewers via detail endpoint
     $.post('ajax_action.php', {action:'fetch_detail', job_id: jobId}, function(res) {
         if(res.status == 'success') {
-            let count = res.view_count || 0;
-            $('#viewers-count').text(count + ' orang');
+            let v = res.viewers || [];
+            $('#viewers-count').text(res.view_count || 0);
             
-            if(res.viewers && res.viewers.length > 0) {
-                let html = '';
-                res.viewers.forEach(v => {
-                    html += `<div class="d-flex align-items-center gap-3 py-2" style="border-bottom: 1px solid rgba(0,0,0,0.03);">
-                        <img src="${v.avatar}" class="rounded-circle" width="36" height="36" style="object-fit:cover; border: 2px solid rgba(234,179,8,0.15);">
-                        <div class="flex-grow-1">
-                            <div class="fw-bold" style="font-size:0.85rem; color:#111827;">${v.name}</div>
-                            <div style="font-size:0.7rem; color:#9ca3af;">${v.viewed_at_fmt}</div>
-                        </div>
-                        <i class="bi bi-eye-fill" style="color: #d1d5db; font-size: 0.8rem;"></i>
-                    </div>`;
-                });
-                $('#viewers-list').html(html);
+            if(v.length === 0) {
+                $('#viewers-list').html('<div class="text-center py-4 text-muted" style="font-size:0.85rem;"><i class="bi bi-eye-slash d-block mb-1" style="font-size:1.5rem; color:#cbd5e1;"></i>Belum ada yang melihat</div>');
             } else {
-                $('#viewers-list').html('<div class="text-center py-4"><i class="bi bi-eye-slash" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada yang melihat</p></div>');
+                let vListHtml = '<div class="d-flex flex-column gap-2">';
+                v.forEach(user => {
+                    vListHtml += `
+                        <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background:#f8fafc; border:1px solid rgba(226,232,240,0.8);">
+                            <img src="${user.avatar}" class="rounded-circle shadow-sm" width="38" height="38" style="object-fit:cover; border:2px solid white; flex-shrink:0;">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-truncate" style="font-size:0.88rem; color:#0f172a;">${user.name}</div>
+                                <div style="font-size:0.72rem; color:#94a3b8;"><i class="bi bi-clock me-1"></i>${user.viewed_at_fmt}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                vListHtml += '</div>';
+                $('#viewers-list').html(vListHtml);
             }
         }
     }, 'json');
 }
 
-function showProgressForm(){ 
-    $('#p-job-id').val(curJob); progressFiles = []; 
+function showProgressForm() { 
+    if(!window._curIsOwner && !window._curIsTagged) { alert('Hanya pembuat atau orang yang di-tag yang dapat mengupdate progres pekerjaan ini.'); return; }
+    $('#p-job-id').val(curJob); 
+    progressFiles = []; 
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
-    $('#progress-modal-title').text('Update Progress');
+    $('#progress-modal-title').text('Update Progress Kerja');
     $('#p-status-wrap').show();
     $('#p-notes').val('');
     new bootstrap.Modal('#progressModal').show(); 
@@ -1175,7 +1313,7 @@ function formatText(t){
     if(!t) return '';
     t = t.replace(/\*([^*]+)\*/g, '<strong>$1</strong>'); // *bold*
     t = t.replace(/_([^_]+)_/g, '<em>$1</em>'); // _italic_
-    t = t.replace(/@(\w+)/g, '<span class="text-primary fw-bold">@$1</span>');
+    t = t.replace(/@([a-zA-Z0-9_]+)/g, '<span class="mention-tag">@$1</span>');
     t = t.replace(/\n/g, '<br>');
     return t;
 }
