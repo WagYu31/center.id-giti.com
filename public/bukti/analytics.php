@@ -448,14 +448,23 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
         border-bottom-right-radius: 12px;
     }
 
-    .kpi-table tr:hover td {
-        background: #fdfdfd;
-        border-color: rgba(245, 158, 11, 0.25);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    .main-wrapper {
+        margin-left: 292px;
+        padding: 24px 32px 60px;
+        min-height: 100vh;
+        display: block;
+    }
+
+    @media (max-width: 992px) {
+        .main-wrapper {
+            margin-left: 0 !important;
+            padding: 16px !important;
+        }
     }
 </style>
 
-<div class="main-content">
+<div class="main-wrapper">
+    <div class="content-area">
     
     <!-- ══════════════════════════════════════════════════════════════
          TOP HEADER & PERIOD CONTROLS
@@ -815,6 +824,7 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
         </div>
     </div>
 
+    </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
