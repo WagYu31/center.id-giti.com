@@ -539,7 +539,7 @@ function format_text($text) {
     .btn-outline-primary:hover { background: #f59e0b !important; color: #ffffff !important; }
 </style>
 
-<div id="loading-overlay">
+<div id="loading-overlay" style="display: none;">
     <span class="loader"></span>
     <p class="mt-3 fw-bold" style="color: #eab308;">Sedang memproses data...</p>
 </div>
