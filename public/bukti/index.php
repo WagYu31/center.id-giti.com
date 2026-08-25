@@ -112,7 +112,21 @@ $myName = $me['name'] ?? 'User';
 $my_av = (!empty($me['avatar']) && file_exists("assets/img/avatars/" . $me['avatar'])) ? "assets/img/avatars/" . $me['avatar'] : "https://ui-avatars.com/api/?name=" . urlencode($myName) . "&background=f59e0b&color=ffffff&bold=true";
 $sapa = date('H')<11?"Selamat Pagi": (date('H')<15?"Selamat Siang": (date('H')<18?"Selamat Sore":"Selamat Malam"));
 
-// Calculate Statistics for Hero and Sidebar Widget
+// ── Global Team All-Time Totals (Matching Analytics All Time) ──
+$global_stats_stmt = $conn->query("SELECT 
+    COUNT(*) as total_created,
+    SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as total_done,
+    SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as total_progress,
+    SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) as total_todo
+FROM bukti_jobs WHERE deleted_at IS NULL");
+$global_stats = $global_stats_stmt ? $global_stats_stmt->fetch(PDO::FETCH_ASSOC) : [];
+
+$team_total_created  = (int)($global_stats['total_created'] ?? 0);
+$team_total_done     = (int)($global_stats['total_done'] ?? 0);
+$team_total_progress = (int)($global_stats['total_progress'] ?? 0);
+$team_total_todo     = (int)($global_stats['total_todo'] ?? 0);
+
+// Calculate Statistics for Sidebar Filter Widget
 $stat_title = "Statistik Saya";
 if (!empty($filter_user)) {
     $stat_user_stmt = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
@@ -254,11 +268,14 @@ function format_text($text) {
     .kpi-chip-val { font-size: 1.05rem; font-weight: 800; color: #0f172a; line-height: 1; }
     .kpi-chip-lbl { font-size: 0.68rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; }
     
-    .chip-done { border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%); }
+    .chip-created { border-color: rgba(14, 165, 233, 0.35); background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%); }
+    .chip-created .kpi-chip-val { color: #0284c7; }
+    .chip-done { border-color: rgba(16, 185, 129, 0.35); background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%); }
     .chip-done .kpi-chip-val { color: #059669; }
-    .chip-progress { border-color: rgba(245, 158, 11, 0.3); background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%); }
+    .chip-progress { border-color: rgba(245, 158, 11, 0.35); background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%); }
     .chip-progress .kpi-chip-val { color: #d97706; }
-    .chip-todo { border-color: rgba(148, 163, 184, 0.3); background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); }
+    .chip-todo { border-color: rgba(148, 163, 184, 0.35); background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); }
+    .chip-todo .kpi-chip-val { color: #475569; }
 
     /* ── 3D Interactive Model Showcase ── */
     .model-3d-container {
@@ -741,28 +758,35 @@ function format_text($text) {
                         Pantau progres pekerjaan tim secara real-time, rayakan pencapaian bersama, dan kolaborasi lebih cepat.
                     </p>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="hero-kpi-chip chip-done">
+                        <div class="hero-kpi-chip chip-created" title="Total Seluruh Tugas Dibuat (Sepanjang Waktu)">
+                            <span class="kpi-chip-icon">📋</span>
+                            <div>
+                                <div class="kpi-chip-val"><?php echo $team_total_created; ?></div>
+                                <div class="kpi-chip-lbl">TUGAS DIBUAT</div>
+                            </div>
+                        </div>
+                        <div class="hero-kpi-chip chip-done" title="Total Seluruh Tugas Selesai (Sepanjang Waktu)">
                             <span class="kpi-chip-icon">🏆</span>
                             <div>
-                                <div class="kpi-chip-val"><?php echo $stats['done'] ?? 0; ?></div>
-                                <div class="kpi-chip-lbl">Selesai</div>
+                                <div class="kpi-chip-val"><?php echo $team_total_done; ?></div>
+                                <div class="kpi-chip-lbl">SELESAI</div>
                             </div>
                         </div>
-                        <div class="hero-kpi-chip chip-progress">
+                        <div class="hero-kpi-chip chip-progress" title="Total Seluruh Tugas Dalam Proses (Sepanjang Waktu)">
                             <span class="kpi-chip-icon">⚡</span>
                             <div>
-                                <div class="kpi-chip-val"><?php echo $stats['in_progress'] ?? 0; ?></div>
-                                <div class="kpi-chip-lbl">Proses</div>
+                                <div class="kpi-chip-val"><?php echo $team_total_progress; ?></div>
+                                <div class="kpi-chip-lbl">PROGRES</div>
                             </div>
                         </div>
-                        <div class="hero-kpi-chip chip-todo">
+                        <div class="hero-kpi-chip chip-todo" title="Total Seluruh Tugas To-Do (Sepanjang Waktu)">
                             <span class="kpi-chip-icon">🎯</span>
                             <div>
-                                <div class="kpi-chip-val"><?php echo $stats['todo'] ?? 0; ?></div>
-                                <div class="kpi-chip-lbl">To-Do</div>
+                                <div class="kpi-chip-val"><?php echo $team_total_todo; ?></div>
+                                <div class="kpi-chip-lbl">TO-DO</div>
                             </div>
                         </div>
-                        <a href="analytics.php" class="btn btn-sm btn-3d-primary rounded-pill px-3 py-2 ms-auto d-inline-flex align-items-center gap-1">
+                        <a href="analytics.php?period=all_time" class="btn btn-sm btn-3d-primary rounded-pill px-3 py-2 ms-auto d-inline-flex align-items-center gap-1">
                             <i class="bi bi-trophy-fill"></i> Leaderboard KPI <i class="bi bi-arrow-right-short"></i>
                         </a>
                     </div>
