@@ -4,7 +4,7 @@ require_once 'includes/header.php';
 require_once 'includes/sidebar.php'; 
 
 $current_user_id = $_SESSION['user_id'];
-$period = $_GET['period'] ?? 'this_month';
+$period = $_GET['period'] ?? 'all_time';
 $custom_start = $_GET['start'] ?? '';
 $custom_end = $_GET['end'] ?? '';
 
