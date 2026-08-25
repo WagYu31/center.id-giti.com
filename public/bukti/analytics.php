@@ -477,49 +477,150 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
     }
 
     /* ══════════════════════════════════════════════════════════════
-       TABLE LEADERBOARD
+       CHART & TABLE 3D POLISH
        ══════════════════════════════════════════════════════════════ */
+    .chart-card-custom {
+        background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%) !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 16px 40px -8px rgba(245, 158, 11, 0.12), inset 0 2px 0 #ffffff !important;
+    }
+
+    .chart-legend-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .legend-pill-blue { background: #e0f2fe; color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); }
+    .legend-pill-amber { background: #fef3c7; color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .legend-pill-green { background: #dcfce7; color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .table-card-custom {
+        background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%) !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.08), inset 0 2px 0 #ffffff !important;
+    }
+
     .kpi-table {
         width: 100%;
         border-collapse: separate;
-        border-spacing: 0 6px;
+        border-spacing: 0 10px;
     }
 
     .kpi-table th {
-        font-size: 0.7rem;
-        font-weight: 700;
+        font-size: 0.72rem;
+        font-weight: 800;
         text-transform: uppercase;
-        color: #94a3b8;
-        letter-spacing: 0.6px;
-        padding: 8px 14px;
+        color: #64748b;
+        letter-spacing: 0.8px;
+        padding: 10px 16px;
         border: none;
     }
 
     .kpi-table tr td {
         background: #ffffff;
-        padding: 12px 14px;
+        padding: 14px 16px;
         vertical-align: middle;
-        border-top: 1px solid var(--ts-border-subtle);
-        border-bottom: 1px solid var(--ts-border-subtle);
-        transition: all 0.2s ease;
+        border-top: 1px solid rgba(226, 232, 240, 0.85);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .kpi-table tr td:first-child {
-        border-left: 1px solid var(--ts-border-subtle);
-        border-top-left-radius: 14px;
-        border-bottom-left-radius: 14px;
+        border-left: 1px solid rgba(226, 232, 240, 0.85);
+        border-top-left-radius: 18px;
+        border-bottom-left-radius: 18px;
     }
 
     .kpi-table tr td:last-child {
-        border-right: 1px solid var(--ts-border-subtle);
-        border-top-right-radius: 14px;
-        border-bottom-right-radius: 14px;
+        border-right: 1px solid rgba(226, 232, 240, 0.85);
+        border-top-right-radius: 18px;
+        border-bottom-right-radius: 18px;
+    }
+
+    /* Rank 1 Row */
+    .kpi-table tr.row-rank-1 td {
+        background: linear-gradient(90deg, #fffbeb 0%, #ffffff 75%) !important;
+        border-color: rgba(245, 158, 11, 0.5) !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
+    }
+    /* Rank 2 Row */
+    .kpi-table tr.row-rank-2 td {
+        background: linear-gradient(90deg, #f8fafc 0%, #ffffff 75%) !important;
+        border-color: rgba(148, 163, 184, 0.45) !important;
+    }
+    /* Rank 3 Row */
+    .kpi-table tr.row-rank-3 td {
+        background: linear-gradient(90deg, #fff7ed 0%, #ffffff 75%) !important;
+        border-color: rgba(234, 88, 12, 0.4) !important;
     }
 
     .kpi-table tbody tr:hover td {
-        background: #fffdfa;
-        border-color: rgba(245, 158, 11, 0.35);
-        transform: translateY(-1px);
+        background: #fffdf5 !important;
+        border-color: rgba(245, 158, 11, 0.6) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.15);
+    }
+
+    /* 3D Pill Metrics */
+    .pill-3d-cyan {
+        background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
+        color: #0284c7;
+        font-weight: 800;
+        font-size: 0.88rem;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid rgba(14, 165, 233, 0.25);
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.1), inset 0 1px 0 #ffffff;
+    }
+    .pill-3d-amber {
+        background: linear-gradient(135deg, #fef3c7, #fffbeb);
+        color: #d97706;
+        font-weight: 800;
+        font-size: 0.88rem;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1), inset 0 1px 0 #ffffff;
+    }
+    .pill-3d-green {
+        background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+        color: #059669;
+        font-weight: 800;
+        font-size: 0.88rem;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1), inset 0 1px 0 #ffffff;
+    }
+
+    .kpi-score-badge-3d {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.5);
+        color: #b45309;
+        padding: 6px 14px;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 3px 10px rgba(245, 158, 11, 0.18), inset 0 1px 0 #ffffff;
     }
 
     .main-wrapper {
@@ -795,19 +896,40 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
 
             </div>
         </div>
+    </div>
+
     <!-- ══════════════════════════════════════════════════════════════
          INTERACTIVE KPI COMPARISON CHART
          ══════════════════════════════════════════════════════════════ -->
     <div class="row g-4 mb-4">
         <div class="col-12">
-            <div class="ts-kpi-card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="ts-kpi-card chart-card-custom p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                     <div>
-                        <h5 class="fw-bold m-0" style="color: #0a0a0a; letter-spacing: -0.02em;">📊 Grafik Perbandingan Kontribusi Tim</h5>
-                        <small class="text-muted">Perbandingan Tugas Dibuat vs Update Progres vs Tugas Selesai per Karyawan</small>
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="font-size: 1.3rem;">📊</span>
+                            <h5 class="fw-bold m-0" style="color: #0f172a; letter-spacing: -0.02em;">Grafik Perbandingan Kontribusi Tim</h5>
+                        </div>
+                        <small class="text-muted">Perbandingan Tugas Dibuat, Update Progres, dan Tugas Selesai per Anggota Tim</small>
+                    </div>
+                    <!-- 3D Legend Pills with Live Counters -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="chart-legend-pill legend-pill-blue">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #0284c7; display: inline-block;"></span>
+                            Tugas Dibuat: <b class="ms-1"><?= $grand_total_created ?></b>
+                        </span>
+                        <span class="chart-legend-pill legend-pill-amber">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                            Update Progres: <b class="ms-1"><?= $grand_total_updates ?></b>
+                        </span>
+                        <span class="chart-legend-pill legend-pill-green">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                            Tugas Selesai: <b class="ms-1"><?= $grand_total_done ?></b>
+                        </span>
                     </div>
                 </div>
-                <div style="height: 280px; position: relative;">
+
+                <div style="height: 310px; position: relative;">
                     <canvas id="kpiComparisonChart"></canvas>
                 </div>
             </div>
@@ -819,85 +941,102 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
          ══════════════════════════════════════════════════════════════ -->
     <div class="row g-4">
         <div class="col-12">
-            <div class="ts-kpi-card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="ts-kpi-card table-card-custom p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                     <div>
-                        <h5 class="fw-bold m-0" style="color: #0a0a0a; letter-spacing: -0.02em;">📋 Tabel Peringkat KPI Seluruh Karyawan</h5>
-                        <small class="text-muted">Daftar lengkap seluruh karyawan diurutkan berdasarkan total skor KPI</small>
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="font-size: 1.3rem;">📋</span>
+                            <h5 class="fw-bold m-0" style="color: #0f172a; letter-spacing: -0.02em;">Tabel Peringkat KPI Seluruh Karyawan</h5>
+                        </div>
+                        <small class="text-muted">Daftar lengkap seluruh karyawan diurutkan berdasarkan akumulasi skor performa & kontribusi KPI</small>
                     </div>
+                    <span class="badge rounded-pill bg-dark text-white px-3 py-2" style="font-size: 0.76rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        🏆 Total <?= count($leaderboard) ?> Karyawan
+                    </span>
                 </div>
 
                 <div class="table-responsive">
                     <table class="kpi-table">
                         <thead>
                             <tr>
-                                <th style="width: 60px; text-align: center;">Rank</th>
+                                <th style="width: 70px; text-align: center;">Rank</th>
                                 <th>Karyawan</th>
                                 <th>Divisi / Jabatan</th>
                                 <th style="text-align: center;">Tugas Dibuat</th>
                                 <th style="text-align: center;">Update Progres</th>
                                 <th style="text-align: center;">Selesai</th>
-                                <th style="text-align: center; width: 140px;">Completion Rate</th>
+                                <th style="text-align: center; width: 150px;">Completion Rate</th>
                                 <th style="text-align: right;">Total KPI</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($leaderboard as $pos => $emp): ?>
-                            <tr>
+                            <?php foreach ($leaderboard as $pos => $emp): 
+                                $row_rank_class = '';
+                                if ($pos === 0) $row_rank_class = 'row-rank-1';
+                                elseif ($pos === 1) $row_rank_class = 'row-rank-2';
+                                elseif ($pos === 2) $row_rank_class = 'row-rank-3';
+                            ?>
+                            <tr class="<?= $row_rank_class ?>">
                                 <td style="text-align: center;">
                                     <?php if ($pos === 0): ?>
-                                        <span style="font-size: 1.25rem;">🥇</span>
+                                        <div style="font-size: 1.45rem; line-height: 1; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.5));">🥇</div>
                                     <?php elseif ($pos === 1): ?>
-                                        <span style="font-size: 1.15rem;">🥈</span>
+                                        <div style="font-size: 1.35rem; line-height: 1; filter: drop-shadow(0 2px 6px rgba(148,163,184,0.5));">🥈</div>
                                     <?php elseif ($pos === 2): ?>
-                                        <span style="font-size: 1.15rem;">🥉</span>
+                                        <div style="font-size: 1.35rem; line-height: 1; filter: drop-shadow(0 2px 6px rgba(234,88,12,0.4));">🥉</div>
                                     <?php else: ?>
-                                        <span class="badge rounded-pill bg-light text-dark fw-bold" style="font-size: 0.75rem; width: 26px; height: 26px; line-height: 18px;"><?= $pos + 1 ?></span>
+                                        <span class="badge rounded-pill bg-light text-secondary border fw-bold" style="font-size: 0.8rem; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                                            #<?= $pos + 1 ?>
+                                        </span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
-                                        <img src="<?= $emp['avatar_url'] ?>" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" alt="">
+                                        <div style="position: relative;">
+                                            <img src="<?= $emp['avatar_url'] ?>" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: <?= $pos === 0 ? '3px solid #f59e0b' : ($pos === 1 ? '2.5px solid #94a3b8' : ($pos === 2 ? '2.5px solid #ea580c' : '2px solid #e2e8f0')) ?>; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" alt="">
+                                            <?php if ($pos === 0): ?>
+                                                <span style="position: absolute; top: -8px; right: -4px; font-size: 0.9rem;">👑</span>
+                                            <?php endif; ?>
+                                        </div>
                                         <div>
-                                            <div class="fw-bold" style="color: #0a0a0a; font-size: 0.88rem;"><?= htmlspecialchars($emp['name']) ?></div>
-                                            <small class="text-muted" style="font-size: 0.72rem;"><?= htmlspecialchars($emp['nickname'] ?: '') ?></small>
+                                            <div class="fw-bold" style="color: #0f172a; font-size: 0.92rem;"><?= htmlspecialchars($emp['name']) ?></div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">@<?= htmlspecialchars($emp['nickname'] ?: explode(' ', $emp['name'])[0]) ?></small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-secondary border" style="font-size: 0.72rem; font-weight: 600;">
+                                    <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.74rem; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                                         <?= htmlspecialchars($emp['division'] ?? 'Team') ?>
                                     </span>
-                                    <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;"><?= htmlspecialchars($emp['jabatan'] ?? 'Karyawan') ?></div>
+                                    <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px; font-weight: 500;"><?= htmlspecialchars($emp['jabatan'] ?? 'Karyawan') ?></div>
                                 </td>
                                 <td style="text-align: center;">
-                                    <span class="badge rounded-pill" style="background: rgba(6, 182, 212, 0.1); color: #0891b2; font-weight: 700; font-size: 0.78rem; padding: 4px 10px;">
-                                        <?= $emp['total_created'] ?>
+                                    <span class="pill-3d-cyan">
+                                        <i class="bi bi-journal-plus"></i> <?= $emp['total_created'] ?>
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <span class="badge rounded-pill" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 700; font-size: 0.78rem; padding: 4px 10px;">
-                                        <?= $emp['total_updates'] ?>
+                                    <span class="pill-3d-amber">
+                                        <i class="bi bi-lightning-charge-fill"></i> <?= $emp['total_updates'] ?>
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <span class="badge rounded-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; font-weight: 700; font-size: 0.78rem; padding: 4px 10px;">
-                                        <?= $emp['total_done'] ?>
+                                    <span class="pill-3d-green">
+                                        <i class="bi bi-check2-circle"></i> <?= $emp['total_done'] ?>
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="progress flex-grow-1" style="height: 6px; border-radius: 4px; background: #f1f5f9;">
-                                            <div class="progress-bar" style="width: <?= $emp['completion_rate'] ?>%; background: <?= $emp['completion_rate'] >= 80 ? '#10b981' : ($emp['completion_rate'] >= 40 ? '#f59e0b' : '#94a3b8') ?>;"></div>
+                                        <div class="progress flex-grow-1" style="height: 8px; border-radius: 10px; background: #e2e8f0; overflow: hidden;">
+                                            <div class="progress-bar" style="width: <?= $emp['completion_rate'] ?>%; background: <?= $emp['completion_rate'] >= 80 ? 'linear-gradient(90deg, #10b981, #34d399)' : ($emp['completion_rate'] >= 40 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #94a3b8, #cbd5e1)') ?>;"></div>
                                         </div>
-                                        <span style="font-size: 0.72rem; font-weight: 700; color: #475569; width: 32px; text-align: right;"><?= $emp['completion_rate'] ?>%</span>
+                                        <span style="font-size: 0.75rem; font-weight: 800; color: #1e293b; width: 36px; text-align: right;"><?= $emp['completion_rate'] ?>%</span>
                                     </div>
                                 </td>
                                 <td style="text-align: right;">
-                                    <span class="fw-bold" style="font-size: 0.95rem; color: #0a0a0a; font-family: 'IBM Plex Mono', monospace;">
-                                        <?= $emp['kpi_score'] ?>
+                                    <span class="kpi-score-badge-3d">
+                                        ✨ <?= $emp['kpi_score'] ?> <small style="font-size: 0.7rem; font-weight: 700; opacity: 0.85;">pts</small>
                                     </span>
-                                    <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 600;"> pts</span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -913,17 +1052,31 @@ $overall_completion_rate = $grand_total_created > 0 ? round(($grand_total_done /
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     CHART.JS INITIALIZATION
+     CHART.JS INITIALIZATION WITH 3D GRADIENTS
      ══════════════════════════════════════════════════════════════ -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('kpiComparisonChart');
-    if (!ctx) return;
+    const canvas = document.getElementById('kpiComparisonChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
     const names = <?= json_encode($chart_names) ?>;
     const created = <?= json_encode($chart_created) ?>;
     const updates = <?= json_encode($chart_updates) ?>;
     const done = <?= json_encode($chart_done) ?>;
+
+    // Vibrant 3D Gradients
+    const gradBlue = ctx.createLinearGradient(0, 0, 0, 300);
+    gradBlue.addColorStop(0, '#0284c7');
+    gradBlue.addColorStop(1, '#38bdf8');
+
+    const gradAmber = ctx.createLinearGradient(0, 0, 0, 300);
+    gradAmber.addColorStop(0, '#d97706');
+    gradAmber.addColorStop(1, '#fbbf24');
+
+    const gradGreen = ctx.createLinearGradient(0, 0, 0, 300);
+    gradGreen.addColorStop(0, '#059669');
+    gradGreen.addColorStop(1, '#34d399');
 
     new Chart(ctx, {
         type: 'bar',
@@ -933,26 +1086,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: 'Tugas Dibuat',
                     data: created,
-                    backgroundColor: 'rgba(6, 182, 212, 0.85)',
-                    borderRadius: 6,
-                    barPercentage: 0.65,
-                    categoryPercentage: 0.8
+                    backgroundColor: gradBlue,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barPercentage: 0.75,
+                    categoryPercentage: 0.75
                 },
                 {
                     label: 'Update Progres',
                     data: updates,
-                    backgroundColor: 'rgba(245, 158, 11, 0.9)',
-                    borderRadius: 6,
-                    barPercentage: 0.65,
-                    categoryPercentage: 0.8
+                    backgroundColor: gradAmber,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barPercentage: 0.75,
+                    categoryPercentage: 0.75
                 },
                 {
                     label: 'Tugas Selesai',
                     data: done,
-                    backgroundColor: 'rgba(16, 185, 129, 0.85)',
-                    borderRadius: 6,
-                    barPercentage: 0.65,
-                    categoryPercentage: 0.8
+                    backgroundColor: gradGreen,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barPercentage: 0.75,
+                    categoryPercentage: 0.75
                 }
             ]
         },
@@ -961,40 +1117,34 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'top',
-                    align: 'end',
-                    labels: {
-                        boxWidth: 12,
-                        boxHeight: 12,
-                        borderRadius: 3,
-                        useBorderRadius: true,
-                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' },
-                        color: '#475569'
-                    }
+                    display: false // Using our custom 3D legend chips in the header
                 },
                 tooltip: {
-                    backgroundColor: '#0a0a0a',
-                    titleFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' },
-                    bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
-                    padding: 10,
-                    cornerRadius: 8,
-                    displayColors: true
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleFont: { family: "'Plus Jakarta Sans', sans-serif", size: 13, weight: '800' },
+                    bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' },
+                    padding: 12,
+                    cornerRadius: 10,
+                    borderColor: 'rgba(245, 158, 11, 0.3)',
+                    borderWidth: 1,
+                    displayColors: true,
+                    boxPadding: 4
                 }
             },
             scales: {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' },
+                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' },
                         color: '#334155'
                     }
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#f1f5f9' },
+                    grid: { color: 'rgba(226, 232, 240, 0.6)', borderDash: [4, 4] },
                     ticks: {
                         precision: 0,
-                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 },
+                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' },
                         color: '#94a3b8'
                     }
                 }
