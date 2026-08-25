@@ -47,7 +47,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth-sso.php");
+    header("Location: https://center.id-giti.com/sso_redirect.php?app=bukti");
     exit;
 }
 

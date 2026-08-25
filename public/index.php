@@ -35,8 +35,7 @@ if (!$user) {
 $_SESSION['user_role'] = $user['role'];
 
 function getSSOLink($conn, $user_id, $target_url) {
-    $token = generate_sso_token($user_id, $conn);
-    return $target_url . "?sso_token=" . $token;
+    return "sso_redirect.php?target=" . urlencode($target_url);
 }
 
 date_default_timezone_set('Asia/Jakarta');
