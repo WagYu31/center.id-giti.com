@@ -117,7 +117,7 @@ function format_text($text) {
     $t = htmlspecialchars($text);
     $t = preg_replace('/\*([^*]+)\*/', '<strong>$1</strong>', $t); // *bold* → bold
     $t = preg_replace('/_([^_]+)_/', '<em>$1</em>', $t); // _italic_ → italic
-    $t = preg_replace('/@(\w+)/', '<span class="text-primary fw-bold">@$1</span>', $t);
+    $t = preg_replace('/@([a-zA-Z0-9_]+)/', '<span class="mention-tag">@$1</span>', $t);
     // Collapse blank lines between bullet items → single newline
     $t = preg_replace('/\n{2,}(\x{2022})/u', "\n$1", $t);
     // Collapse 3+ newlines globally → max 2
@@ -126,7 +126,6 @@ function format_text($text) {
 }
 ?>
 
-<style>
 <style>
     /* ══════════════════════════════════════════════════════════════
        TASTE SKILL 3D MODERN DESIGN SYSTEM
@@ -430,13 +429,16 @@ function format_text($text) {
     }
 
     /* Tag Mentions in Text */
-    .mention-badge {
-        background: rgba(14, 165, 233, 0.1);
-        color: #0284c7;
+    .mention-tag, .mention-badge {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0369a1;
         font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 6px;
+        padding: 2px 8px;
+        border-radius: 8px;
         font-size: 0.88em;
+        display: inline-block;
+        box-shadow: 0 1px 2px rgba(2, 132, 199, 0.08);
+        border: 1px solid rgba(14, 165, 233, 0.25);
     }
 
     /* Description Editor */
@@ -707,28 +709,12 @@ function format_text($text) {
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">KARYAWAN</label><select name="user" class="form-select bg-light border-0" style="border-radius:12px; padding:10px 14px;"><option value="">Semua Karyawan</option><?php foreach($users_list as $u) echo "<option value='{$u['id']}' ".($filter_user==$u['id']?'selected':'').">{$u['name']}</option>"; ?></select></div>
                 <div class="mb-3">
                     <label class="small fw-bold text-muted mb-1">STATUS</label>
-                    <div class="status-picker" id="statusPicker">
-                        <div class="status-picker-btn" id="statusPickerBtn" style="border-radius:12px; padding:10px 14px;">
-                            <span class="status-dot" id="statusPickerDot" style="background:#3b82f6;"></span>
-                            <span id="statusPickerLabel">Semua Status</span>
-                            <i class="bi bi-chevron-down ms-auto" style="font-size:0.75rem; color:#9ca3af;"></i>
-                        </div>
-                        <div class="status-picker-menu" id="statusPickerMenu">
-                            <div class="status-opt" data-val="" data-color="#3b82f6" data-label="Semua Status">
-                                <span class="status-dot" style="background:#3b82f6;"></span> Semua Status
-                            </div>
-                            <div class="status-opt" data-val="todo" data-color="#ef4444" data-label="Belum Mulai">
-                                <span class="status-dot" style="background:#ef4444;"></span> Belum Mulai
-                            </div>
-                            <div class="status-opt" data-val="in_progress" data-color="#eab308" data-label="Dalam Proses">
-                                <span class="status-dot" style="background:#eab308;"></span> Dalam Proses
-                            </div>
-                            <div class="status-opt" data-val="done" data-color="#22c55e" data-label="Selesai">
-                                <span class="status-dot" style="background:#22c55e;"></span> Selesai
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" name="status" id="statusHiddenInput" value="<?php echo htmlspecialchars($filter_status); ?>">
+                    <select name="status" class="form-select bg-light border-0" style="border-radius:12px; padding:10px 14px;">
+                        <option value="">Semua Status</option>
+                        <option value="todo" <?php echo $filter_status=='todo'?'selected':''; ?>>⚪ Belum Mulai</option>
+                        <option value="in_progress" <?php echo $filter_status=='in_progress'?'selected':''; ?>>🟡 Dalam Proses</option>
+                        <option value="done" <?php echo $filter_status=='done'?'selected':''; ?>>🟢 Selesai</option>
+                    </select>
                 </div>
                 <div class="mb-3"><label class="small fw-bold text-muted mb-1">RENTANG WAKTU</label>
                     <div class="d-flex gap-1">
@@ -1763,51 +1749,6 @@ $(document).ready(()=>{
         selectedFiles = []; 
         updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); 
     });
-
-    // ── Status Picker Init ──
-    (function() {
-        const picker  = document.getElementById('statusPicker');
-        const btn     = document.getElementById('statusPickerBtn');
-        const menu    = document.getElementById('statusPickerMenu');
-        const dot     = document.getElementById('statusPickerDot');
-        const label   = document.getElementById('statusPickerLabel');
-        const hidden  = document.getElementById('statusHiddenInput');
-        if (!picker) return;
-
-        // Set initial state from hidden input (page load with active filter)
-        const opts = menu.querySelectorAll('.status-opt');
-        const currentVal = hidden ? hidden.value : '';
-        opts.forEach(opt => {
-            if (opt.dataset.val === currentVal) {
-                dot.style.background   = opt.dataset.color;
-                label.textContent      = opt.dataset.label;
-                opt.classList.add('active');
-            }
-        });
-
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            picker.classList.toggle('open');
-        });
-
-        opts.forEach(opt => {
-            opt.addEventListener('click', function() {
-                // Update button
-                dot.style.background  = this.dataset.color;
-                label.textContent     = this.dataset.label;
-                hidden.value          = this.dataset.val;
-                // Mark active
-                opts.forEach(o => o.classList.remove('active'));
-                this.classList.add('active');
-                picker.classList.remove('open');
-            });
-        });
-
-        // Close on outside click
-        document.addEventListener('click', function(e) {
-            if (!picker.contains(e.target)) picker.classList.remove('open');
-        });
-    })();
 });</script>
 
 <!-- ═══ FILE LIGHTBOX ═══ -->
