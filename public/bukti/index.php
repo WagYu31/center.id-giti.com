@@ -112,6 +112,43 @@ $myName = $me['name'] ?? 'User';
 $my_av = (!empty($me['avatar']) && file_exists("assets/img/avatars/" . $me['avatar'])) ? "assets/img/avatars/" . $me['avatar'] : "https://ui-avatars.com/api/?name=" . urlencode($myName) . "&background=f59e0b&color=ffffff&bold=true";
 $sapa = date('H')<11?"Selamat Pagi": (date('H')<15?"Selamat Siang": (date('H')<18?"Selamat Sore":"Selamat Malam"));
 
+// Calculate Statistics for Hero and Sidebar Widget
+$stat_title = "Statistik Saya";
+if (!empty($filter_user)) {
+    $stat_user_stmt = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
+    $stat_user_stmt->execute([$filter_user]);
+    $stat_user_row = $stat_user_stmt->fetch(PDO::FETCH_ASSOC);
+    if ($stat_user_row) {
+        $stat_title = "Statistik " . htmlspecialchars(explode(' ', $stat_user_row['name'])[0]);
+        $cleanStatName = '@' . str_replace(' ', '', $stat_user_row['name']);
+        $cleanStatNick = !empty($stat_user_row['nickname']) ? '@' . str_replace(' ', '', $stat_user_row['nickname']) : $cleanStatName;
+        
+        $stat_cond = ["j.deleted_at IS NULL"];
+        $stat_param = [];
+        $stat_cond[] = "(j.user_id = ? OR j.description LIKE ? OR j.description LIKE ? OR j.id IN (SELECT job_id FROM bukti_job_progress WHERE user_id = ?))";
+        $stat_param[] = $filter_user;
+        $stat_param[] = "%$cleanStatName%";
+        $stat_param[] = "%$cleanStatNick%";
+        $stat_param[] = $filter_user;
+        
+        if (!empty($filter_date_start)) { $stat_cond[] = "DATE(j.created_at) >= ?"; $stat_param[] = $filter_date_start; }
+        if (!empty($filter_date_end)) { $stat_cond[] = "DATE(j.created_at) <= ?"; $stat_param[] = $filter_date_end; }
+        if (!empty($search_query)) { $stat_cond[] = "(j.title LIKE ? OR j.description LIKE ?)"; $stat_param[] = "%$search_query%"; $stat_param[] = "%$search_query%"; }
+        
+        $stat_where = implode(" AND ", $stat_cond);
+        $stat_stmt = $conn->prepare("SELECT j.status, COUNT(*) as c FROM bukti_jobs j WHERE $stat_where GROUP BY j.status");
+        $stat_stmt->execute($stat_param);
+        $stats = $stat_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    } else {
+        $stats = [];
+    }
+} else {
+    // Default: Statistik user login
+    $stat_stmt = $conn->prepare("SELECT j.status, COUNT(*) as c FROM bukti_jobs j WHERE j.user_id = ? AND j.deleted_at IS NULL GROUP BY j.status");
+    $stat_stmt->execute([$current_user_id]);
+    $stats = $stat_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
 function time_ago($datetime) { return tgl_indo($datetime); }
 function format_text($text) { 
     $t = htmlspecialchars($text);
@@ -934,43 +971,6 @@ function format_text($text) {
                 <button class="btn btn-3d-primary w-100 fw-bold py-2" style="border-radius:12px;">Terapkan Filter</button>
             </form>
         </div>
-        <?php
-        $stat_title = "Statistik Saya";
-        if (!empty($filter_user)) {
-            $stat_user_stmt = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
-            $stat_user_stmt->execute([$filter_user]);
-            $stat_user_row = $stat_user_stmt->fetch(PDO::FETCH_ASSOC);
-            if ($stat_user_row) {
-                $stat_title = "Statistik " . htmlspecialchars(explode(' ', $stat_user_row['name'])[0]);
-                $cleanStatName = '@' . str_replace(' ', '', $stat_user_row['name']);
-                $cleanStatNick = !empty($stat_user_row['nickname']) ? '@' . str_replace(' ', '', $stat_user_row['nickname']) : $cleanStatName;
-                
-                $stat_cond = ["j.deleted_at IS NULL"];
-                $stat_param = [];
-                $stat_cond[] = "(j.user_id = ? OR j.description LIKE ? OR j.description LIKE ? OR j.id IN (SELECT job_id FROM bukti_job_progress WHERE user_id = ?))";
-                $stat_param[] = $filter_user;
-                $stat_param[] = "%$cleanStatName%";
-                $stat_param[] = "%$cleanStatNick%";
-                $stat_param[] = $filter_user;
-                
-                if (!empty($filter_date_start)) { $stat_cond[] = "DATE(j.created_at) >= ?"; $stat_param[] = $filter_date_start; }
-                if (!empty($filter_date_end)) { $stat_cond[] = "DATE(j.created_at) <= ?"; $stat_param[] = $filter_date_end; }
-                if (!empty($search_query)) { $stat_cond[] = "(j.title LIKE ? OR j.description LIKE ?)"; $stat_param[] = "%$search_query%"; $stat_param[] = "%$search_query%"; }
-                
-                $stat_where = implode(" AND ", $stat_cond);
-                $stat_stmt = $conn->prepare("SELECT j.status, COUNT(*) as c FROM bukti_jobs j WHERE $stat_where GROUP BY j.status");
-                $stat_stmt->execute($stat_param);
-                $stats = $stat_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-            } else {
-                $stats = [];
-            }
-        } else {
-            // Default: Statistik user login
-            $stat_stmt = $conn->prepare("SELECT j.status, COUNT(*) as c FROM bukti_jobs j WHERE j.user_id = ? AND j.deleted_at IS NULL GROUP BY j.status");
-            $stat_stmt->execute([$current_user_id]);
-            $stats = $stat_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        }
-        ?>
         <div class="card-custom p-4" style="background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 0.95rem;"><i class="bi bi-pie-chart-fill text-warning me-2"></i><?= $stat_title ?></h6>
