@@ -25,6 +25,7 @@
             <?php endif; ?>
         </a>
         <a href="log.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'log.php' ? 'active' : ''; ?>"><i class="bi bi-clock-history"></i> Riwayat Log</a>
+        <a href="analytics.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics.php' ? 'active' : ''; ?>"><i class="bi bi-trophy-fill" style="color: #f59e0b;"></i> Analytics & KPI</a>
         
         <div class="section-label">Filter Cepat</div>
         <a href="index.php?status=todo" class="nav-link"><i class="bi bi-circle"></i> Belum Mulai</a>

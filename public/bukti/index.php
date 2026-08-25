@@ -451,6 +451,7 @@ function format_text($text) {
             <div class="btn-group shadow-sm bg-white rounded-pill p-1">
                 <a href="?switch_mode=social" class="btn btn-sm rounded-pill px-3 <?php echo $view_mode=='social'?'btn-dark':'text-muted'; ?>"><i class="bi bi-grid-fill me-1"></i> Sosial</a>
                 <a href="?switch_mode=formal" class="btn btn-sm rounded-pill px-3 <?php echo $view_mode=='formal'?'btn-dark':'text-muted'; ?>"><i class="bi bi-list-ul me-1"></i> Tabel</a>
+                <a href="analytics.php" class="btn btn-sm rounded-pill px-3 text-muted" style="font-weight: 600;"><i class="bi bi-trophy-fill me-1 text-warning"></i> KPI</a>
             </div>
         </div>
 
