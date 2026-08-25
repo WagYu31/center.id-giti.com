@@ -128,20 +128,20 @@ function format_text($text) {
 
 <style>
     /* ══════════════════════════════════════════════════════════════
-       TASTE SKILL 3D MODERN DESIGN SYSTEM
+       TASTE SKILL 3D MODERN VIBRANT DESIGN SYSTEM
        ══════════════════════════════════════════════════════════════ */
     
     /* Loading Overlay - Premium Gold Glassmorphism */
     #loading-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(248, 250, 252, 0.85); 
-        backdrop-filter: blur(12px); 
+        background: rgba(250, 247, 242, 0.88); 
+        backdrop-filter: blur(14px); 
         z-index: 99999; 
         display: none; align-items: center; justify-content: center; flex-direction: column; 
     }
     .loader { 
         width: 52px; height: 52px; 
-        border: 4px solid rgba(245, 158, 11, 0.15); 
+        border: 4px solid rgba(245, 158, 11, 0.2); 
         border-top-color: #f59e0b; 
         border-radius: 50%; 
         display: inline-block; box-sizing: border-box; 
@@ -149,21 +149,163 @@ function format_text($text) {
     }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ── 3D Feed Cards & Interactive Depth ── */
+    /* ── Hero 3D Showcase Banner ── */
+    .hero-3d-banner {
+        position: relative;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 40%, #ffedd5 100%);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        border-radius: 24px;
+        padding: 26px 30px;
+        box-shadow: 0 16px 40px -8px rgba(245, 158, 11, 0.22), 0 4px 16px -2px rgba(15, 23, 42, 0.04), inset 0 2px 0 rgba(255, 255, 255, 1);
+        overflow: hidden;
+        perspective: 1000px;
+    }
+    .hero-3d-bg-glow {
+        position: absolute;
+        top: -50%; right: -20%;
+        width: 320px; height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(245, 158, 11, 0) 70%);
+        pointer-events: none;
+        animation: pulseGlow 6s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlow { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.2); opacity: 1; } }
+
+    .hero-3d-tag {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+    }
+    .hero-3d-title {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 1.6rem;
+        letter-spacing: -0.02em;
+    }
+    .gradient-text {
+        background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #ea580c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero-3d-subtitle {
+        color: #475569;
+        font-size: 0.9rem;
+        max-width: 520px;
+        line-height: 1.5;
+    }
+    
+    /* Hero KPI Chips */
+    .hero-kpi-chip {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
+        padding: 8px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .hero-kpi-chip:hover { transform: translateY(-2px) scale(1.03); }
+    .kpi-chip-icon { font-size: 1.25rem; }
+    .kpi-chip-val { font-size: 1.05rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .kpi-chip-lbl { font-size: 0.68rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; }
+    
+    .chip-done { border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%); }
+    .chip-done .kpi-chip-val { color: #059669; }
+    .chip-progress { border-color: rgba(245, 158, 11, 0.3); background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%); }
+    .chip-progress .kpi-chip-val { color: #d97706; }
+    .chip-todo { border-color: rgba(148, 163, 184, 0.3); background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); }
+
+    /* ── 3D Interactive Model Showcase ── */
+    .model-3d-container {
+        perspective: 900px;
+        display: inline-block;
+    }
+    .model-3d-card {
+        width: 160px; height: 160px;
+        margin: 0 auto;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.2s ease-out;
+    }
+    .model-3d-core {
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 16px 36px -4px rgba(245, 158, 11, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+        position: relative;
+        animation: floatCore 6s ease-in-out infinite alternate;
+    }
+    @keyframes floatCore { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-8px) rotate(3deg); } }
+    
+    .model-avatar-ring {
+        position: relative;
+        z-index: 2;
+        border-radius: 50%;
+        box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.45);
+    }
+    .model-badge-float {
+        position: absolute;
+        bottom: -10px;
+        background: #ffffff;
+        border: 1px solid rgba(245, 158, 11, 0.4);
+        padding: 4px 10px;
+        border-radius: 9999px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 5;
+        white-space: nowrap;
+    }
+
+    .floating-item {
+        position: absolute;
+        font-size: 1.5rem;
+        z-index: 4;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+    .float-item-1 { top: -10px; left: -10px; animation: floatIcon1 4s ease-in-out infinite alternate; }
+    .float-item-2 { top: -8px; right: -10px; animation: floatIcon2 4.5s ease-in-out infinite alternate; }
+    .float-item-3 { bottom: 0px; right: -15px; animation: floatIcon1 5s ease-in-out infinite alternate; }
+    .float-item-4 { bottom: -5px; left: -12px; animation: floatIcon2 4.2s ease-in-out infinite alternate; }
+    
+    @keyframes floatIcon1 { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(-10px) scale(1.1); } }
+    @keyframes floatIcon2 { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(10px) scale(1.1); } }
+
+    /* ── Vibrant 3D Feed Cards ── */
     .card-custom {
         background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.85);
-        border-radius: 18px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 6px 18px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-        margin-bottom: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 20px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+        margin-bottom: 22px;
         overflow: hidden;
         position: relative;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .card-custom:hover {
-        border-color: rgba(245, 158, 11, 0.3);
-        box-shadow: 0 8px 26px -4px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1);
-        transform: translateY(-2px);
+        box-shadow: 0 12px 32px -4px rgba(245, 158, 11, 0.15), 0 4px 12px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1);
+        transform: translateY(-3px) scale(1.004);
+    }
+    .card-custom[data-status="done"] {
+        border-left: 5px solid #10b981 !important;
+        background: linear-gradient(180deg, #ffffff 0%, #f7fef9 100%);
+    }
+    .card-custom[data-status="in_progress"] {
+        border-left: 5px solid #f59e0b !important;
+        background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+    }
+    .card-custom[data-status="todo"] {
+        border-left: 5px solid #64748b !important;
+        background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
     }
 
     /* ── 3D Status Badges with Glowing Pulse ── */
@@ -210,7 +352,7 @@ function format_text($text) {
     }
     @keyframes pulseAmber {
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25); }
-        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.1); }
+        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1); }
     }
 
     .badge-3d-todo {
@@ -546,8 +688,75 @@ function format_text($text) {
 
 <div class="main-wrapper">
     <div class="content-area">
+        <!-- ═══ 3D HERO SHOWCASE BANNER ═══ -->
+        <div class="hero-3d-banner mb-4">
+            <div class="hero-3d-bg-glow"></div>
+            <div class="row align-items-center position-relative z-2">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="hero-3d-tag"><i class="bi bi-stars me-1"></i>TASTE SKILL 3D WORKSPACE</span>
+                        <span class="badge rounded-pill bg-warning bg-opacity-25 text-warning fw-bold px-3 py-1" style="font-size: 0.72rem;">✨ Live Tim</span>
+                    </div>
+                    <h2 class="hero-3d-title mb-2">
+                        <?php echo $sapa; ?>, <span class="gradient-text"><?php echo htmlspecialchars(explode(' ', $myName)[0]); ?></span>!
+                    </h2>
+                    <p class="hero-3d-subtitle mb-3">
+                        Pantau progres pekerjaan tim secara real-time, rayakan pencapaian bersama, dan kolaborasi lebih cepat.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="hero-kpi-chip chip-done">
+                            <span class="kpi-chip-icon">🏆</span>
+                            <div>
+                                <div class="kpi-chip-val"><?php echo $stats['done'] ?? 0; ?></div>
+                                <div class="kpi-chip-lbl">Selesai</div>
+                            </div>
+                        </div>
+                        <div class="hero-kpi-chip chip-progress">
+                            <span class="kpi-chip-icon">⚡</span>
+                            <div>
+                                <div class="kpi-chip-val"><?php echo $stats['in_progress'] ?? 0; ?></div>
+                                <div class="kpi-chip-lbl">Proses</div>
+                            </div>
+                        </div>
+                        <div class="hero-kpi-chip chip-todo">
+                            <span class="kpi-chip-icon">🎯</span>
+                            <div>
+                                <div class="kpi-chip-val"><?php echo $stats['todo'] ?? 0; ?></div>
+                                <div class="kpi-chip-lbl">To-Do</div>
+                            </div>
+                        </div>
+                        <a href="analytics.php" class="btn btn-sm btn-3d-primary rounded-pill px-3 py-2 ms-auto d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-trophy-fill"></i> Leaderboard KPI <i class="bi bi-arrow-right-short"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center d-none d-lg-block">
+                    <!-- 3D Interactive Model Showcase -->
+                    <div class="model-3d-container" id="hero3dContainer">
+                        <div class="model-3d-card" id="hero3dCard">
+                            <div class="floating-item float-item-1">🚀</div>
+                            <div class="floating-item float-item-2">✨</div>
+                            <div class="floating-item float-item-3">🏆</div>
+                            <div class="floating-item float-item-4">🛡️</div>
+                            <div class="model-3d-core">
+                                <div class="model-avatar-ring">
+                                    <img src="<?php echo $my_av; ?>" class="rounded-circle shadow" width="70" height="70" style="object-fit:cover; border:3px solid white;">
+                                </div>
+                                <div class="model-badge-float">
+                                    <span class="fw-bold" style="font-size:0.75rem; color:#d97706;">TOP PERFORMER</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-end mb-4">
-            <div><h3 class="fw-bold mb-1"><?php echo $sapa; ?>, <?php echo htmlspecialchars(explode(' ', $myName)[0]); ?>!</h3><p class="text-muted mb-0">Lihat apa yang sedang dikerjakan tim hari ini.</p></div>
+            <div>
+                <h5 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.01em;">Aktivitas Tim Terbaru</h5>
+                <p class="text-muted mb-0" style="font-size: 0.85rem;">Linimasa pekerjaan dan bukti hasil progres kerja.</p>
+            </div>
             <div class="btn-group shadow-sm bg-white rounded-pill p-1">
                 <a href="?switch_mode=social" class="btn btn-sm rounded-pill px-3 <?php echo $view_mode=='social'?'btn-dark':'text-muted'; ?>"><i class="bi bi-grid-fill me-1"></i> Sosial</a>
                 <a href="?switch_mode=formal" class="btn btn-sm rounded-pill px-3 <?php echo $view_mode=='formal'?'btn-dark':'text-muted'; ?>"><i class="bi bi-list-ul me-1"></i> Tabel</a>
@@ -762,11 +971,53 @@ function format_text($text) {
             $stats = $stat_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         }
         ?>
-        <div class="card-custom p-4">
-            <h6 class="fw-bold mb-3"><?= $stat_title ?></h6>
-            <div class="d-flex justify-content-between mb-2"><span><i class="bi bi-circle text-secondary me-2"></i> Belum Mulai</span><b><?php echo $stats['todo']??0; ?></b></div>
-            <div class="d-flex justify-content-between mb-2"><span><i class="bi bi-play-circle-fill text-primary me-2"></i> Dalam Proses</span><b><?php echo $stats['in_progress']??0; ?></b></div>
-            <div class="d-flex justify-content-between"><span><i class="bi bi-check-circle-fill text-success me-2"></i> Selesai</span><b><?php echo $stats['done']??0; ?></b></div>
+        <div class="card-custom p-4" style="background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 0.95rem;"><i class="bi bi-pie-chart-fill text-warning me-2"></i><?= $stat_title ?></h6>
+                <span class="badge rounded-pill bg-warning bg-opacity-15 text-warning fw-bold" style="font-size: 0.68rem;">Live</span>
+            </div>
+            
+            <div class="d-flex flex-column gap-2 mb-3">
+                <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #f0fdf4; border: 1px solid rgba(16, 185, 129, 0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);"></span>
+                        <span class="fw-bold" style="font-size: 0.82rem; color: #047857;">Selesai</span>
+                    </div>
+                    <b class="fs-6" style="color: #047857;"><?php echo $stats['done']??0; ?></b>
+                </div>
+                
+                <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #fffbeb; border: 1px solid rgba(245, 158, 11, 0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);"></span>
+                        <span class="fw-bold" style="font-size: 0.82rem; color: #b45309;">Dalam Proses</span>
+                    </div>
+                    <b class="fs-6" style="color: #b45309;"><?php echo $stats['in_progress']??0; ?></b>
+                </div>
+                
+                <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);"></span>
+                        <span class="fw-bold" style="font-size: 0.82rem; color: #475569;">Belum Mulai</span>
+                    </div>
+                    <b class="fs-6" style="color: #475569;"><?php echo $stats['todo']??0; ?></b>
+                </div>
+            </div>
+            
+            <?php 
+                $tot = ($stats['done']??0) + ($stats['in_progress']??0) + ($stats['todo']??0);
+                $pDone = $tot > 0 ? round((($stats['done']??0) / $tot) * 100) : 0;
+                $pProg = $tot > 0 ? round((($stats['in_progress']??0) / $tot) * 100) : 0;
+                $pTodo = $tot > 0 ? round((($stats['todo']??0) / $tot) * 100) : 0;
+            ?>
+            <div class="progress rounded-pill mb-2" style="height: 8px; background: #e2e8f0; overflow:hidden;">
+                <div class="progress-bar bg-success" style="width: <?php echo $pDone; ?>%;"></div>
+                <div class="progress-bar bg-warning" style="width: <?php echo $pProg; ?>%;"></div>
+                <div class="progress-bar bg-secondary" style="width: <?php echo $pTodo; ?>%;"></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center text-muted" style="font-size: 0.72rem; font-weight: 600;">
+                <span>Total: <?php echo $tot; ?> Tugas</span>
+                <span class="text-success fw-bold"><?php echo $pDone; ?>% Selesai</span>
+            </div>
         </div>
     </div>
 </div>
@@ -1749,6 +2000,23 @@ $(document).ready(()=>{
         selectedFiles = []; 
         updatePreviews('file-preview-container', selectedFiles, 'selectedFiles'); 
     });
+
+    // ── 3D Hero Parallax Mouse Interaction ──
+    const heroCard = document.getElementById('hero3dCard');
+    const heroContainer = document.getElementById('hero3dContainer');
+    if (heroContainer && heroCard) {
+        heroContainer.addEventListener('mousemove', function(e) {
+            const rect = heroContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            const tiltX = (y / (rect.height / 2)) * -22;
+            const tiltY = (x / (rect.width / 2)) * 22;
+            heroCard.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.08, 1.08, 1.08)`;
+        });
+        heroContainer.addEventListener('mouseleave', function() {
+            heroCard.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    }
 });</script>
 
 <!-- ═══ FILE LIGHTBOX ═══ -->

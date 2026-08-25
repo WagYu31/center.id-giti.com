@@ -10,25 +10,25 @@
     
     <style>
         :root {
-            /* Taste Skill Modern 3D Vibrant Theme */
-            --sidebar-bg: #ffffff;
-            --sidebar-text: #64748b;
-            --sidebar-hover: #1e293b;
-            --body-bg: #f8fafc;
+            /* Taste Skill Modern Vibrant 3D Theme */
+            --sidebar-bg: rgba(255, 255, 255, 0.95);
+            --sidebar-text: #475569;
+            --sidebar-hover: #0f172a;
+            --body-bg: #faf7f2;
             --card-bg: #ffffff;
             --primary: #d97706;
             --primary-light: #f59e0b;
-            --primary-glow: rgba(245, 158, 11, 0.12);
+            --primary-glow: rgba(245, 158, 11, 0.2);
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: rgba(226, 232, 240, 0.9);
+            --border-color: rgba(226, 232, 240, 0.85);
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
-            --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-            --shadow-3d: 0 1px 3px rgba(15, 23, 42, 0.03), 0 8px 24px -4px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-            --shadow-3d-hover: 0 4px 8px -2px rgba(15, 23, 42, 0.04), 0 18px 38px -6px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
-            --radius: 18px;
-            --radius-sm: 12px;
+            --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+            --shadow-lg: 0 16px 38px -4px rgba(15, 23, 42, 0.09), 0 6px 16px -2px rgba(15, 23, 42, 0.04);
+            --shadow-3d: 0 2px 6px rgba(15, 23, 42, 0.03), 0 10px 28px -4px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            --shadow-3d-hover: 0 8px 24px -3px rgba(245, 158, 11, 0.18), 0 20px 42px -6px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
+            --radius: 20px;
+            --radius-sm: 14px;
         }
         
         * { box-sizing: border-box; }
@@ -36,34 +36,63 @@
         body {
             background-color: var(--body-bg);
             background-image: 
-                radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.035) 0px, transparent 50%),
-                radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.035) 0px, transparent 50%);
+                radial-gradient(at 5% 5%, rgba(251, 191, 36, 0.16) 0px, transparent 45%),
+                radial-gradient(at 95% 10%, rgba(14, 165, 233, 0.14) 0px, transparent 45%),
+                radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.06) 0px, transparent 50%),
+                radial-gradient(at 85% 90%, rgba(16, 185, 129, 0.12) 0px, transparent 45%),
+                radial-gradient(at 10% 90%, rgba(168, 85, 247, 0.1) 0px, transparent 45%);
             background-attachment: fixed;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
             color: var(--text-dark);
             -webkit-font-smoothing: antialiased;
         }
+
+        /* ── Floating 3D Ambient Orbs ── */
+        .ambient-orb-1 {
+            position: fixed; top: -120px; right: 8%; width: 480px; height: 480px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, rgba(245, 158, 11, 0) 70%);
+            z-index: -1; pointer-events: none;
+            animation: floatOrb1 16s ease-in-out infinite alternate;
+        }
+        .ambient-orb-2 {
+            position: fixed; bottom: 5%; left: 18%; width: 520px; height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.14) 0%, rgba(56, 189, 248, 0) 70%);
+            z-index: -1; pointer-events: none;
+            animation: floatOrb2 20s ease-in-out infinite alternate;
+        }
+        .ambient-orb-3 {
+            position: fixed; top: 40%; right: 25%; width: 380px; height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, rgba(244, 63, 94, 0) 70%);
+            z-index: -1; pointer-events: none;
+            animation: floatOrb1 24s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes floatOrb1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-50px, 70px) scale(1.15); } }
+        @keyframes floatOrb2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(70px, -60px) scale(1.18); } }
         
         /* ═══════════════════════════════════════════
-           SIDEBAR - ISO 9241-151 Clean White + Amber Accent
+           SIDEBAR - Glassmorphism + Vibrant Amber Accent
            ═══════════════════════════════════════════ */
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
             position: fixed;
             top: 16px;
             left: 16px;
             bottom: 16px;
             z-index: 1000;
-            border-radius: 20px;
+            border-radius: 24px;
             padding-top: 28px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
         
         .sidebar::before {

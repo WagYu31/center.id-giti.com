@@ -1,3 +1,7 @@
+<div class="ambient-orb-1"></div>
+<div class="ambient-orb-2"></div>
+<div class="ambient-orb-3"></div>
+
 <nav class="sidebar">
     <div class="sidebar-brand">
         <div class="brand-icon">
