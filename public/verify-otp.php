@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user) {
             $now = date("Y-m-d H:i:s");
             if ($now <= $user['otp_expires_at']) {
-                $update = $conn->prepare("UPDATE users SET email_verified_at = :now, is_verified = 1, verification_code = NULL, otp_expires_at = NULL WHERE id = :id");
+                $update = $conn->prepare("UPDATE users SET email_verified_at = :now, verification_code = NULL, otp_expires_at = NULL WHERE id = :id");
                 $update->execute([':now' => $now, ':id' => $user['id']]);
 
                 unset($_SESSION['verify_email']);
