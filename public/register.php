@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($is_admin_register) {
                     // Admin buat user → langsung verified, tidak perlu OTP
-                    $conn->prepare("UPDATE users SET is_verified = 1, verification_code = NULL WHERE email = ?")
+                    $conn->prepare("UPDATE users SET is_verified = 1, email_verified_at = NOW(), verification_code = NULL, otp_expires_at = NULL WHERE email = ?")
                          ->execute([$email]);
                     $_SESSION['admin_reg_success'] = "User {$name} berhasil ditambahkan.";
                     header("Location: data-karyawan.php");
