@@ -1900,7 +1900,9 @@ function openDetail(id){
                 }); 
                 th += '</div>';
             } else { 
-                th='<div class="text-center py-4 px-3" style="background:#f8fafc; border-radius:16px; border:1px dashed rgba(226,232,240,0.9);"><div style="width:44px; height:44px; border-radius:14px; background:#fffbeb; color:#d97706; display:inline-flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:8px;"><i class="bi bi-lightning-charge-fill"></i></div><h6 class="fw-bold m-0" style="font-size:0.9rem; color:#0f172a;">Belum ada update progres</h6><p class="mt-1 mb-0" style="font-size:0.78rem; color:#94a3b8;">Klik tombol "+ Update Progres" untuk mencatat progres pekerjaan.</p></div>'; 
+                let canUpdate = Boolean(res.is_owner || res.is_tagged || res.is_approver);
+                let hintText = canUpdate ? 'Klik tombol "+ Update Progres" untuk mencatat progres pekerjaan.' : 'Belum ada catatan progres yang dilaporkan oleh tim.';
+                th='<div class="text-center py-4 px-3" style="background:#f8fafc; border-radius:16px; border:1px dashed rgba(226,232,240,0.9);"><div style="width:44px; height:44px; border-radius:14px; background:#fffbeb; color:#d97706; display:inline-flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:8px;"><i class="bi bi-lightning-charge-fill"></i></div><h6 class="fw-bold m-0" style="font-size:0.9rem; color:#0f172a;">Belum ada update progres</h6><p class="mt-1 mb-0" style="font-size:0.78rem; color:#94a3b8;">' + hintText + '</p></div>'; 
             }
             $('#d-timeline').html(th);
             
@@ -1935,9 +1937,11 @@ function openDetail(id){
                 btn.find('i').css('color', '#94a3b8');
             }
             
-            $('#btn-update-progress').toggle(res.is_owner || res.is_tagged);
-            window._curIsOwner  = res.is_owner;
-            window._curIsTagged = res.is_tagged;
+            let canUpdateProgress = Boolean(res.is_owner || res.is_tagged || res.is_approver);
+            $('#btn-update-progress').toggle(canUpdateProgress);
+            window._curIsOwner    = res.is_owner;
+            window._curIsTagged   = res.is_tagged;
+            window._curIsApprover = res.is_approver;
             $('#p-job-id').val(id);
             
             // Render viewers section
@@ -2214,7 +2218,10 @@ function showViewers(jobId) {
 }
 
 function showProgressForm() { 
-    if(!window._curIsOwner && !window._curIsTagged) { alert('Hanya pembuat atau orang yang di-tag yang dapat mengupdate progres pekerjaan ini.'); return; }
+    if(!window._curIsOwner && !window._curIsTagged && !window._curIsApprover) { 
+        alert('Hanya pembuat tugas, rekan yang di-tag (@sebut), atau Admin yang dapat mengupdate progres pekerjaan ini.'); 
+        return; 
+    }
     $('#p-job-id').val(curJob); 
     progressFiles = []; 
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');

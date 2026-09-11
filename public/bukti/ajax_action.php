@@ -215,9 +215,10 @@ if ($action == 'update_progress') {
     $my_nick_t = '@' . ($job['my_nick'] ?: str_replace(' ', '', $job['my_name']));
     $is_tagged = (stripos($job['description'], $my_tag) !== false ||
                   stripos($job['description'], $my_nick_t) !== false);
+    $is_admin  = (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1);
 
-    if (!$is_owner && !$is_tagged) {
-        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
+    if (!$is_owner && !$is_tagged && !$is_admin) {
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak: Hanya pembuat tugas, rekan yang di-tag, atau Admin yang dapat mengupdate progres']);
         exit;
     }
 
