@@ -240,8 +240,8 @@ if ($action == 'update_progress') {
     }
 
     // Kirim notifikasi in-app & email update progress ke creator & seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id, $user_id);
-    $note_tagged = get_tagged_users_from_text($conn, $notes, $user_id);
+    $recipients = get_job_recipients($conn, $job_id, null);
+    $note_tagged = get_tagged_users_from_text($conn, $notes, null);
     foreach ($note_tagged as $nt) {
         $recipients[] = $nt;
     }
@@ -299,7 +299,7 @@ if ($action == 'approve_job') {
     write_log($conn, $user_id, 'APPROVE_JOB', "Menyetujui pekerjaan '{$job['title']}' (Lanjut Kerjakan)");
 
     // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id, $user_id);
+    $recipients = get_job_recipients($conn, $job_id, null);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
 
     foreach ($recipients as $rec) {
@@ -351,7 +351,7 @@ if ($action == 'reject_job') {
     write_log($conn, $user_id, 'REJECT_JOB', "Meminta meeting ulang untuk '{$job['title']}': $notes");
 
     // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id, $user_id);
+    $recipients = get_job_recipients($conn, $job_id, null);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
 
     foreach ($recipients as $rec) {
