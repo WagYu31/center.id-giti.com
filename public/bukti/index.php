@@ -509,6 +509,93 @@ function format_text($text) {
         box-shadow: 0 5px 12px rgba(239, 68, 68, 0.45);
     }
 
+    /* ─── 3D Confirmation Modals (Approve & Meeting Ulang) ─── */
+    #approveModal, #rejectModal {
+        z-index: 1085 !important;
+    }
+    .modal-3d-box {
+        border-radius: 26px !important;
+        background: #ffffff !important;
+        box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.28), 0 0 1px 1px rgba(0,0,0,0.05) !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    }
+    .approve-icon-orb {
+        width: 80px;
+        height: 80px;
+        border-radius: 26px;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #6ee7b7;
+        box-shadow: 0 12px 28px rgba(16, 185, 129, 0.28), inset 0 2px 4px rgba(255,255,255,0.8);
+        animation: orbBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .reject-icon-orb {
+        width: 80px;
+        height: 80px;
+        border-radius: 26px;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fda4af;
+        box-shadow: 0 12px 28px rgba(239, 68, 68, 0.25), inset 0 2px 4px rgba(255,255,255,0.8);
+        animation: orbBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes orbBounce {
+        0% { transform: scale(0.55); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .btn-3d-approve {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff !important;
+        border: none;
+        border-radius: 9999px;
+        padding: 11px 24px;
+        font-weight: 700;
+        font-size: 0.92rem;
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.35);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .btn-3d-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.35);
+        filter: brightness(1.05);
+    }
+    .btn-3d-cancel {
+        background: #f1f5f9;
+        color: #64748b !important;
+        border: 1px solid #e2e8f0;
+        border-radius: 9999px;
+        padding: 11px 22px;
+        font-weight: 600;
+        font-size: 0.92rem;
+        transition: all 0.2s ease;
+    }
+    .btn-3d-cancel:hover {
+        background: #e2e8f0;
+        color: #334155 !important;
+    }
+    .btn-3d-reject {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: #ffffff !important;
+        border: none;
+        border-radius: 9999px;
+        padding: 11px 24px;
+        font-weight: 700;
+        font-size: 0.92rem;
+        box-shadow: 0 6px 18px rgba(239, 68, 68, 0.38), inset 0 1px 0 rgba(255,255,255,0.35);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .btn-3d-reject:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255,255,255,0.35);
+        filter: brightness(1.05);
+    }
+
     .chip-pending {
         border-color: rgba(2, 132, 199, 0.45) !important;
         background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%) !important;
@@ -987,7 +1074,7 @@ function format_text($text) {
                                     }
                                 ?>
                                 <?php if($is_approver && $job['status'] == 'pending_approval'): ?>
-                                <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, event)" title="Setujui (Lanjut Kerjakan)">
+                                <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Setujui (Lanjut Kerjakan)">
                                     <i class="bi bi-check-lg"></i>
                                 </button>
                                 <button class="btn-quick-reject" onclick="openRejectModal(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Meeting Ulang (Tidak Approve)">
@@ -1064,7 +1151,7 @@ function format_text($text) {
                             <td class="text-end pe-4">
                                 <div class="d-flex justify-content-end align-items-center gap-2">
                                     <?php if($is_approver && $job['status'] == 'pending_approval'): ?>
-                                    <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, event)" title="Setujui (Lanjut Kerjakan)">
+                                    <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Setujui (Lanjut Kerjakan)">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
                                     <button class="btn-quick-reject" onclick="openRejectModal(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Meeting Ulang (Tidak Approve)">
@@ -1378,27 +1465,87 @@ function format_text($text) {
     </div>
 </div>
 
-<!-- Modal Instruksi Meeting Ulang -->
-<div class="modal fade" id="rejectModal" tabindex="-1" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
-        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-            <div class="modal-header border-0 px-4 pt-4 pb-2" style="background: #ffffff;">
-                <div class="d-flex align-items-center gap-2">
-                    <span style="width: 36px; height: 36px; border-radius: 12px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;"><i class="bi bi-arrow-repeat"></i></span>
-                    <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 1.05rem;">Instruksi Meeting Ulang</h6>
+<!-- Modal Konfirmasi Persetujuan (Approve) 3D -->
+<div class="modal fade" id="approveModal" tabindex="-1" style="z-index: 1085;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 470px;">
+        <div class="modal-content modal-3d-box border-0 overflow-hidden">
+            <div class="modal-body p-4 p-md-5 text-center position-relative">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-4" data-bs-dismiss="modal" style="font-size: 0.85rem;"></button>
+                
+                <!-- 3D Orb Icon -->
+                <div class="approve-icon-orb mb-3">
+                    <i class="bi bi-patch-check-fill" style="font-size: 2.7rem; color: #059669; filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.4));"></i>
                 </div>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                
+                <h5 class="fw-bold mb-2" style="color: #0f172a; font-size: 1.3rem; letter-spacing: -0.02em;">Setujui Pekerjaan?</h5>
+                <p class="text-secondary small mb-3" style="font-size: 0.88rem; line-height: 1.55;">
+                    Apakah Anda yakin menyetujui pekerjaan ini untuk <strong>Lanjut Kerjakan</strong>? Konfirmasi akan otomatis dikirimkan ke pembuat pekerjaan.
+                </p>
+
+                <!-- Task Preview Card -->
+                <div class="p-3 mb-3 text-start rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;">Judul Pekerjaan</span>
+                        <span class="badge-3d-status badge-3d-pending" style="font-size: 0.65rem; padding: 2px 8px;"><span class="pulse-dot"></span> Menunggu Approval</span>
+                    </div>
+                    <div id="approve-job-title" class="fw-bold text-dark text-truncate" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <div class="p-2 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 text-start" style="background: #ecfdf5; border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46;">
+                    <i class="bi bi-info-circle-fill text-success fs-6 flex-shrink-0"></i>
+                    <span>Status pekerjaan langsung beralih ke <strong>Lanjut Kerjakan</strong> (On Progress).</span>
+                </div>
+
+                <input type="hidden" id="approve-job-id">
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-3d-cancel flex-grow-1" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="button" class="btn btn-3d-approve flex-grow-1" onclick="confirmApproveJob()">
+                        <i class="bi bi-check-lg me-1"></i> Ya, Setujui
+                    </button>
+                </div>
             </div>
-            <div class="modal-body px-4 pb-4 pt-2" style="background: #ffffff;">
-                <p class="text-muted small mb-3">Tuliskan arahan / catatan hal yang perlu dibahas ulang oleh tim untuk pekerjaan: <br><strong id="reject-job-title" class="text-dark"></strong></p>
-                <input type="hidden" id="reject-job-id">
-                <div class="mb-3">
-                    <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Catatan / Alasan Meeting Ulang</label>
-                    <textarea id="reject-notes" class="form-control bg-light border-0" rows="4" placeholder="Contoh: Skema diskon perlu disesuaikan dengan profit margin, jadwalkan meeting ulang hari Senin..." style="border-radius: 14px; padding: 12px 14px; font-size: 0.88rem; color: #1e293b; resize: none;"></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Instruksi Meeting Ulang 3D -->
+<div class="modal fade" id="rejectModal" tabindex="-1" style="z-index: 1085;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content modal-3d-box border-0 overflow-hidden">
+            <div class="modal-body p-4 p-md-5 position-relative">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-4" data-bs-dismiss="modal" style="font-size: 0.85rem;"></button>
+                
+                <div class="text-center mb-3">
+                    <div class="reject-icon-orb mb-3">
+                        <i class="bi bi-arrow-repeat" style="font-size: 2.7rem; color: #dc2626; filter: drop-shadow(0 4px 10px rgba(239, 68, 68, 0.4));"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1" style="color: #0f172a; font-size: 1.3rem; letter-spacing: -0.02em;">Instruksi Meeting Ulang</h5>
+                    <p class="text-secondary small mb-0" style="font-size: 0.86rem;">
+                        Tuliskan catatan / poin hal yang perlu dibahas ulang bersama tim.
+                    </p>
                 </div>
-                <div class="d-flex gap-2 justify-content-end">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" style="font-size: 0.88rem;">Batal</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onclick="submitRejectJob()" style="font-size: 0.88rem;"><i class="bi bi-send-fill me-1"></i> Kirim Meeting Ulang</button>
+
+                <div class="p-3 mb-3 text-start rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="text-muted fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;">Pekerjaan</div>
+                    <div id="reject-job-title" class="fw-bold text-dark text-truncate" style="font-size: 0.95rem;"></div>
+                </div>
+
+                <input type="hidden" id="reject-job-id">
+                
+                <div class="mb-4">
+                    <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Catatan / Arahan Pimpinan</label>
+                    <textarea id="reject-notes" class="form-control" rows="4" placeholder="Contoh: Skema diskon perlu disesuaikan dengan profit margin, tolong siapkan data penjualan dan jadwalkan meeting ulang hari Senin..." style="border-radius: 16px; padding: 12px 14px; font-size: 0.88rem; color: #1e293b; background: #f8fafc; border: 1px solid #e2e8f0; resize: none;"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-3d-cancel flex-grow-1" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-3d-reject flex-grow-1" onclick="submitRejectJob()">
+                        <i class="bi bi-send-fill me-1"></i> Kirim Meeting Ulang
+                    </button>
                 </div>
             </div>
         </div>
@@ -1497,7 +1644,7 @@ function openDetail(id){
             if (res.is_approver && j.status === 'pending_approval') {
                 let safeTitle = (j.title || '').replace(/'/g, "\\'");
                 $('#d-approval-actions').html(`
-                    <button class="btn-quick-approve" onclick="approveJob(${j.id}, event)" title="Setujui (Lanjut Kerjakan)">
+                    <button class="btn-quick-approve" onclick="approveJob(${j.id}, '${safeTitle}', event)" title="Setujui (Lanjut Kerjakan)">
                         <i class="bi bi-check-lg"></i>
                     </button>
                     <button class="btn-quick-reject" onclick="openRejectModal(${j.id}, '${safeTitle}', event)" title="Meeting Ulang (Tidak Approve)">
@@ -1748,9 +1895,30 @@ function deleteExistingAttachment(id) {
     }
 }
 
-function approveJob(id, e) {
-    if (e) e.stopPropagation();
-    if (!confirm('Apakah Anda yakin menyetujui pekerjaan ini untuk dilanjutkan kerjakan?')) return;
+function approveJob(id, title, e) {
+    if (typeof title === 'object' && title !== null) {
+        e = title;
+        title = '';
+    }
+    if (e && e.stopPropagation) e.stopPropagation();
+    
+    // Auto-detect title if opened from detail modal
+    if (!title && curJob == id) {
+        title = $('#d-title').text();
+    }
+    
+    $('#approve-job-id').val(id);
+    $('#approve-job-title').text(title || ('Pekerjaan #' + id));
+    new bootstrap.Modal('#approveModal').show();
+}
+
+function confirmApproveJob() {
+    let id = $('#approve-job-id').val();
+    let modalEl = document.getElementById('approveModal');
+    if (modalEl) {
+        let inst = bootstrap.Modal.getInstance(modalEl);
+        if (inst) inst.hide();
+    }
     toggleLoading(true);
     $.post('ajax_action.php', {action: 'approve_job', job_id: id}, function(res) {
         toggleLoading(false);
@@ -1766,9 +1934,12 @@ function approveJob(id, e) {
 }
 
 function openRejectModal(id, title, e) {
-    if (e) e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!title && curJob == id) {
+        title = $('#d-title').text();
+    }
     $('#reject-job-id').val(id);
-    $('#reject-job-title').text(title || 'Pekerjaan #' + id);
+    $('#reject-job-title').text(title || ('Pekerjaan #' + id));
     $('#reject-notes').val('');
     new bootstrap.Modal('#rejectModal').show();
 }
@@ -1780,6 +1951,11 @@ function submitRejectJob() {
         alert('Mohon tuliskan instruksi atau alasan meeting ulang terlebih dahulu.');
         $('#reject-notes').focus();
         return;
+    }
+    let modalEl = document.getElementById('rejectModal');
+    if (modalEl) {
+        let inst = bootstrap.Modal.getInstance(modalEl);
+        if (inst) inst.hide();
     }
     toggleLoading(true);
     $.post('ajax_action.php', {action: 'reject_job', job_id: id, notes: notes}, function(res) {
@@ -2341,6 +2517,13 @@ $(document).ready(()=>{
     if (targetJobId) {
         openDetail(parseInt(targetJobId));
     }
+
+    // Preserve modal-open on body if nested modal is closed while detailModal is still open
+    $('#approveModal, #rejectModal').on('hidden.bs.modal', function() {
+        if ($('#detailModal').hasClass('show')) {
+            $('body').addClass('modal-open');
+        }
+    });
 });</script>
 
 <!-- ═══ FILE LIGHTBOX ═══ -->
