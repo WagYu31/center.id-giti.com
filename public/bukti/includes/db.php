@@ -72,6 +72,20 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Sinkronisasi data user & role secara real-time dari database
+try {
+    $sync_stmt = $conn->prepare("SELECT role, name, nickname, avatar, dashboard_mode FROM users WHERE id = ? LIMIT 1");
+    $sync_stmt->execute([$_SESSION['user_id']]);
+    $u_db = $sync_stmt->fetch(PDO::FETCH_ASSOC);
+    if ($u_db) {
+        $_SESSION['role'] = $u_db['role'];
+        if (!empty($u_db['name'])) $_SESSION['name'] = $u_db['name'];
+        if (!empty($u_db['nickname'])) $_SESSION['nickname'] = $u_db['nickname'];
+        if (!empty($u_db['avatar'])) $_SESSION['avatar'] = $u_db['avatar'];
+        if (isset($u_db['dashboard_mode'])) $_SESSION['dashboard_mode'] = $u_db['dashboard_mode'];
+    }
+} catch (Exception $e) {}
+
 function tgl_indo($timestamp = '', $date_format = 'l, j F Y | H:i') {
     if (trim($timestamp) == '') $timestamp = time();
     elseif (!ctype_digit($timestamp)) $timestamp = strtotime($timestamp);
