@@ -284,6 +284,30 @@ body {
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
+.btn-change-pwd {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-change-pwd:hover {
+    background: #f59e0b;
+    color: #ffffff;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
 /* ==========================================================================
    TASTE SKILL BENTO CARDS & SECTIONS
    ========================================================================== */

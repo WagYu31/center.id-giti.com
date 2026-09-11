@@ -61,8 +61,32 @@ $tanggal = date('d M Y');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=13.0">
+    <link rel="stylesheet" href="assets/css/style.css?v=13.1">
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
+    <style>
+        .btn-change-pwd {
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        .btn-change-pwd:hover {
+            background: #f59e0b;
+            color: #ffffff;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+    </style>
 </head>
 <body>
 
@@ -84,6 +108,9 @@ $tanggal = date('d M Y');
         <div class="user-pill">
             <span class="user-name d-none d-sm-inline"><?= htmlspecialchars($user['name']) ?></span>
             <span class="role-tag d-none d-md-inline"><?= strtoupper($user['role'] ?? 'USER') ?></span>
+            <button type="button" class="btn-change-pwd" onclick="openChangePasswordModal()" title="Ubah Password">
+                <i class="bi bi-key-fill"></i>
+            </button>
             <a href="logout.php" class="btn-logout-circle" title="Keluar dari akun">
                 <i class="bi bi-power"></i>
             </a>
@@ -1144,7 +1171,160 @@ $tanggal = date('d M Y');
     }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
     
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // === CHANGE PASSWORD HANDLER ===
+    let changePwdModal = null;
+    function openChangePasswordModal() {
+        if (!changePwdModal) {
+            changePwdModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        }
+        document.getElementById('old_password').value = '';
+        document.getElementById('new_password').value = '';
+        document.getElementById('confirm_password').value = '';
+        const alertBox = document.getElementById('pwdAlert');
+        alertBox.className = 'alert alert-danger py-2 px-3 d-none';
+        alertBox.textContent = '';
+        changePwdModal.show();
+    }
+
+    function togglePasswordVis(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+
+    function submitChangePassword() {
+        const old_password = document.getElementById('old_password').value.trim();
+        const new_password = document.getElementById('new_password').value.trim();
+        const confirm_password = document.getElementById('confirm_password').value.trim();
+        const alertBox = document.getElementById('pwdAlert');
+        const btnSubmit = document.getElementById('btnSubmitPwd');
+
+        alertBox.className = 'alert alert-danger py-2 px-3 d-none';
+        alertBox.textContent = '';
+
+        if (!old_password || !new_password || !confirm_password) {
+            alertBox.textContent = 'Harap isi semua kolom password.';
+            alertBox.classList.remove('d-none');
+            return;
+        }
+
+        if (new_password.length < 6) {
+            alertBox.textContent = 'Password baru minimal 6 karakter.';
+            alertBox.classList.remove('d-none');
+            return;
+        }
+
+        if (new_password !== confirm_password) {
+            alertBox.textContent = 'Konfirmasi password baru tidak cocok.';
+            alertBox.classList.remove('d-none');
+            return;
+        }
+
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+
+        const formData = new FormData();
+        formData.append('old_password', old_password);
+        formData.append('new_password', new_password);
+        formData.append('confirm_password', confirm_password);
+
+        fetch('api_change_password.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Simpan Password';
+            if (data.status === 'success') {
+                alertBox.className = 'alert alert-success py-2 px-3';
+                alertBox.textContent = data.message;
+                alertBox.classList.remove('d-none');
+                setTimeout(() => {
+                    if (changePwdModal) changePwdModal.hide();
+                }, 1800);
+            } else {
+                alertBox.className = 'alert alert-danger py-2 px-3';
+                alertBox.textContent = data.message || 'Terjadi kesalahan.';
+                alertBox.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Simpan Password';
+            alertBox.className = 'alert alert-danger py-2 px-3';
+            alertBox.textContent = 'Gagal menghubungi server.';
+            alertBox.classList.remove('d-none');
+        });
+    }
 </script>
+
+<!-- Modal Ubah Password -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header border-0 px-4 pt-4 pb-2" style="background:#ffffff;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;box-shadow:0 4px 12px rgba(245,158,11,0.35);">
+                        <i class="bi bi-key-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0" style="color:#0f172a;font-size:1.05rem;">Ubah Password</h6>
+                        <small style="color:#94a3b8;font-size:0.75rem;">Perbarui kata sandi akun Anda</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 py-3" style="background:#ffffff;">
+                <div id="pwdAlert" class="alert alert-danger py-2 px-3 d-none" style="font-size:0.8rem;border-radius:10px;"></div>
+                
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Password Saat Ini</label>
+                    <div class="input-group">
+                        <input type="password" id="old_password" class="form-control" placeholder="Masukkan password lama" style="border-radius:10px 0 0 10px;border-color:#e2e8f0;font-size:0.88rem;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVis('old_password', this)" style="border-color:#e2e8f0;border-radius:0 10px 10px 0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Password Baru</label>
+                    <div class="input-group">
+                        <input type="password" id="new_password" class="form-control" placeholder="Minimal 6 karakter" style="border-radius:10px 0 0 10px;border-color:#e2e8f0;font-size:0.88rem;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVis('new_password', this)" style="border-color:#e2e8f0;border-radius:0 10px 10px 0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Konfirmasi Password Baru</label>
+                    <div class="input-group">
+                        <input type="password" id="confirm_password" class="form-control" placeholder="Ketik ulang password baru" style="border-radius:10px 0 0 10px;border-color:#e2e8f0;font-size:0.88rem;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVis('confirm_password', this)" style="border-color:#e2e8f0;border-radius:0 10px 10px 0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-1" style="background:#ffffff;">
+                <button type="button" class="btn btn-light px-3 py-2" data-bs-dismiss="modal" style="border-radius:10px;font-size:0.85rem;font-weight:600;color:#64748b;">Batal</button>
+                <button type="button" id="btnSubmitPwd" class="btn text-white px-4 py-2" onclick="submitChangePassword()" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;font-size:0.85rem;font-weight:600;box-shadow:0 4px 12px rgba(245,158,11,0.35);">
+                    <i class="bi bi-check2-circle me-1"></i> Simpan Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
