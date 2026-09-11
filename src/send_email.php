@@ -4,6 +4,21 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+function writeMailLog($status, $toEmail, $subject, $details = '') {
+    $logDir = __DIR__ . '/../public/bukti';
+    if (!is_dir($logDir)) {
+        @mkdir($logDir, 0777, true);
+    }
+    $logFile = $logDir . '/mail_log.txt';
+    $timestamp = date('Y-m-d H:i:s');
+    $line = "[{$timestamp}] [{$status}] To: {$toEmail} | Subject: {$subject}";
+    if (!empty($details)) {
+        $line .= " | Info: {$details}";
+    }
+    $line .= PHP_EOL;
+    @file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+}
+
 function sendOTP($toEmail, $otpCode, $userName) {
     $mail = new PHPMailer(true);
 
@@ -15,6 +30,15 @@ function sendOTP($toEmail, $otpCode, $userName) {
         $mail->Password   = 'OffOff@18'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         $mail->setFrom('verification@grav-tech.com', 'Grav Tech Security');
         $mail->addAddress($toEmail, $userName);
@@ -60,6 +84,15 @@ function sendApprovalRequestEmail($toEmail, $approverName, $requesterName, $jobT
         $mail->Password   = 'OffOff@18'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
         $mail->addAddress($toEmail, $approverName);
@@ -113,8 +146,10 @@ function sendApprovalRequestEmail($toEmail, $approverName, $requesterName, $jobT
 
         $mail->Body = $emailTemplate;
         $mail->send();
+        writeMailLog('SUCCESS', $toEmail, $mail->Subject);
         return true;
     } catch (Exception $e) {
+        writeMailLog('FAILED', $toEmail, $mail->Subject ?? $jobTitle, $mail->ErrorInfo ?: $e->getMessage());
         return false;
     }
 }
@@ -130,6 +165,15 @@ function sendApprovalResultEmail($toEmail, $recipientName, $approverName, $jobTi
         $mail->Password   = 'OffOff@18'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
         $mail->addAddress($toEmail, $recipientName);
@@ -198,8 +242,10 @@ function sendApprovalResultEmail($toEmail, $recipientName, $approverName, $jobTi
 
         $mail->Body = $emailTemplate;
         $mail->send();
+        writeMailLog('SUCCESS', $toEmail, $mail->Subject);
         return true;
     } catch (Exception $e) {
+        writeMailLog('FAILED', $toEmail, $mail->Subject ?? $jobTitle, $mail->ErrorInfo ?: $e->getMessage());
         return false;
     }
 }
@@ -215,6 +261,15 @@ function sendTagNotificationEmail($toEmail, $recipientName, $actorName, $jobTitl
         $mail->Password   = 'OffOff@18'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
         $mail->addAddress($toEmail, $recipientName);
@@ -264,8 +319,10 @@ function sendTagNotificationEmail($toEmail, $recipientName, $actorName, $jobTitl
 
         $mail->Body = $emailTemplate;
         $mail->send();
+        writeMailLog('SUCCESS', $toEmail, $mail->Subject);
         return true;
     } catch (Exception $e) {
+        writeMailLog('FAILED', $toEmail, $mail->Subject ?? $jobTitle, $mail->ErrorInfo ?: $e->getMessage());
         return false;
     }
 }
@@ -281,6 +338,15 @@ function sendProgressUpdateEmail($toEmail, $recipientName, $actorName, $jobTitle
         $mail->Password   = 'OffOff@18'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
 
         $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
         $mail->addAddress($toEmail, $recipientName);
@@ -342,8 +408,10 @@ function sendProgressUpdateEmail($toEmail, $recipientName, $actorName, $jobTitle
 
         $mail->Body = $emailTemplate;
         $mail->send();
+        writeMailLog('SUCCESS', $toEmail, $mail->Subject);
         return true;
     } catch (Exception $e) {
+        writeMailLog('FAILED', $toEmail, $mail->Subject ?? $jobTitle, $mail->ErrorInfo ?: $e->getMessage());
         return false;
     }
 }

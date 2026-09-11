@@ -32,18 +32,20 @@ $offset = ($page - 1) * $limit;
 $cond = ["j.deleted_at IS NULL"]; $param = [];
 
 if ($filter_user) {
-    // Ambil info nama & nickname user yang difilter untuk mendeteksi mention/tag
-    $uStmt = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
+    // Ambil info nama, nickname & email user yang difilter untuk mendeteksi mention/tag
+    $uStmt = $conn->prepare("SELECT name, nickname, email FROM users WHERE id = ?");
     $uStmt->execute([$filter_user]);
     $uRow = $uStmt->fetch(PDO::FETCH_ASSOC);
     if ($uRow) {
         $cleanName = '@' . str_replace(' ', '', $uRow['name']);
         $cleanNick = !empty($uRow['nickname']) ? '@' . str_replace(' ', '', $uRow['nickname']) : $cleanName;
+        $emailPrefix = !empty($uRow['email']) ? '@' . explode('@', $uRow['email'])[0] : $cleanName;
         // User adalah pembuat post, ATAU di-tag di post, ATAU mengunggah progress
-        $cond[] = "(j.user_id = ? OR j.description LIKE ? OR j.description LIKE ? OR j.id IN (SELECT job_id FROM bukti_job_progress WHERE user_id = ?))";
+        $cond[] = "(j.user_id = ? OR j.description LIKE ? OR j.description LIKE ? OR j.description LIKE ? OR j.id IN (SELECT job_id FROM bukti_job_progress WHERE user_id = ?))";
         $param[] = $filter_user;
         $param[] = "%$cleanName%";
         $param[] = "%$cleanNick%";
+        $param[] = "%$emailPrefix%";
         $param[] = $filter_user;
     } else {
         $cond[] = "j.user_id = ?";
