@@ -65,26 +65,27 @@ $tanggal = date('d M Y');
     <link rel="icon" type="image/png" href="assets/uploads/logo-square.png">
     <style>
         .btn-change-pwd {
-            background: rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
+            background: rgba(245, 158, 11, 0.2) !important;
+            color: #f59e0b !important;
+            border: 1px solid rgba(245, 158, 11, 0.4) !important;
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-decoration: none;
-            font-size: 0.85rem;
-            border: none;
+            font-size: 0.88rem;
             cursor: pointer;
             padding: 0;
+            margin: 0 2px;
         }
         .btn-change-pwd:hover {
-            background: #f59e0b;
-            color: #ffffff;
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            background: #f59e0b !important;
+            color: #ffffff !important;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
         }
     </style>
 </head>
