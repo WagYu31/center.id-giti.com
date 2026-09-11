@@ -203,4 +203,148 @@ function sendApprovalResultEmail($toEmail, $recipientName, $approverName, $jobTi
         return false;
     }
 }
+
+function sendTagNotificationEmail($toEmail, $recipientName, $actorName, $jobTitle, $contextText, $jobId, $sourceType = 'job') {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'potenza.id.rapidplex.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'verification@grav-tech.com';
+        $mail->Password   = 'OffOff@18'; 
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = 465;
+
+        $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
+        $mail->addAddress($toEmail, $recipientName);
+
+        $mail->isHTML(true);
+        $actionDesc = ($sourceType === 'comment') ? 'menandai Anda dalam komentar' : 'menandai Anda dalam pekerjaan';
+        $mail->Subject = '[TAG] ' . $actorName . ' ' . $actionDesc . ': ' . $jobTitle;
+        
+        $jobUrl = "https://center.id-giti.com/bukti/index.php?job_id=" . urlencode($jobId);
+        $cleanText = nl2br(htmlspecialchars(strip_tags(mb_substr($contextText, 0, 400)))) . (mb_strlen($contextText) > 400 ? '...' : '');
+
+        $emailTemplate = "
+        <div style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 25px 15px;'>
+            <div style='background-color: #ffffff; padding: 35px 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;'>
+                <div style='text-align: center; margin-bottom: 25px;'>
+                    <span style='background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 30px; border: 1px solid #fde68a;'>
+                        🏷️ Tanda Sebutan (@Tag)
+                    </span>
+                    <h2 style='color: #0f172a; margin: 15px 0 6px 0; font-size: 22px; font-weight: 800;'>Anda Ditandai</h2>
+                    <p style='color: #64748b; font-size: 14px; margin: 0;'>Halo <b>{$recipientName}</b>, <b>{$actorName}</b> {$actionDesc}.</p>
+                </div>
+                
+                <div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 25px;'>
+                    <div style='margin-bottom: 12px;'>
+                        <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Judul Pekerjaan</span>
+                        <div style='color: #0f172a; font-size: 16px; font-weight: 700; margin-top: 3px;'>{$jobTitle}</div>
+                    </div>
+                    <div>
+                        <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Pesan / Isi Deskripsi</span>
+                        <div style='color: #334155; font-size: 13px; line-height: 1.6; margin-top: 5px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;'>
+                            {$cleanText}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style='text-align: center; margin-bottom: 25px;'>
+                    <a href='{$jobUrl}' style='display: inline-block; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 14px rgba(217,119,6,0.35);'>
+                        Buka Pekerjaan di Web Bukti &rarr;
+                    </a>
+                </div>
+                
+                <hr style='border: none; border-top: 1px solid #f1f5f9; margin: 25px 0;'>
+                <p style='color: #94a3b8; font-size: 11px; text-align: center; margin: 0;'>&copy; " . date('Y') . " Grav Tech Center - Web Bukti. All rights reserved.</p>
+            </div>
+        </div>
+        ";
+
+        $mail->Body = $emailTemplate;
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+function sendProgressUpdateEmail($toEmail, $recipientName, $actorName, $jobTitle, $statusBefore, $statusAfter, $notes, $jobId) {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'potenza.id.rapidplex.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'verification@grav-tech.com';
+        $mail->Password   = 'OffOff@18'; 
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = 465;
+
+        $mail->setFrom('verification@grav-tech.com', 'Web Bukti - Grav Tech Center');
+        $mail->addAddress($toEmail, $recipientName);
+
+        $mail->isHTML(true);
+
+        $statusLabels = [
+            'todo' => 'Belum Mulai',
+            'in_progress' => 'On Progress (Lanjut Kerjakan)',
+            'done' => 'Selesai',
+            'pending_approval' => 'Menunggu Approval',
+            'need_meeting' => 'Meeting Ulang'
+        ];
+        $statusLabel = $statusLabels[$statusAfter] ?? $statusAfter;
+
+        $mail->Subject = '[UPDATE PROGRES] ' . $jobTitle . ' - oleh ' . $actorName;
+        $jobUrl = "https://center.id-giti.com/bukti/index.php?job_id=" . urlencode($jobId);
+        $cleanNotes = nl2br(htmlspecialchars(strip_tags(mb_substr($notes ?: 'Update progres pekerjaan dilaporkan.', 0, 400)))) . (mb_strlen($notes) > 400 ? '...' : '');
+
+        $emailTemplate = "
+        <div style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 25px 15px;'>
+            <div style='background-color: #ffffff; padding: 35px 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;'>
+                <div style='text-align: center; margin-bottom: 25px;'>
+                    <span style='background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 30px; border: 1px solid #bfdbfe;'>
+                        ⚡ Update Progres
+                    </span>
+                    <h2 style='color: #0f172a; margin: 15px 0 6px 0; font-size: 22px; font-weight: 800;'>Pembaruan Progres Kerja</h2>
+                    <p style='color: #64748b; font-size: 14px; margin: 0;'>Halo <b>{$recipientName}</b>, ada catatan progres baru dari <b>{$actorName}</b>.</p>
+                </div>
+                
+                <div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 25px;'>
+                    <div style='margin-bottom: 12px;'>
+                        <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Judul Pekerjaan</span>
+                        <div style='color: #0f172a; font-size: 16px; font-weight: 700; margin-top: 3px;'>{$jobTitle}</div>
+                    </div>
+                    <div style='margin-bottom: 12px;'>
+                        <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Status Baru</span>
+                        <div style='color: #0f172a; font-size: 14px; font-weight: 700; margin-top: 3px;'>📌 {$statusLabel}</div>
+                    </div>
+                    <div>
+                        <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;'>Catatan Progres</span>
+                        <div style='color: #334155; font-size: 13px; line-height: 1.6; margin-top: 5px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;'>
+                            {$cleanNotes}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style='text-align: center; margin-bottom: 25px;'>
+                    <a href='{$jobUrl}' style='display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 10px;'>
+                        Lihat Progres & Lampiran di Web Bukti &rarr;
+                    </a>
+                </div>
+                
+                <hr style='border: none; border-top: 1px solid #f1f5f9; margin: 25px 0;'>
+                <p style='color: #94a3b8; font-size: 11px; text-align: center; margin: 0;'>&copy; " . date('Y') . " Grav Tech Center - Web Bukti. All rights reserved.</p>
+            </div>
+        </div>
+        ";
+
+        $mail->Body = $emailTemplate;
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
 ?>

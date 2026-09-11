@@ -39,6 +39,73 @@ function notify_approver_approval_request($conn, $job_id, $job_title, $job_desc,
     } catch (Exception $e) {}
 }
 
+function get_tagged_users_from_text($conn, $text, $exclude_user_id = null) {
+    if (!$text) return [];
+    preg_match_all('/@(\w+)/', $text, $matches);
+    if (empty($matches[1])) return [];
+
+    $recipients = [];
+    $nicks = array_unique($matches[1]);
+    foreach ($nicks as $nick) {
+        $u = $conn->prepare("SELECT id, name, email FROM users WHERE (nickname = ? OR REPLACE(name, ' ', '') = ?) AND email IS NOT NULL AND email != '' LIMIT 1");
+        $u->execute([$nick, $nick]);
+        $user = $u->fetch(PDO::FETCH_ASSOC);
+        if ($user && $user['id'] != $exclude_user_id) {
+            $recipients[$user['id']] = $user;
+        }
+    }
+    return $recipients;
+}
+
+function get_job_recipients($conn, $job_id, $exclude_user_id = null) {
+    $stmt = $conn->prepare("SELECT j.user_id as creator_id, j.description, u.name as creator_name, u.email as creator_email 
+                            FROM bukti_jobs j 
+                            JOIN users u ON j.user_id = u.id 
+                            WHERE j.id = ?");
+    $stmt->execute([$job_id]);
+    $job = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$job) return [];
+
+    $recipients = [];
+    // 1. Creator
+    if (!empty($job['creator_email']) && $job['creator_id'] != $exclude_user_id) {
+        $recipients[$job['creator_id']] = [
+            'id'    => $job['creator_id'],
+            'name'  => $job['creator_name'],
+            'email' => $job['creator_email']
+        ];
+    }
+
+    // 2. Tagged users in job description
+    $tagged = get_tagged_users_from_text($conn, $job['description'], $exclude_user_id);
+    foreach ($tagged as $id => $u) {
+        $recipients[$id] = $u;
+    }
+
+    return array_values($recipients);
+}
+
+function notify_tagged_users($conn, $actor_id, $job_id, $job_title, $text, $sourceType = 'job') {
+    $tagged = get_tagged_users_from_text($conn, $text, $actor_id);
+    if (empty($tagged)) return [];
+
+    $actor_stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
+    $actor_stmt->execute([$actor_id]);
+    $actor_name = $actor_stmt->fetchColumn() ?: 'Rekan Tim';
+
+    foreach ($tagged as $user) {
+        // In-app notification
+        try {
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'mention')")
+                 ->execute([$user['id'], $actor_id, $job_id]);
+        } catch (Exception $e) {}
+
+        // Email notification
+        @sendTagNotificationEmail($user['email'], $user['name'], $actor_name, $job_title, $text, $job_id, $sourceType);
+    }
+    return $tagged;
+}
+
 // --- FUNGSI HELPER UPLOAD (FIX MASALAH 1 & 2) ---
 function process_uploads($conn, $job_id, $files, $progress_id = null) {
     if (!empty($files['name'][0])) {
@@ -76,17 +143,8 @@ if ($action == 'create_post') {
             process_uploads($conn, $job_id, $_FILES['files']);
         }
 
-        // Tagging Notif
-        preg_match_all('/@(\w+)/', $_POST['description'], $matches);
-        if($matches[1]) {
-            foreach($matches[1] as $nick) {
-                // Check both nickname and fallback space-removed name
-                $u = $conn->prepare("SELECT id FROM users WHERE nickname = ? OR REPLACE(name, ' ', '') = ? LIMIT 1");
-                $u->execute([$nick, $nick]);
-                $tid = $u->fetchColumn();
-                if($tid) $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'mention')")->execute([$tid, $user_id, $job_id]);
-            }
-        }
+        // Tagging Notif & Email
+        notify_tagged_users($conn, $user_id, $job_id, $_POST['title'], $_POST['description'], 'job');
 
         write_log($conn, $user_id, 'CREATE_JOB', "Membuat pekerjaan: " . $_POST['title']);
         
@@ -117,6 +175,9 @@ if ($action == 'edit_post') {
         if (isset($_FILES['files'])) {
             process_uploads($conn, $job_id, $_FILES['files']);
         }
+
+        // Tagging Notif & Email
+        notify_tagged_users($conn, $user_id, $job_id, $_POST['title'], $_POST['description'], 'job');
 
         // Trigger Notifikasi & Email Approval jika status 'pending_approval'
         if ($_POST['status'] === 'pending_approval') {
@@ -173,6 +234,33 @@ if ($action == 'update_progress') {
         notify_approver_approval_request($conn, $job_id, $job['title'], $update_desc, $user_id);
     }
 
+    // Kirim notifikasi in-app & email update progress ke creator & seluruh user yang di-tag
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
+    $note_tagged = get_tagged_users_from_text($conn, $notes, $user_id);
+    foreach ($note_tagged as $nt) {
+        $recipients[] = $nt;
+    }
+    // Deduplicate by ID
+    $unique_recipients = [];
+    foreach ($recipients as $r) {
+        $unique_recipients[$r['id']] = $r;
+    }
+
+    $u_stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
+    $u_stmt->execute([$user_id]);
+    $actor_name = $u_stmt->fetchColumn() ?: 'Rekan Tim';
+
+    foreach ($unique_recipients as $rec) {
+        try {
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'comment')")
+                 ->execute([$rec['id'], $user_id, $job_id]);
+        } catch (Exception $e) {}
+
+        if (!empty($rec['email'])) {
+            @sendProgressUpdateEmail($rec['email'], $rec['name'], $actor_name, $job['title'], $job['status'], $status, $notes, $job_id);
+        }
+    }
+
     write_log($conn, $user_id, 'UPDATE_PROGRESS', "Update status '{$job['title']}' ke $status");
     echo json_encode(['status' => 'success']);
     exit;
@@ -205,14 +293,19 @@ if ($action == 'approve_job') {
 
     write_log($conn, $user_id, 'APPROVE_JOB', "Menyetujui pekerjaan '{$job['title']}' (Lanjut Kerjakan)");
 
-    // In-app notification to creator
-    $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_approved')")
-         ->execute([$job['user_id'], $user_id, $job_id]);
-
-    // Send email feedback to creator
+    // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
-    if (!empty($job['creator_email'])) {
-        @sendApprovalResultEmail($job['creator_email'], $job['creator_name'], $approver_name, $job['title'], 'approved', '', $job_id);
+
+    foreach ($recipients as $rec) {
+        try {
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_approved')")
+                 ->execute([$rec['id'], $user_id, $job_id]);
+        } catch (Exception $e) {}
+
+        if (!empty($rec['email'])) {
+            @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'approved', '', $job_id);
+        }
     }
 
     echo json_encode(['status' => 'success', 'message' => 'Pekerjaan berhasil disetujui (Lanjut Kerjakan)']);
@@ -252,14 +345,19 @@ if ($action == 'reject_job') {
 
     write_log($conn, $user_id, 'REJECT_JOB', "Meminta meeting ulang untuk '{$job['title']}': $notes");
 
-    // In-app notification to creator
-    $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_rejected')")
-         ->execute([$job['user_id'], $user_id, $job_id]);
-
-    // Send email feedback to creator
+    // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
-    if (!empty($job['creator_email'])) {
-        @sendApprovalResultEmail($job['creator_email'], $job['creator_name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
+
+    foreach ($recipients as $rec) {
+        try {
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_rejected')")
+                 ->execute([$rec['id'], $user_id, $job_id]);
+        } catch (Exception $e) {}
+
+        if (!empty($rec['email'])) {
+            @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
+        }
     }
 
     echo json_encode(['status' => 'success', 'message' => 'Status berhasil diubah menjadi Meeting Ulang']);
@@ -267,8 +365,28 @@ if ($action == 'reject_job') {
 }
 
 if ($action == 'comment') {
-    $conn->prepare("INSERT INTO bukti_comments (job_id, user_id, content) VALUES (?, ?, ?)")->execute([$_POST['job_id'], $user_id, $_POST['content']]);
-    write_log($conn, $user_id, 'COMMENT', 'Komentar pada job ' . $_POST['job_id']);
+    $job_id = (int)$_POST['job_id'];
+    $content = trim($_POST['content']);
+    $conn->prepare("INSERT INTO bukti_comments (job_id, user_id, content) VALUES (?, ?, ?)")->execute([$job_id, $user_id, $content]);
+    write_log($conn, $user_id, 'COMMENT', 'Komentar pada job ' . $job_id);
+
+    // Fetch job title & creator
+    $jt = $conn->prepare("SELECT title, user_id FROM bukti_jobs WHERE id = ?");
+    $jt->execute([$job_id]);
+    $jdata = $jt->fetch(PDO::FETCH_ASSOC);
+    $job_title = $jdata['title'] ?? 'Pekerjaan #' . $job_id;
+
+    // Notify tagged users in comment
+    notify_tagged_users($conn, $user_id, $job_id, $job_title, $content, 'comment');
+
+    // Notify job creator if not actor
+    if ($jdata && $jdata['user_id'] != $user_id) {
+        try {
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'comment')")
+                 ->execute([$jdata['user_id'], $user_id, $job_id]);
+        } catch (Exception $e) {}
+    }
+
     echo json_encode(['status' => 'success']);
     exit;
 }
