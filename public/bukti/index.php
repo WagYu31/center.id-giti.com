@@ -1469,6 +1469,7 @@ function format_text($text) {
                                 <div class="d-flex align-items-center gap-2">
                                     <div id="d-status-badge"></div>
                                     <div id="d-approval-actions" class="d-flex align-items-center gap-1"></div>
+                                    <div id="d-post-actions" class="d-flex align-items-center gap-1"></div>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                             </div>
@@ -1834,6 +1835,20 @@ function openDetail(id){
                 $('#d-approval-actions').hide().empty();
             }
 
+            // Edit & Delete Actions for Author or Admin
+            if (res.is_owner || res.is_approver) {
+                $('#d-post-actions').html(`
+                    <button class="btn btn-sm rounded-pill px-3 d-flex align-items-center gap-1 border-0" onclick="editFromDetail(${j.id})" title="Edit Pekerjaan" style="background:#fffbeb; color:#d97706; font-weight:600; font-size:0.8rem; box-shadow:0 1px 3px rgba(217,119,6,0.15); transition:all 0.2s;">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                    <button class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center border-0" onclick="deleteFromDetail(${j.id})" title="Hapus Pekerjaan" style="width:30px; height:30px; background:#fef2f2; color:#ef4444; font-size:0.82rem; transition:all 0.2s;">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                `).show();
+            } else {
+                $('#d-post-actions').hide().empty();
+            }
+
             // Approval Banner above Title
             let approvalBanner = '';
             if (j.status === 'need_meeting') {
@@ -2161,6 +2176,29 @@ function submitRejectJob() {
 }
 
 function deletePost(id){ if(confirm('Yakin hapus?')) $.post('ajax_action.php', {action:'delete_post', job_id:id}, function(){ location.reload(); }); }
+
+function editFromDetail(id) {
+    const modalEl = document.getElementById('detailModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) {
+        modalInstance.hide();
+    }
+    setTimeout(() => {
+        openEditModal(id);
+    }, 350);
+}
+
+function deleteFromDetail(id) {
+    if (confirm('Yakin ingin menghapus pekerjaan ini?')) {
+        $.post('ajax_action.php', {action: 'delete_post', job_id: id}, function(res) {
+            if (res.status === 'success') {
+                location.reload();
+            } else {
+                alert(res.message || 'Gagal menghapus');
+            }
+        }, 'json');
+    }
+}
 
 function toggleLike(id, btn){
     $.post('ajax_action.php', {action:'like', job_id:id}, function(res){

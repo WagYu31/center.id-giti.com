@@ -171,8 +171,10 @@ if ($action == 'edit_post') {
     $job_id = (int)$_POST['job_id'];
     $check = $conn->prepare("SELECT user_id FROM bukti_jobs WHERE id = ?");
     $check->execute([$job_id]);
+    $author_id = (int)$check->fetchColumn();
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
     
-    if ($check->fetchColumn() == $user_id) {
+    if ($author_id == $user_id || $is_admin) {
         $stmt = $conn->prepare("UPDATE bukti_jobs SET title = ?, description = ?, is_edited = 1, status = ?, start_date = ?, end_date = ? WHERE id = ?");
         $stmt->execute([$_POST['title'], $_POST['description'], $_POST['status'], $_POST['start_date'], $_POST['end_date'], $job_id]);
         
@@ -189,7 +191,7 @@ if ($action == 'edit_post') {
             notify_approver_approval_request($conn, $job_id, $_POST['title'], $_POST['description'], $user_id);
         }
 
-        write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id);
+        write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id . ($is_admin && $author_id != $user_id ? " (oleh Admin)" : ""));
         echo json_encode(['status' => 'success']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
@@ -433,7 +435,8 @@ if ($action == 'delete_post') {
     $check->execute([$job_id]);
     $data = $check->fetch();
 
-    if ($data && ($data['user_id'] == $user_id || $_SESSION['role'] === 'admin')) {
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
+    if ($data && ($data['user_id'] == $user_id || $is_admin)) {
         // Soft Delete
         $stmt = $conn->prepare("UPDATE bukti_jobs SET deleted_at = NOW() WHERE id = ?");
         $stmt->execute([$job_id]);
@@ -476,7 +479,8 @@ if ($action == 'delete_attachment') {
     $check->execute([$att_id]);
     $data = $check->fetch();
     
-    if ($data && ($data['user_id'] == $user_id || $_SESSION['role'] === 'admin')) {
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
+    if ($data && ($data['user_id'] == $user_id || $is_admin)) {
         // Physical file removal
         $filepath = 'assets/uploads/bukti/' . $data['file_path'];
         if (file_exists($filepath)) {
