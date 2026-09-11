@@ -18,12 +18,12 @@ function notify_approver_approval_request($conn, $job_id, $job_title, $job_desc,
         $approver_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE id = 1 LIMIT 1");
         $approver_stmt->execute();
         $approver = $approver_stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$approver || empty($approver['email'])) {
-            $approver_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE role = 'admin' AND email IS NOT NULL AND email != '' LIMIT 1");
+        if (!$approver) {
+            $approver_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE role = 'admin' LIMIT 1");
             $approver_stmt->execute();
             $approver = $approver_stmt->fetch(PDO::FETCH_ASSOC);
         }
-        if ($approver && !empty($approver['email'])) {
+        if ($approver) {
             // In-app notification
             $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_request')")
                  ->execute([$approver['id'], $requester_id, $job_id]);
@@ -34,65 +34,25 @@ function notify_approver_approval_request($conn, $job_id, $job_title, $job_desc,
             $req_name = $u->fetchColumn() ?: 'Staf';
 
             // Send Email
-            sendApprovalRequestEmail($approver['email'], $approver['name'], $req_name, $job_title, $job_desc, $job_id);
+            @sendApprovalRequestEmail($approver['email'], $approver['name'], $req_name, $job_title, $job_desc, $job_id);
         }
-    } catch (Exception $e) {
-        error_log("notify_approver_approval_request error: " . $e->getMessage());
-    }
+    } catch (Exception $e) {}
 }
 
 function get_tagged_users_from_text($conn, $text, $exclude_user_id = null) {
     if (!$text) return [];
-    
-    // Support @username (letters, numbers, underscore, dot, hyphen)
-    preg_match_all('/@([a-zA-Z0-9_\.\-]+)/', $text, $matches);
-    $nicks = $matches[1] ?? [];
-
-    // Also extract from rich text data-nickname attribute
-    if (preg_match_all('/data-nickname=["\']([^"\']+)["\']/i', $text, $data_nicks)) {
-        foreach ($data_nicks[1] as $dn) {
-            $nicks[] = $dn;
-        }
-    }
-
-    if (empty($nicks)) return [];
+    preg_match_all('/@(\w+)/', $text, $matches);
+    if (empty($matches[1])) return [];
 
     $recipients = [];
-    $nicks = array_unique(array_filter($nicks));
-
-    // Multi-criteria user lookup:
-    // 1. Exact nickname match
-    // 2. Exact email prefix (e.g. chikastriani from chikastriani@gmail.com)
-    // 3. Exact name without spaces (e.g. PriskaApriliani from Priska Apriliani)
-    // 4. Partial substring LIKE fallback
-    $query = "SELECT id, name, email, nickname FROM users 
-              WHERE email IS NOT NULL AND email != ''
-                AND (
-                    LOWER(nickname) = LOWER(?)
-                    OR LOWER(REPLACE(name, ' ', '')) = LOWER(?)
-                    OR LOWER(SUBSTRING_INDEX(email, '@', 1)) = LOWER(?)
-                    OR LOWER(REPLACE(name, ' ', '')) LIKE LOWER(CONCAT('%', ?, '%'))
-                    OR LOWER(nickname) LIKE LOWER(CONCAT('%', ?, '%'))
-                    OR LOWER(SUBSTRING_INDEX(email, '@', 1)) LIKE LOWER(CONCAT('%', ?, '%'))
-                )
-              ORDER BY 
-                CASE 
-                    WHEN LOWER(nickname) = LOWER(?) THEN 1
-                    WHEN LOWER(SUBSTRING_INDEX(email, '@', 1)) = LOWER(?) THEN 2
-                    WHEN LOWER(REPLACE(name, ' ', '')) = LOWER(?) THEN 3
-                    ELSE 4
-                END
-              LIMIT 1";
-    $stmt = $conn->prepare($query);
-
+    $nicks = array_unique($matches[1]);
     foreach ($nicks as $nick) {
-        $nick = trim($nick, '.');
-        if (empty($nick)) continue;
-
-        $stmt->execute([$nick, $nick, $nick, $nick, $nick, $nick, $nick, $nick, $nick]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $u = $conn->prepare("SELECT id, name, email FROM users WHERE (LOWER(nickname) = LOWER(?) OR LOWER(REPLACE(name, ' ', '')) = LOWER(?)) AND email IS NOT NULL AND email != '' LIMIT 1");
+        $u->execute([$nick, $nick]);
+        $user = $u->fetch(PDO::FETCH_ASSOC);
         if ($user) {
             if ($exclude_user_id !== null && $user['id'] == $exclude_user_id) {
+                // If explicitly excluded, skip
                 continue;
             }
             $recipients[$user['id']] = $user;
@@ -111,8 +71,8 @@ function get_job_recipients($conn, $job_id, $exclude_user_id = null) {
     if (!$job) return [];
 
     $recipients = [];
-    // 1. Creator (always include unless explicitly requested otherwise)
-    if (!empty($job['creator_email']) && ($exclude_user_id === null || $job['creator_id'] != $exclude_user_id)) {
+    // 1. Creator (always included)
+    if (!empty($job['creator_email'])) {
         $recipients[$job['creator_id']] = [
             'id'    => $job['creator_id'],
             'name'  => $job['creator_name'],
@@ -120,8 +80,8 @@ function get_job_recipients($conn, $job_id, $exclude_user_id = null) {
         ];
     }
 
-    // 2. Tagged users in job description (never exclude tagged users)
-    $tagged = get_tagged_users_from_text($conn, $job['description']);
+    // 2. Tagged users in job description (all tagged users included)
+    $tagged = get_tagged_users_from_text($conn, $job['description'], null);
     foreach ($tagged as $id => $u) {
         $recipients[$id] = $u;
     }
@@ -130,7 +90,8 @@ function get_job_recipients($conn, $job_id, $exclude_user_id = null) {
 }
 
 function notify_tagged_users($conn, $actor_id, $job_id, $job_title, $text, $sourceType = 'job') {
-    $tagged = get_tagged_users_from_text($conn, $text);
+    // Include self-tag so user testing their own tag also receives the notification email
+    $tagged = get_tagged_users_from_text($conn, $text, null);
     if (empty($tagged)) return [];
 
     $actor_stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
@@ -145,7 +106,7 @@ function notify_tagged_users($conn, $actor_id, $job_id, $job_title, $text, $sour
         } catch (Exception $e) {}
 
         // Email notification
-        sendTagNotificationEmail($user['email'], $user['name'], $actor_name, $job_title, $text, $job_id, $sourceType);
+        @sendTagNotificationEmail($user['email'], $user['name'], $actor_name, $job_title, $text, $job_id, $sourceType);
     }
     return $tagged;
 }
@@ -241,27 +202,26 @@ if ($action == 'update_progress') {
     $status = $_POST['status'];
     $notes = $_POST['notes'];
     
-    // Cek apakah user adalah owner, admin, ATAU di-tag di post
-    $chk = $conn->prepare("SELECT j.status, j.title, j.description, j.user_id FROM bukti_jobs j WHERE j.id = ?");
-    $chk->execute([$job_id]);
+    // Cek apakah user adalah owner ATAU di-tag di post
+    $chk = $conn->prepare("SELECT j.status, j.title, j.description, j.user_id,
+        (SELECT name FROM users WHERE id = ?) AS my_name,
+        (SELECT nickname FROM users WHERE id = ?) AS my_nick
+        FROM bukti_jobs j WHERE j.id = ?");
+    $chk->execute([$user_id, $user_id, $job_id]);
     $job = $chk->fetch();
 
-    if (!$job) {
-        echo json_encode(['status' => 'error', 'message' => 'Pekerjaan tidak ditemukan']);
-        exit;
-    }
-
     $is_owner  = ($job['user_id'] == $user_id);
-    $tagged_users = get_tagged_users_from_text($conn, $job['description']);
-    $is_tagged = isset($tagged_users[$user_id]);
-    $is_admin  = (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1);
+    $my_tag    = '@' . str_replace(' ', '', $job['my_name']);
+    $my_nick_t = '@' . ($job['my_nick'] ?: str_replace(' ', '', $job['my_name']));
+    $is_tagged = (stripos($job['description'], $my_tag) !== false ||
+                  stripos($job['description'], $my_nick_t) !== false);
 
-    if (!$is_owner && !$is_tagged && !$is_admin) {
+    if (!$is_owner && !$is_tagged) {
         echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
         exit;
     }
 
-    // Owner, admin, DAN tagged user bisa update status post
+    // Owner DAN tagged user bisa update status post
     $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
     
     $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, ?, ?)")
@@ -280,8 +240,8 @@ if ($action == 'update_progress') {
     }
 
     // Kirim notifikasi in-app & email update progress ke creator & seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id);
-    $note_tagged = get_tagged_users_from_text($conn, $notes);
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
+    $note_tagged = get_tagged_users_from_text($conn, $notes, $user_id);
     foreach ($note_tagged as $nt) {
         $recipients[] = $nt;
     }
@@ -302,7 +262,7 @@ if ($action == 'update_progress') {
         } catch (Exception $e) {}
 
         if (!empty($rec['email'])) {
-            sendProgressUpdateEmail($rec['email'], $rec['name'], $actor_name, $job['title'], $job['status'], $status, $notes, $job_id);
+            @sendProgressUpdateEmail($rec['email'], $rec['name'], $actor_name, $job['title'], $job['status'], $status, $notes, $job_id);
         }
     }
 
@@ -339,7 +299,7 @@ if ($action == 'approve_job') {
     write_log($conn, $user_id, 'APPROVE_JOB', "Menyetujui pekerjaan '{$job['title']}' (Lanjut Kerjakan)");
 
     // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id);
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
 
     foreach ($recipients as $rec) {
@@ -349,7 +309,7 @@ if ($action == 'approve_job') {
         } catch (Exception $e) {}
 
         if (!empty($rec['email'])) {
-            sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'approved', '', $job_id);
+            @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'approved', '', $job_id);
         }
     }
 
@@ -391,7 +351,7 @@ if ($action == 'reject_job') {
     write_log($conn, $user_id, 'REJECT_JOB', "Meminta meeting ulang untuk '{$job['title']}': $notes");
 
     // Kirim notifikasi in-app & email ke creator dan seluruh user yang di-tag
-    $recipients = get_job_recipients($conn, $job_id);
+    $recipients = get_job_recipients($conn, $job_id, $user_id);
     $approver_name = $_SESSION['name'] ?? 'Pimpinan';
 
     foreach ($recipients as $rec) {
@@ -401,7 +361,7 @@ if ($action == 'reject_job') {
         } catch (Exception $e) {}
 
         if (!empty($rec['email'])) {
-            sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
+            @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
         }
     }
 
@@ -544,7 +504,7 @@ if ($action == 'fetch_detail') {
              ->execute([$job_id, $user_id]);
     } catch(Exception $e) {}
     
-    $stmt = $conn->prepare("SELECT j.*, u.name, u.avatar, u.jabatan,
+    $stmt = $conn->prepare("SELECT j.*, u.name, u.nickname, u.avatar, u.jabatan,
         (SELECT name FROM users WHERE id = j.approval_by) as approver_name,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id) as like_count,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id = ?) as is_liked
@@ -595,8 +555,13 @@ if ($action == 'fetch_detail') {
     $view_count->execute([$job_id]);
     
     // Cek apakah user di-tag dalam deskripsi post
-    $tagged_users = get_tagged_users_from_text($conn, $job['description']);
-    $is_tagged = isset($tagged_users[$user_id]);
+    $me = $conn->prepare("SELECT name, nickname FROM users WHERE id = ?");
+    $me->execute([$user_id]);
+    $me_data = $me->fetch(PDO::FETCH_ASSOC);
+    $my_tag    = '@' . str_replace(' ', '', $me_data['name']);
+    $my_nick_t = '@' . ($me_data['nickname'] ?: str_replace(' ', '', $me_data['name']));
+    $is_tagged = (stripos($job['description'], $my_tag) !== false ||
+                  stripos($job['description'], $my_nick_t) !== false);
 
     echo json_encode([
         'status'     => 'success',
@@ -614,55 +579,15 @@ if ($action == 'fetch_detail') {
 }
 
 if ($action == 'search_users') {
-    $term = ($_GET['term'] ?? '') . '%';
-    $stmt = $conn->prepare("SELECT name, nickname, avatar, email FROM users WHERE name LIKE ? OR nickname LIKE ? OR email LIKE ? LIMIT 8");
-    $stmt->execute([$term, $term, $term]);
+    $term = $_GET['term'] . '%';
+    $stmt = $conn->prepare("SELECT name, nickname, avatar FROM users WHERE name LIKE ? OR nickname LIKE ? LIMIT 5");
+    $stmt->execute([$term, $term]);
     $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach($res as &$r) {
         $r['avatar'] = $r['avatar'] && file_exists("assets/img/avatars/".$r['avatar']) ? "assets/img/avatars/".$r['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($r['name']);
-        if (empty($r['nickname'])) {
-            $email_prefix = !empty($r['email']) ? explode('@', $r['email'])[0] : '';
-            $r['nickname'] = $email_prefix ?: str_replace(' ', '', $r['name']);
-        }
+        $r['nickname'] = $r['nickname'] ?: str_replace(' ', '', $r['name']);
     }
     echo json_encode($res);
-    exit;
-}
-
-if ($action == 'test_email') {
-    $target_email = $_REQUEST['email'] ?? '';
-    if (!$target_email) {
-        $u_stmt = $conn->prepare("SELECT email, name FROM users WHERE id = ?");
-        $u_stmt->execute([$user_id]);
-        $u_row = $u_stmt->fetch(PDO::FETCH_ASSOC);
-        $target_email = $u_row['email'] ?? '';
-        $target_name = $u_row['name'] ?? 'Tester';
-    } else {
-        $target_name = 'Tester';
-    }
-
-    if (!$target_email) {
-        echo json_encode(['status' => 'error', 'message' => 'Email tujuan tidak ditemukan']);
-        exit;
-    }
-
-    $res = sendTagNotificationEmail($target_email, $target_name, 'Sistem Web Bukti', 'Test Notifikasi Email', 'Ini adalah email uji coba untuk memastikan pengiriman notifikasi email Web Bukti berjalan dengan lancar.', 0, 'test');
-    
-    $log_path = __DIR__ . '/mail_log.txt';
-    $last_logs = file_exists($log_path) ? array_slice(file($log_path), -10) : ['Belum ada log'];
-
-    if ($res) {
-        echo json_encode(['status' => 'success', 'message' => "Email berhasil dikirim ke {$target_email}", 'logs' => $last_logs]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => "Gagal mengirim email ke {$target_email}", 'logs' => $last_logs]);
-    }
-    exit;
-}
-
-if ($action == 'get_mail_logs') {
-    $log_path = __DIR__ . '/mail_log.txt';
-    $lines = file_exists($log_path) ? array_slice(file($log_path), -30) : ['Belum ada log'];
-    echo json_encode(['status' => 'success', 'logs' => array_reverse($lines)]);
     exit;
 }
 ?>
