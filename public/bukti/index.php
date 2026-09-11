@@ -749,19 +749,167 @@ function format_text($text) {
         box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
     }
-    .preview-item:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .preview-item:hover { transform: scale(1.04); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
     .preview-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
     .preview-content img, .preview-content video { width: 100%; height: 100%; object-fit: cover; }
     .preview-content i { font-size: 2rem; color: #f59e0b; }
+    .preview-thumb-wrap {
+        position: relative; width: 100%; height: 100%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .preview-thumb-wrap img, .preview-thumb-wrap video {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .preview-thumb-wrap:hover img, .preview-thumb-wrap:hover video {
+        transform: scale(1.08);
+    }
+    .preview-overlay-hint {
+        position: absolute; inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.2s ease;
+        backdrop-filter: blur(2px);
+    }
+    .preview-item:hover .preview-overlay-hint { opacity: 1; }
+    .preview-hint-pill {
+        background: rgba(0, 0, 0, 0.7);
+        color: #ffffff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(255,255,255,0.25);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
     .btn-remove-file { 
         position: absolute; top: 4px; right: 4px; 
-        background: rgba(15, 23, 42, 0.75); color: white; 
+        background: rgba(15, 23, 42, 0.8); color: white; 
         border: none; border-radius: 50%; width: 22px; height: 22px; 
         font-size: 11px; display: flex; align-items: center; justify-content: center; 
-        cursor: pointer; z-index: 5; transition: all 0.2s ease; 
+        cursor: pointer; z-index: 10; transition: all 0.2s ease; 
         backdrop-filter: blur(4px);
     }
     .btn-remove-file:hover { background: #ef4444; transform: scale(1.18); }
+
+    /* ── Super High-Z-Index Lightbox Preview ── */
+    .file-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 20px;
+    }
+    .file-lightbox.show {
+        display: flex;
+        opacity: 1;
+    }
+    .file-lightbox .lb-header {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 20;
+        pointer-events: none;
+    }
+    .file-lightbox .lb-header > * {
+        pointer-events: auto;
+    }
+    .file-lightbox .lb-name-badge {
+        background: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 60vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+    .file-lightbox .lb-action-btn, .file-lightbox .lb-close {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .file-lightbox .lb-action-btn:hover {
+        background: rgba(217, 119, 6, 0.85);
+        color: #ffffff;
+        transform: scale(1.08);
+    }
+    .file-lightbox .lb-close:hover {
+        background: rgba(239, 68, 68, 0.85);
+        color: #ffffff;
+        transform: scale(1.08);
+    }
+    .file-lightbox .lb-body {
+        max-width: 92vw;
+        max-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .file-lightbox .lb-img {
+        max-width: 92vw;
+        max-height: 82vh;
+        object-fit: contain;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        animation: lbZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .file-lightbox .lb-video {
+        max-width: 90vw;
+        max-height: 80vh;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+        outline: none;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        animation: lbZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .file-lightbox .lb-doc {
+        background: rgba(30, 41, 59, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 20px;
+        padding: 35px 30px;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: lbZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(12px);
+    }
+    @keyframes lbZoomIn {
+        from { transform: scale(0.92); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
 
     /* ── 3D Modal Windows (Detail & Progress) ── */
     .modal-content {
@@ -1609,11 +1757,40 @@ function updatePreviews(containerId, fileArray, arrayName) {
     const container = $('#' + containerId); container.empty();
     fileArray.forEach((file, index) => {
         let pc = '';
-         const objUrl = URL.createObjectURL(file);
-        if (file.type.startsWith('image/')) pc = `<img src="${objUrl}" onclick="openLightbox('${objUrl}','${file.name.replace(/'/g,"\\'")}')">`;
-        else if (file.type.startsWith('video/')) pc = `<div class="preview-content"><i class="bi bi-camera-video"></i><div class="file-name-small">${file.name}</div></div>`;
-        else pc = `<div class="preview-content"><i class="bi bi-file-earmark-text"></i><div class="file-name-small">${file.name}</div></div>`;
-        container.append(`<div class="preview-item"><button type="button" class="btn-remove-file" onclick="removeFile(${index}, '${arrayName}')"><i class="bi bi-x"></i></button><div class="preview-content">${pc}</div></div>`);
+        const objUrl = URL.createObjectURL(file);
+        const safeName = file.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        if (file.type.startsWith('image/')) {
+            pc = `<div class="preview-thumb-wrap" onclick="openLightbox('${objUrl}','${safeName}', 'image')" title="Klik untuk cek pratinjau gambar">
+                    <img src="${objUrl}" alt="${safeName}">
+                    <div class="preview-overlay-hint">
+                        <span class="preview-hint-pill"><i class="bi bi-eye-fill"></i> Cek</span>
+                    </div>
+                  </div>`;
+        } else if (file.type.startsWith('video/')) {
+            pc = `<div class="preview-thumb-wrap" onclick="openLightbox('${objUrl}','${safeName}', 'video')" title="Klik untuk putar video">
+                    <video src="${objUrl}" muted></video>
+                    <div class="preview-overlay-hint">
+                        <span class="preview-hint-pill"><i class="bi bi-play-fill"></i> Putar</span>
+                    </div>
+                    <div class="file-name-small">${file.name}</div>
+                  </div>`;
+        } else {
+            pc = `<div class="preview-thumb-wrap" onclick="openLightbox('${objUrl}','${safeName}', 'file')" title="Klik untuk info dokumen">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <div class="preview-overlay-hint">
+                        <span class="preview-hint-pill"><i class="bi bi-box-arrow-up-right"></i> Buka</span>
+                    </div>
+                    <div class="file-name-small">${file.name}</div>
+                  </div>`;
+        }
+        container.append(`
+            <div class="preview-item">
+                <button type="button" class="btn-remove-file" onclick="event.stopPropagation(); removeFile(${index}, '${arrayName}')" title="Hapus file ini">
+                    <i class="bi bi-x"></i>
+                </button>
+                <div class="preview-content">${pc}</div>
+            </div>
+        `);
     });
 }
 
@@ -1855,18 +2032,24 @@ function openEditModal(id){
                 let eh = '';
                 res.attachments.forEach(a => {
                     let p = 'assets/uploads/bukti/' + a.file_path;
-                    let iconHtml = '';
+                    let safeName = (a.file_name || 'Lampiran').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     if (a.file_type == 'image') {
-                        iconHtml = `<img src="${p}" style="width:100%;height:100%;object-fit:cover;">`;
+                        iconHtml = `<div class="preview-thumb-wrap" onclick="openLightbox('${p}','${safeName}', 'image')" title="Klik untuk cek pratinjau" style="width:100%;height:100%;">
+                            <img src="${p}" style="width:100%;height:100%;object-fit:cover;">
+                            <div class="preview-overlay-hint"><span class="preview-hint-pill"><i class="bi bi-eye-fill"></i> Cek</span></div>
+                        </div>`;
                     } else if (a.file_type == 'video') {
-                        iconHtml = `<div class="d-flex align-items-center justify-content-center h-100 bg-dark rounded text-white" style="width:80px;"><i class="bi bi-play-circle-fill" style="font-size:1.5rem;"></i></div>`;
+                        iconHtml = `<div class="preview-thumb-wrap" onclick="openLightbox('${p}','${safeName}', 'video')" title="Klik untuk putar video" style="width:100%;height:100%;">
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-dark rounded text-white" style="width:80px;"><i class="bi bi-play-circle-fill" style="font-size:1.5rem;"></i></div>
+                            <div class="preview-overlay-hint"><span class="preview-hint-pill"><i class="bi bi-play-fill"></i> Putar</span></div>
+                        </div>`;
                     } else {
-                        iconHtml = `<div class="d-flex align-items-center justify-content-center h-100 bg-light rounded text-secondary" style="width:80px;"><i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i></div>`;
+                        iconHtml = `<a href="${p}" target="_blank" class="d-flex align-items-center justify-content-center h-100 bg-light rounded text-secondary" style="width:80px; text-decoration:none;" title="Buka dokumen"><i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i></a>`;
                     }
                     eh += `
                     <div id="att-card-${a.id}" style="position:relative; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #e5e7eb;">
                         ${iconHtml}
-                        <button type="button" onclick="deleteExistingAttachment(${a.id})" class="btn btn-danger btn-sm p-0 d-flex align-items-center justify-content-center" style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; font-size:0.65rem; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                        <button type="button" onclick="event.stopPropagation(); deleteExistingAttachment(${a.id})" class="btn btn-danger btn-sm p-0 d-flex align-items-center justify-content-center" style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; font-size:0.65rem; box-shadow:0 1px 3px rgba(0,0,0,0.3); z-index:10;">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>`;
@@ -1992,9 +2175,9 @@ function toggleLike(id, btn){
 function toggleLikeInModal(){ toggleLike(curJob, $('#d-like-btn')); }
 
 function showMedia(p,t){ 
-    let fp='assets/uploads/bukti/'+p; 
-    let c = t=='image' ? `<img src="${fp}" style="max-height:90vh; max-width:100%">` : `<video src="${fp}" controls autoplay style="max-height:90vh; max-width:100%"></video>`;
-    $('#media-container').html(c); new bootstrap.Modal('#mediaModal').show();
+    let fp = 'assets/uploads/bukti/' + p; 
+    let name = p.split('/').pop();
+    openLightbox(fp, name, t);
 }
 
 function showViewers(jobId) {
@@ -2529,22 +2712,97 @@ $(document).ready(()=>{
 });</script>
 
 <!-- ═══ FILE LIGHTBOX ═══ -->
-<div id="fileLightbox" onclick="if(event.target===this)closeLightbox()">
-    <button class="lb-close" onclick="closeLightbox()"><i class="bi bi-x-lg"></i></button>
-    <img id="lbImg" class="lb-img" src="" alt="Preview">
-    <span id="lbName" class="lb-name"></span>
+<div id="fileLightbox" class="file-lightbox" onclick="if(event.target===this||event.target.id==='lbBody')closeLightbox()">
+    <div class="lb-header">
+        <div class="lb-name-badge">
+            <i class="bi bi-file-earmark-image me-1 text-warning"></i>
+            <span id="lbName" class="lb-name"></span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a id="lbDownload" href="#" target="_blank" class="lb-action-btn" title="Buka di tab baru / Unduh file asli">
+                <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+            <button type="button" class="lb-close" onclick="closeLightbox()" title="Tutup pratinjau (Esc)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+    <div class="lb-body" id="lbBody">
+        <img id="lbImg" class="lb-img" src="" alt="Preview" style="display:none;" onclick="event.stopPropagation()">
+        <video id="lbVideo" class="lb-video" src="" controls autoplay style="display:none;" onclick="event.stopPropagation()"></video>
+        <div id="lbDoc" class="lb-doc" style="display:none;" onclick="event.stopPropagation()">
+            <i class="bi bi-file-earmark-text display-3 text-warning mb-2"></i>
+            <h6 id="lbDocName" class="text-white fw-bold mb-2"></h6>
+            <p class="text-white-50 small mb-3">Format ini dapat dibuka langsung di tab baru.</p>
+            <a id="lbDocLink" href="#" target="_blank" class="btn btn-warning rounded-pill px-4 fw-bold">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Buka Dokumen
+            </a>
+        </div>
+    </div>
 </div>
 <script>
-function openLightbox(src, name) {
-    document.getElementById('lbImg').src = src;
-    document.getElementById('lbName').textContent = name;
-    document.getElementById('fileLightbox').classList.add('show');
-    document.body.style.overflow = 'hidden';
+function openLightbox(src, name, type = 'image') {
+    const lb = document.getElementById('fileLightbox');
+    if (!lb) return;
+    const lbImg = document.getElementById('lbImg');
+    const lbVideo = document.getElementById('lbVideo');
+    const lbDoc = document.getElementById('lbDoc');
+    const lbName = document.getElementById('lbName');
+    const lbDownload = document.getElementById('lbDownload');
+
+    lbName.textContent = name || 'Pratinjau File';
+    if (lbDownload) {
+        lbDownload.href = src;
+        lbDownload.setAttribute('download', name || 'file');
+    }
+
+    lbImg.style.display = 'none';
+    lbVideo.style.display = 'none';
+    lbDoc.style.display = 'none';
+    if (lbVideo) {
+        lbVideo.pause();
+        lbVideo.src = '';
+    }
+
+    let isImg = (type === 'image') || (!type && (/\.(jpg|jpeg|png|gif|webp|svg)/i.test(src) || src.startsWith('data:image') || src.startsWith('blob:')));
+    let isVid = (type === 'video') || (!type && /\.(mp4|webm|ogg|mov)/i.test(src));
+
+    if (isImg) {
+        lbImg.src = src;
+        lbImg.style.display = 'block';
+    } else if (isVid) {
+        lbVideo.src = src;
+        lbVideo.style.display = 'block';
+    } else {
+        const docName = document.getElementById('lbDocName');
+        const docLink = document.getElementById('lbDocLink');
+        if (docName) docName.textContent = name || 'Dokumen';
+        if (docLink) docLink.href = src;
+        lbDoc.style.display = 'block';
+    }
+
+    lb.classList.add('show');
+    $('body').addClass('modal-open');
 }
+
 function closeLightbox() {
-    document.getElementById('fileLightbox').classList.remove('show');
-    document.body.style.overflow = '';
+    const lb = document.getElementById('fileLightbox');
+    if (!lb) return;
+    const lbVideo = document.getElementById('lbVideo');
+    if (lbVideo) {
+        lbVideo.pause();
+        lbVideo.src = '';
+    }
+    lb.classList.remove('show');
+    if ($('.modal.show').length > 0) {
+        document.body.style.overflow = 'hidden';
+        $('body').addClass('modal-open');
+    } else {
+        document.body.style.overflow = '';
+        $('body').removeClass('modal-open');
+    }
 }
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeLightbox();
 });
