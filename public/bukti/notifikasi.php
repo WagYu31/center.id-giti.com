@@ -5,95 +5,157 @@ require_once 'includes/sidebar.php';
 
 $user_id = $_SESSION['user_id'];
 
+// Auto mark unread notifications as read when visiting notifikasi.php
+try {
+    $conn->prepare("UPDATE bukti_notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0")->execute([$user_id]);
+} catch (Exception $e) {}
+
 $stmt_user = $conn->prepare("SELECT nickname, name FROM users WHERE id = ?");
 $stmt_user->execute([$user_id]);
 $curr_user = $stmt_user->fetch();
 $nickname = $curr_user['nickname'] ? $curr_user['nickname'] : str_replace(' ', '', $curr_user['name']);
-$tag_pattern = "%@" . $nickname . "%";
 
-$limit = 15; 
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 20; 
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
 
-$sql_count = "
-    SELECT 
-        (SELECT COUNT(*) FROM bukti_jobs WHERE description LIKE ? AND deleted_at IS NULL) + 
-        (SELECT COUNT(*) FROM bukti_comments WHERE content LIKE ? AND deleted_at IS NULL) 
-    as total";
-$stmt_count = $conn->prepare($sql_count);
-$stmt_count->execute([$tag_pattern, $tag_pattern]);
-$total_rows = $stmt_count->fetchColumn();
+// Count total notifications from bukti_notifications
+$stmt_count = $conn->prepare("SELECT COUNT(*) FROM bukti_notifications WHERE user_id = ? AND deleted_at IS NULL");
+$stmt_count->execute([$user_id]);
+$total_rows = (int)$stmt_count->fetchColumn();
 $total_pages = ceil($total_rows / $limit);
 
+// Fetch notifications with actor & job info
 $sql = "
-    SELECT id as item_id, id as job_id, user_id as actor_id, 'job' as type, description as content, created_at 
-    FROM bukti_jobs 
-    WHERE description LIKE ? AND deleted_at IS NULL
-    
-    UNION ALL
-    
-    SELECT id as item_id, job_id, user_id as actor_id, 'comment' as type, content, created_at 
-    FROM bukti_comments 
-    WHERE content LIKE ? AND deleted_at IS NULL
-    
-    ORDER BY created_at DESC 
+    SELECT 
+        n.id as notif_id,
+        n.job_id,
+        n.actor_id,
+        n.type,
+        n.is_read,
+        n.created_at,
+        u.name as actor_name,
+        u.avatar as actor_avatar,
+        j.title as job_title,
+        j.status as job_status
+    FROM bukti_notifications n
+    LEFT JOIN users u ON n.actor_id = u.id
+    LEFT JOIN bukti_jobs j ON n.job_id = j.id
+    WHERE n.user_id = ? AND n.deleted_at IS NULL
+    ORDER BY n.created_at DESC 
     LIMIT $limit OFFSET $offset
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->execute([$tag_pattern, $tag_pattern]);
-$mentions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt->execute([$user_id]);
+$notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 function time_ago_custom($datetime) { return tgl_indo($datetime); }
-function format_text_preview($text) {
-    return strlen($text) > 100 ? substr(strip_tags($text), 0, 100) . "..." : strip_tags($text);
-}
 ?>
 
 <div class="main-wrapper">
-    <div class="content-area" style="max-width: 800px;">
+    <div class="content-area" style="max-width: 860px;">
         
-        <h4 class="fw-bold mb-4">Mentions & Tag</h4>
-        <p class="text-muted mb-4">Daftar pekerjaan dan komentar di mana Anda (@<?php echo htmlspecialchars($nickname); ?>) ditandai.</p>
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h4 class="fw-bold m-0" style="color: #0f172a; font-size: 1.35rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(245,158,11,0.2);">
+                        <i class="bi bi-bell-fill"></i>
+                    </span>
+                    Notifikasi & Aktivitas
+                </h4>
+                <p class="text-muted small mt-1 mb-0">Pemberitahuan persetujuan pekerjaan, arahan meeting, dan tanda sebutan (@<?php echo htmlspecialchars($nickname); ?>).</p>
+            </div>
+            <a href="index.php" class="btn btn-sm btn-light rounded-pill px-3 py-2 fw-bold text-muted border shadow-sm" style="font-size: 0.82rem;">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Beranda
+            </a>
+        </div>
 
-        <div class="card-custom p-0 overflow-hidden">
-            <?php if(count($mentions) > 0): ?>
-                <?php foreach($mentions as $m): 
-                    $stmt_actor = $conn->prepare("SELECT name, avatar FROM users WHERE id = ?");
-                    $stmt_actor->execute([$m['actor_id']]);
-                    $actor = $stmt_actor->fetch();
+        <div class="card-custom p-0 overflow-hidden shadow-sm" style="border: 1px solid rgba(226,232,240,0.8); border-radius: 20px; background: #ffffff;">
+            <?php if(count($notifications) > 0): ?>
+                <?php foreach($notifications as $n): 
+                    $actor_name = $n['actor_name'] ?: 'Rekan Tim';
+                    $av = $n['actor_avatar'] && file_exists("assets/img/avatars/".$n['actor_avatar']) 
+                        ? "assets/img/avatars/".$n['actor_avatar'] 
+                        : "https://ui-avatars.com/api/?name=".urlencode($actor_name)."&background=f1f5f9&color=64748b";
                     
-                    $av = $actor['avatar'] && file_exists("assets/img/avatars/".$actor['avatar']) ? "assets/img/avatars/".$actor['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($actor['name']);
-                    
-                    if($m['type'] == 'job') {
-                        $context = "menandai Anda dalam pekerjaannya";
-                        $icon = '<i class="bi bi-briefcase-fill text-primary"></i>';
+                    $job_title = $n['job_title'] ?: 'Pekerjaan #'.$n['job_id'];
+                    $type = $n['type'];
+
+                    // Configure visual badges & texts based on notification type
+                    if ($type === 'approval_request') {
+                        $badge_class = 'badge-3d-pending';
+                        $badge_label = 'Menunggu Approval';
+                        $icon_badge = '<span style="width:28px; height:28px; border-radius:8px; background:#e0f2fe; color:#0284c7; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;"><i class="bi bi-shield-lock-fill"></i></span>';
+                        $action_text = 'mengajukan permintaan <strong>Approval</strong> untuk:';
+                        $border_color = '#0284c7';
+                    } elseif ($type === 'approval_approved') {
+                        $badge_class = 'badge-3d-done';
+                        $badge_label = 'Disetujui (Lanjut)';
+                        $icon_badge = '<span style="width:28px; height:28px; border-radius:8px; background:#ecfdf5; color:#10b981; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;"><i class="bi bi-check-circle-fill"></i></span>';
+                        $action_text = 'telah <strong>menyetujui</strong> pekerjaan Anda (Lanjut Kerjakan):';
+                        $border_color = '#10b981';
+                    } elseif ($type === 'approval_rejected') {
+                        $badge_class = 'badge-3d-meeting';
+                        $badge_label = 'Meeting Ulang';
+                        $icon_badge = '<span style="width:28px; height:28px; border-radius:8px; background:#fff1f2; color:#ef4444; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;"><i class="bi bi-arrow-repeat"></i></span>';
+                        $action_text = 'meminta <strong>Meeting Ulang</strong> untuk pekerjaan:';
+                        $border_color = '#ef4444';
+                    } elseif ($type === 'comment') {
+                        $badge_class = '';
+                        $badge_label = 'Komentar';
+                        $icon_badge = '<span style="width:28px; height:28px; border-radius:8px; background:#f0fdf4; color:#16a34a; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;"><i class="bi bi-chat-dots-fill"></i></span>';
+                        $action_text = 'memberikan tanggapan / komentar pada:';
+                        $border_color = '#cbd5e1';
                     } else {
-                        $context = "menandai Anda dalam komentar";
-                        $icon = '<i class="bi bi-chat-dots-fill text-success"></i>';
+                        // mention or default
+                        $badge_class = '';
+                        $badge_label = 'Mention';
+                        $icon_badge = '<span style="width:28px; height:28px; border-radius:8px; background:#fef3c7; color:#d97706; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;"><i class="bi bi-at"></i></span>';
+                        $action_text = 'menandai Anda (@'.$nickname.') dalam:';
+                        $border_color = '#cbd5e1';
                     }
                 ?>
-                <div class="p-3 border-bottom d-flex gap-3 align-items-start bg-white cursor-pointer hover-bg-light" onclick="openDetail(<?php echo $m['job_id']; ?>)">
-                    <img src="<?php echo $av; ?>" class="rounded-circle border" width="45" height="45" style="object-fit:cover;">
-                    <div class="flex-grow-1">
-                        <div class="mb-1">
-                            <span class="fw-bold text-dark"><?php echo htmlspecialchars($actor['name']); ?></span> 
-                            <span class="text-secondary small"><?php echo $context; ?></span>
+                <a href="index.php?job_id=<?php echo $n['job_id']; ?>" class="text-decoration-none d-block">
+                    <div class="p-3 p-md-4 border-bottom d-flex gap-3 align-items-center bg-white notif-row" style="transition: all 0.2s ease;">
+                        <div class="position-relative flex-shrink-0">
+                            <img src="<?php echo $av; ?>" class="rounded-circle shadow-sm" width="46" height="46" style="object-fit:cover; border: 2px solid #ffffff;">
+                            <span class="position-absolute bottom-0 end-0" style="transform: translate(25%, 25%);">
+                                <?php echo $icon_badge; ?>
+                            </span>
                         </div>
-                        <div class="text-dark bg-light p-2 rounded small border d-inline-block mb-1">
-                            <?php echo $icon; ?> <span class="fst-italic">"<?php echo format_text_preview($m['content']); ?>"</span>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="fw-bold" style="color: #0f172a; font-size: 0.92rem;"><?php echo htmlspecialchars($actor_name); ?></span> 
+                                <span class="text-secondary small" style="font-size: 0.83rem;"><?php echo $action_text; ?></span>
+                            </div>
+                            <div class="text-truncate fw-semibold" style="color: #1e293b; font-size: 0.9rem; max-width: 550px;">
+                                "<?php echo htmlspecialchars($job_title); ?>"
+                            </div>
+                            <div class="d-flex align-items-center gap-3 mt-2">
+                                <small class="text-muted" style="font-size: 0.74rem;">
+                                    <i class="bi bi-clock me-1"></i> <?php echo time_ago_custom($n['created_at']); ?>
+                                </small>
+                                <?php if (!empty($badge_label) && !empty($badge_class)): ?>
+                                    <span class="badge-3d-status <?php echo $badge_class; ?>" style="font-size: 0.65rem; padding: 2px 8px;">
+                                        <span class="pulse-dot" style="width: 5px; height: 5px;"></span> <?php echo $badge_label; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <div class="d-block">
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i> <?php echo time_ago_custom($m['created_at']); ?></small>
+                        <div class="flex-shrink-0 text-muted ms-2">
+                            <i class="bi bi-chevron-right fs-5"></i>
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-chevron-right"></i></button>
-                </div>
+                </a>
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="p-5 text-center text-muted">
-                    <i class="bi bi-at display-4 mb-3 d-block"></i>
-                    Belum ada yang menandai Anda.
+                    <div style="width: 64px; height: 64px; border-radius: 20px; background: #f8fafc; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 12px; border: 1px dashed #cbd5e1;">
+                        <i class="bi bi-bell-slash"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark m-0">Belum Ada Notifikasi</h6>
+                    <p class="small text-muted mt-1 mb-0">Semua aktivitas atau persetujuan pekerjaan akan muncul di sini.</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -103,7 +165,7 @@ function format_text_preview($text) {
             <ul class="pagination justify-content-center">
                 <?php for($i=1; $i<=$total_pages; $i++): ?>
                     <li class="page-item <?php echo $page==$i?'active':''; ?>">
-                        <a class="page-link border-0 rounded-circle mx-1" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                        <a class="page-link border-0 rounded-circle mx-1 shadow-sm" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
                     </li>
                 <?php endfor; ?>
             </ul>
@@ -113,256 +175,40 @@ function format_text_preview($text) {
     </div>
 </div>
 
-<div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 overflow-hidden" style="height: 85vh;">
-            <div class="modal-body p-0 h-100">
-                <div class="row g-0 h-100">
-                    <div class="col-lg-8 h-100 bg-white border-end d-flex flex-column">
-                        <div class="p-4 border-bottom flex-shrink-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex gap-3 align-items-center"><img src="" id="d-avatar" class="rounded-circle shadow-sm" width="50" height="50" style="object-fit: cover;"><div><h6 class="fw-bold mb-0 text-dark" id="d-name"></h6><small class="text-muted" id="d-date"></small></div></div>
-                                <div class="d-flex align-items-center gap-3"><div id="d-status-badge"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                            </div>
-                        </div>
-                        <div class="p-4 overflow-auto custom-scroll flex-grow-1" style="min-height: 0;">
-                            <h3 class="fw-bold mb-3 text-dark" id="d-title"></h3>
-                            <div id="d-desc" class="text-secondary mb-4" style="white-space: pre-wrap; font-size: 1rem; line-height: 1.6;"></div>
-                            <div id="d-att" class="row g-2 mb-4"></div>
-                            <div class="card bg-light border-0 rounded-4">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3"><h6 class="fw-bold m-0 text-primary"><i class="bi bi-activity me-2"></i>Timeline Progress</h6><button class="btn btn-sm btn-primary rounded-pill px-3" id="btn-update-progress" style="display:none;" onclick="showProgressForm()"><i class="bi bi-plus-lg me-1"></i> Update</button></div>
-                                    <div id="d-timeline" class="ps-2"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 h-100 bg-light d-flex flex-column">
-                        <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0" style="height: 83px;">
-                            <h6 class="fw-bold m-0">Diskusi</h6>
-                            <button class="btn btn-sm btn-light border rounded-pill fw-bold text-muted" id="d-like-btn" onclick="toggleLikeInModal()"><i class="bi bi-hand-thumbs-up-fill"></i> <span id="d-like-count">0</span></button>
-                        </div>
-                        <div id="d-comments" class="flex-grow-1 p-3 overflow-auto custom-scroll" style="min-height: 0;"></div>
-                        <div class="p-3 bg-white border-top flex-shrink-0">
-                            <div class="position-relative">
-                                <input id="d-input" class="form-control rounded-pill pe-5 bg-light border-0" placeholder="Ketik @ untuk tag..." style="padding-right: 50px;">
-                                <button class="btn btn-primary rounded-circle position-absolute top-50 end-0 translate-middle-y me-2" style="width:35px;height:35px; display: flex; align-items: center; justify-content: center;" onclick="sendComment()"><i class="bi bi-send-fill" style="font-size: 0.9rem;"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="progressModal" tabindex="-1" style="z-index: 1060;">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
-            <div class="modal-header border-0 pb-0"><h6 class="fw-bold">Update Progress</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body">
-                <form id="formProgress">
-                    <input type="hidden" name="job_id" id="p-job-id">
-                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Status Baru</label><select name="status" id="p-status" class="form-select bg-light border-0"><option value="todo">Belum Mulai</option><option value="in_progress">Dalam Proses</option><option value="done">Selesai</option></select></div>
-                    <div class="mb-3"><label class="small text-muted fw-bold mb-1">Catatan</label><textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3"></textarea></div>
-                    <div class="mb-3">
-                        <label class="btn btn-sm btn-light w-100 border text-start rounded-pill"><i class="bi bi-paperclip"></i> Bukti/File <input type="file" id="progressFileInput" name="files[]" multiple hidden></label>
-                        <div id="progress-preview-container" class="preview-grid mt-2" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;"></div>
-                    </div>
-                </form>
-                <button class="btn btn-primary w-100 rounded-pill" onclick="saveProgress()">Simpan Update</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="mediaModal" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen bg-dark p-0">
-        <div class="modal-content bg-transparent">
-            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-4 z-3" data-bs-dismiss="modal"></button>
-            <div class="modal-body d-flex justify-content-center align-items-center" id="media-container"></div>
-        </div>
-    </div>
-</div>
+<style>
+.notif-row:hover {
+    background: #f8fafc !important;
+    transform: translateX(4px);
+}
+.badge-3d-pending {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+}
+.badge-3d-meeting {
+    background: linear-gradient(135deg, #fee2e2, #fecdd3);
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+.badge-3d-done {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+.pulse-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    margin-right: 4px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+</style>
 
 <?php require_once 'includes/footer.php'; ?>
-
-<script>
-let curJob = null;
-let progressFiles = []; 
-
-function toggleLoading(show) {} 
-
-$('#progressFileInput').on('change', function(e) {
-    const files = Array.from(e.target.files);
-    progressFiles = progressFiles.concat(files);
-    updatePreviews();
-    $(this).val('');
-});
-
-function updatePreviews() {
-    const container = $('#progress-preview-container'); container.empty();
-    progressFiles.forEach((file, index) => {
-        let pc = '';
-        if (file.type.startsWith('image/')) pc = `<img src="${URL.createObjectURL(file)}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
-        else pc = `<div style="width:100%;height:100%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:8px;"><i class="bi bi-file-earmark-text"></i></div>`;
-        container.append(`<div style="position:relative;width:100%;padding-top:100%;"><div style="position:absolute;top:0;left:0;width:100%;height:100%;">${pc}<button type="button" onclick="removeFile(${index})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;display:flex;align-items:center;justify-content:center;">&times;</button></div></div>`);
-    });
-}
-
-function removeFile(index) {
-    progressFiles.splice(index, 1);
-    updatePreviews();
-}
-
-function openDetail(id){
-    curJob=id;
-    $.post('ajax_action.php', {action:'fetch_detail', job_id:id}, function(res){
-        if(res.status=='success'){
-            let j=res.job;
-            $('#d-title').text(j.title); $('#d-desc').html(formatText(j.description));
-            $('#d-name').text(j.nickname||j.name); $('#d-date').text(j.date_fmt); $('#d-avatar').attr('src',j.avatar_url);
-            
-            // Premium status badges
-            let sc = {
-                todo: {bg:'#f1f5f9', color:'#475569', icon:'circle', label:'Belum Mulai'},
-                in_progress: {bg:'#fefce8', color:'#a16207', icon:'play-circle-fill', label:'Dalam Proses'},
-                done: {bg:'#f0fdf4', color:'#15803d', icon:'check-circle-fill', label:'Selesai'}
-            };
-            let s = sc[j.status] || sc.todo;
-            $('#d-status-badge').html(`<span class="px-3 py-2 rounded-pill fw-bold" style="background:${s.bg}; color:${s.color}; font-size:0.75rem; letter-spacing:0.3px;"><i class="bi bi-${s.icon} me-1"></i>${s.label}</span>`);
-            
-            // Timeline with premium cards
-            let th=''; 
-            if(res.history.length){ 
-                res.history.forEach((h, i)=>{ 
-                    let sColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#3b82f6' : '#6b7280');
-                    
-                    // Render progress attachments HTML
-                    let pattHtml = '';
-                    if (h.attachments && h.attachments.length > 0) {
-                        pattHtml += `<div class="row g-2 mt-2">`;
-                        h.attachments.forEach(a => {
-                            let p = 'assets/uploads/bukti/' + a.file_path;
-                            if (a.file_type == 'image') {
-                                pattHtml += `<div class="col-4"><div style="position:relative; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover;"></div></div>`;
-                            } else if (a.file_type == 'video') {
-                                pattHtml += `<div class="col-12"><video src="${p}" controls class="w-100 rounded" style="max-height:150px; background:#000;"></video></div>`;
-                            } else {
-                                pattHtml += `<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-2 p-2 text-decoration-none border rounded-3" style="background:#fafafa; font-size:0.75rem;"><i class="bi bi-file-earmark-text text-warning"></i> <span style="font-weight:600; color:#374151;">${a.file_name}</span></a></div>`;
-                            }
-                        });
-                        pattHtml += `</div>`;
-                    }
-
-                    th+=`<div class="d-flex gap-3 mb-3 ${i > 0 ? 'pt-3' : ''}" ${i > 0 ? 'style="border-top: 1px solid rgba(0,0,0,0.04);"' : ''}>
-                        <div style="width:8px; height:8px; border-radius:50%; background:${sColor}; margin-top:6px; flex-shrink:0; box-shadow: 0 0 0 3px ${sColor}22;"></div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <span class="fw-bold" style="font-size:0.85rem; color:#111827;">${h.name}</span>
-                                <small style="font-size:0.7rem; color:#9ca3af;">${h.date}</small>
-                            </div>
-                            <span class="px-2 py-1 rounded-pill d-inline-block mt-1" style="font-size:0.68rem; font-weight:600; background:${sColor}10; color:${sColor}; text-transform:uppercase; letter-spacing:0.5px;">${h.status_after}</span>
-                            ${h.notes ? `<p class="mt-2 mb-0" style="font-size:0.85rem; color:#4b5563; line-height:1.55;">${h.notes}</p>` : ''}
-                            ${pattHtml}
-                        </div>
-                    </div>`; 
-                }); 
-            } else { 
-                th='<div class="text-center py-3"><i class="bi bi-clock-history" style="font-size:1.5rem; color:#d1d5db;"></i><p class="mt-2 mb-0" style="font-size:0.82rem; color:#9ca3af;">Belum ada progress</p></div>'; 
-            }
-            $('#d-timeline').html(th);
-            
-            // Premium attachment gallery
-            let ah=''; 
-            res.attachments.forEach(a=>{ 
-                let p='assets/uploads/bukti/'+a.file_path; 
-                if(a.file_type=='image') {
-                    ah+=`<div class="col-4"><div style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; aspect-ratio:1; background:#f3f4f6;" onclick="showMedia('${a.file_path}','image')"><img src="${p}" class="w-100 h-100" style="object-fit:cover; transition:transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(0,0,0,0.3));opacity:0;transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><i class="bi bi-zoom-in position-absolute bottom-0 end-0 m-2 text-white"></i></div></div></div>`; 
-                } else if(a.file_type=='video') {
-                    ah+=`<div class="col-12"><video src="${p}" controls class="w-100" style="border-radius:12px; max-height:300px; background:#000;"></video></div>`; 
-                } else {
-                    ah+=`<div class="col-12"><a href="${p}" target="_blank" class="d-flex align-items-center gap-3 p-3 text-decoration-none" style="background:white; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s;" onmouseover="this.style.borderColor='#eab308'" onmouseout="this.style.borderColor='#e5e7eb'"><div style="width:40px;height:40px;border-radius:10px;background:#fefce8;display:flex;align-items:center;justify-content:center;"><i class="bi bi-file-earmark-text" style="color:#eab308; font-size:1.1rem;"></i></div><div><div style="font-size:0.85rem; font-weight:600; color:#111827;">${a.file_name}</div><div style="font-size:0.7rem; color:#9ca3af;">Klik untuk download</div></div></a></div>`; 
-                }
-            });
-            $('#d-att').html(ah);
-            
-            // Hide main attachment container if empty
-            if (res.attachments.length === 0) {
-                $('#d-att').hide();
-            } else {
-                $('#d-att').show();
-            }
-
-            renderComments(res.comments);
-            $('#d-like-count').text(j.like_count);
-            let btn=$('#d-like-btn'); 
-            if(j.is_liked) {
-                btn.removeClass('btn-light text-muted').addClass('btn-primary text-white');
-            } else {
-                btn.removeClass('btn-primary text-white').addClass('btn-light text-muted');
-            }
-            
-            $('#btn-update-progress').toggle(res.is_owner);
-            $('#p-job-id').val(id);
-            new bootstrap.Modal('#detailModal').show();
-        }
-    },'json');
-}
-
-function renderComments(arr){
-    let h=''; arr.forEach(c=>{
-        let delBtn = c.is_mine ? `<div class="mt-1"><button class="btn btn-link p-0 text-muted" style="font-size:0.7rem" onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">Edit</button> <button class="btn btn-link p-0 text-danger ms-2" style="font-size:0.7rem" onclick="delComment(${c.id})">Hapus</button></div>` : '';
-        h+=`<div class="d-flex gap-2 mb-3"><img src="${c.avatar}" class="rounded-circle" width="32" height="32"><div class="w-100"><div class="bg-white border rounded-3 p-2 px-3 shadow-sm"><div class="d-flex justify-content-between"><span class="fw-bold small">${c.name}</span><small class="text-muted" style="font-size:0.6rem">${c.date}</small></div><div class="small text-dark mt-1">${formatText(c.content)}</div></div>${delBtn}</div></div>`;
-    });
-    $('#d-comments').html(h);
-}
-
-function sendComment(){
-    let c=$('#d-input').val().trim(); if(!c) return;
-    $.post('ajax_action.php', {action:'comment', job_id:curJob, content:c}, function(){ openDetail(curJob); $('#d-input').val(''); });
-}
-
-$(document).on('keydown', '#d-input', function(e){
-    if(e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); sendComment(); }
-});
-
-function delComment(id){ if(confirm('Hapus komentar?')) $.post('ajax_action.php', {action:'delete_comment', comment_id:id}, function(){ openDetail(curJob); }); }
-function editComment(id, old){ let n=prompt("Edit:", old); if(n!==null && n.trim()!=="") $.post('ajax_action.php', {action:'edit_comment', comment_id:id, content:n}, function(){ openDetail(curJob); }); }
-
-function saveProgress(){
-    let fd = new FormData($('#formProgress')[0]); fd.append('action', 'update_progress');
-    fd.delete('files[]'); progressFiles.forEach((f) => { fd.append('files[]', f); });
-    $.ajax({url:'ajax_action.php', type:'POST', data:fd, contentType:false, processData:false, success:function(){ location.reload(); }});
-}
-
-function toggleLike(id, btn){
-    $.post('ajax_action.php', {action:'like', job_id:id}, function(res){
-        if(res.status=='success') {
-            $(btn).find('.count').text(res.count);
-            res.liked ? $(btn).removeClass('btn-light text-muted').addClass('btn-primary text-white') : $(btn).removeClass('btn-primary text-white').addClass('btn-light text-muted');
-        }
-    },'json');
-}
-function toggleLikeInModal(){ toggleLike(curJob, $('#d-like-btn')); }
-
-function showMedia(p,t){ 
-    let fp='assets/uploads/bukti/'+p; 
-    let c = t=='image' ? `<img src="${fp}" style="max-height:90vh; max-width:100%">` : `<video src="${fp}" controls autoplay style="max-height:90vh; max-width:100%"></video>`;
-    $('#media-container').html(c); new bootstrap.Modal('#mediaModal').show();
-}
-
-function showProgressForm(){ 
-    $('#p-job-id').val(curJob); progressFiles = []; 
-    updatePreviews();
-    new bootstrap.Modal('#progressModal').show(); 
-}
-
-function formatText(t){ return t?t.replace(/@(\w+)/g, '<span class="text-primary fw-bold">@$1</span>').replace(/\n/g, '<br>'):''; }
-</script>
-<style>
-.custom-scroll::-webkit-scrollbar { width: 6px; }
-.custom-scroll::-webkit-scrollbar-track { background: transparent; }
-.custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 10px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,0.2); }
-</style>

@@ -32,9 +32,11 @@
         <a href="analytics.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics.php' ? 'active' : ''; ?>"><i class="bi bi-trophy-fill" style="color: #f59e0b;"></i> Analytics & KPI</a>
         
         <div class="section-label">Filter Cepat</div>
+        <a href="index.php?status=pending_approval" class="nav-link"><i class="bi bi-bell-fill text-info"></i> Menunggu Approval</a>
         <a href="index.php?status=todo" class="nav-link"><i class="bi bi-circle"></i> Belum Mulai</a>
-        <a href="index.php?status=in_progress" class="nav-link"><i class="bi bi-play-circle"></i> Dalam Proses</a>
-        <a href="index.php?status=done" class="nav-link"><i class="bi bi-check-circle"></i> Selesai</a>
+        <a href="index.php?status=in_progress" class="nav-link"><i class="bi bi-play-circle text-warning"></i> Dalam Proses</a>
+        <a href="index.php?status=need_meeting" class="nav-link"><i class="bi bi-arrow-repeat text-danger"></i> Meeting Ulang</a>
+        <a href="index.php?status=done" class="nav-link"><i class="bi bi-check-circle text-success"></i> Selesai</a>
     </div>
     <a href="../index.php" class="btn-center"><i class="bi bi-grid"></i> Center</a>
 </nav>

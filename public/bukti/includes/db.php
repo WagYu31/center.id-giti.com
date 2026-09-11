@@ -29,6 +29,27 @@ try {
     try {
         $conn->exec("ALTER TABLE bukti_job_attachments ADD COLUMN progress_id INT DEFAULT NULL");
     } catch(Exception $e) {}
+
+    // Migration for Approval features
+    try {
+        $conn->exec("ALTER TABLE bukti_jobs MODIFY COLUMN status ENUM('todo','in_progress','done','pending_approval','need_meeting') DEFAULT 'todo'");
+    } catch(Exception $e) {}
+
+    try {
+        $conn->exec("ALTER TABLE bukti_jobs ADD COLUMN approval_by BIGINT(20) UNSIGNED DEFAULT NULL");
+    } catch(Exception $e) {}
+
+    try {
+        $conn->exec("ALTER TABLE bukti_jobs ADD COLUMN approval_at DATETIME DEFAULT NULL");
+    } catch(Exception $e) {}
+
+    try {
+        $conn->exec("ALTER TABLE bukti_jobs ADD COLUMN approval_notes TEXT DEFAULT NULL");
+    } catch(Exception $e) {}
+
+    try {
+        $conn->exec("ALTER TABLE bukti_notifications MODIFY COLUMN type ENUM('mention','comment','reaction','approval_request','approval_approved','approval_rejected') DEFAULT 'mention'");
+    } catch(Exception $e) {}
 } catch(Exception $e) {
     // Table may already exist or insufficient permissions - ignore
 }

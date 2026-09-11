@@ -117,7 +117,9 @@ $global_stats_stmt = $conn->query("SELECT
     COUNT(*) as total_created,
     SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as total_done,
     SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as total_progress,
-    SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) as total_todo
+    SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) as total_todo,
+    SUM(CASE WHEN status = 'pending_approval' THEN 1 ELSE 0 END) as total_pending_approval,
+    SUM(CASE WHEN status = 'need_meeting' THEN 1 ELSE 0 END) as total_need_meeting
 FROM bukti_jobs WHERE deleted_at IS NULL");
 $global_stats = $global_stats_stmt ? $global_stats_stmt->fetch(PDO::FETCH_ASSOC) : [];
 
@@ -125,6 +127,9 @@ $team_total_created  = (int)($global_stats['total_created'] ?? 0);
 $team_total_done     = (int)($global_stats['total_done'] ?? 0);
 $team_total_progress = (int)($global_stats['total_progress'] ?? 0);
 $team_total_todo     = (int)($global_stats['total_todo'] ?? 0);
+$team_total_pending  = (int)($global_stats['total_pending_approval'] ?? 0);
+$team_total_meeting  = (int)($global_stats['total_need_meeting'] ?? 0);
+$is_approver         = (($_SESSION['role'] ?? '') === 'admin' || $current_user_id == 1);
 
 // Calculate Statistics for Sidebar Filter Widget
 $stat_title = "Statistik Saya";
@@ -361,6 +366,14 @@ function format_text($text) {
         border-left: 5px solid #64748b !important;
         background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
     }
+    .card-custom[data-status="pending_approval"] {
+        border-left: 5px solid #0284c7 !important;
+        background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+    }
+    .card-custom[data-status="need_meeting"] {
+        border-left: 5px solid #ef4444 !important;
+        background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+    }
 
     /* ── 3D Status Badges with Glowing Pulse ── */
     .badge-3d-status {
@@ -409,6 +422,38 @@ function format_text($text) {
         50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1); }
     }
 
+    .badge-3d-pending {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        color: #0369a1;
+        border: 1px solid rgba(2, 132, 199, 0.35);
+    }
+    .badge-3d-pending .pulse-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+        animation: pulseCyan 2s infinite;
+    }
+    @keyframes pulseCyan {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25); }
+        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(2, 132, 199, 0.1); }
+    }
+
+    .badge-3d-meeting {
+        background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+        color: #be123c;
+        border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+    .badge-3d-meeting .pulse-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #f43f5e;
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25);
+        animation: pulseRose 2s infinite;
+    }
+    @keyframes pulseRose {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25); }
+        50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.1); }
+    }
+
     .badge-3d-todo {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         color: #475569;
@@ -418,6 +463,62 @@ function format_text($text) {
         width: 7px; height: 7px; border-radius: 50%;
         background: #94a3b8;
         box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+    }
+
+    /* ── Quick Action Buttons for Approver ── */
+    .btn-quick-approve {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff !important;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 3px 8px rgba(16, 185, 129, 0.35);
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+    .btn-quick-approve:hover {
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        transform: translateY(-2px) scale(1.06);
+        box-shadow: 0 5px 12px rgba(16, 185, 129, 0.45);
+    }
+    .btn-quick-reject {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: #ffffff !important;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 3px 8px rgba(239, 68, 68, 0.35);
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+    .btn-quick-reject:hover {
+        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        transform: translateY(-2px) scale(1.06);
+        box-shadow: 0 5px 12px rgba(239, 68, 68, 0.45);
+    }
+
+    .chip-pending {
+        border-color: rgba(2, 132, 199, 0.45) !important;
+        background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%) !important;
+        animation: pulseChip 2.5s infinite;
+    }
+    .chip-pending .kpi-chip-val { color: #0284c7 !important; }
+    .chip-pending .kpi-chip-lbl { color: #0369a1 !important; }
+    @keyframes pulseChip {
+        0%, 100% { box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1); }
+        50% { box-shadow: 0 4px 18px rgba(2, 132, 199, 0.3); }
     }
 
     /* ── 3D Tactile Buttons ── */
@@ -786,6 +887,17 @@ function format_text($text) {
                                 <div class="kpi-chip-lbl">TO-DO</div>
                             </div>
                         </div>
+                        <?php if ($team_total_pending > 0): ?>
+                        <a href="index.php?status=pending_approval" style="text-decoration:none;">
+                            <div class="hero-kpi-chip chip-pending" title="Tugas Menunggu Persetujuan Pimpinan (Klik untuk filter)">
+                                <span class="kpi-chip-icon">🔔</span>
+                                <div>
+                                    <div class="kpi-chip-val"><?php echo $team_total_pending; ?></div>
+                                    <div class="kpi-chip-lbl">APPROVAL</div>
+                                </div>
+                            </div>
+                        </a>
+                        <?php endif; ?>
                         <a href="analytics.php?period=all_time" class="btn btn-sm btn-3d-primary rounded-pill px-3 py-2 ms-auto d-inline-flex align-items-center gap-1">
                             <i class="bi bi-trophy-fill"></i> Leaderboard KPI <i class="bi bi-arrow-right-short"></i>
                         </a>
@@ -860,13 +972,29 @@ function format_text($text) {
                                 <?php 
                                     if ($job['status'] == 'done') {
                                         echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> SELESAI</span>';
+                                    } elseif ($job['status'] == 'pending_approval') {
+                                        echo '<span class="badge-3d-status badge-3d-pending"><span class="pulse-dot"></span> MENUNGGU APPROVAL</span>';
+                                    } elseif ($job['status'] == 'need_meeting') {
+                                        echo '<span class="badge-3d-status badge-3d-meeting"><span class="pulse-dot"></span> MEETING ULANG</span>';
                                     } elseif ($job['status'] == 'in_progress') {
-                                        echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> ON PROGRESS</span>';
+                                        if (!empty($job['approval_by'])) {
+                                            echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> LANJUT KERJAKAN</span>';
+                                        } else {
+                                            echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> ON PROGRESS</span>';
+                                        }
                                     } else {
                                         echo '<span class="badge-3d-status badge-3d-todo"><span class="pulse-dot"></span> BELUM MULAI</span>';
                                     }
                                 ?>
-                                <?php if($job['user_id'] == $current_user_id): ?>
+                                <?php if($is_approver && $job['status'] == 'pending_approval'): ?>
+                                <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, event)" title="Setujui (Lanjut Kerjakan)">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button class="btn-quick-reject" onclick="openRejectModal(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Meeting Ulang (Tidak Approve)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                                <?php endif; ?>
+                                <?php if($job['user_id'] == $current_user_id || $is_approver): ?>
                                 <div class="dropdown">
                                     <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:#f8fafc;"><i class="bi bi-three-dots-vertical" style="color:#64748b;"></i></button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" style="min-width: 160px; box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;">
@@ -917,8 +1045,16 @@ function format_text($text) {
                                 <?php 
                                     if ($job['status'] == 'done') {
                                         echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> Selesai</span>';
+                                    } elseif ($job['status'] == 'pending_approval') {
+                                        echo '<span class="badge-3d-status badge-3d-pending"><span class="pulse-dot"></span> Menunggu Approval</span>';
+                                    } elseif ($job['status'] == 'need_meeting') {
+                                        echo '<span class="badge-3d-status badge-3d-meeting"><span class="pulse-dot"></span> Meeting Ulang</span>';
                                     } elseif ($job['status'] == 'in_progress') {
-                                        echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> On Progress</span>';
+                                        if (!empty($job['approval_by'])) {
+                                            echo '<span class="badge-3d-status badge-3d-done"><span class="pulse-dot"></span> Lanjut Kerjakan</span>';
+                                        } else {
+                                            echo '<span class="badge-3d-status badge-3d-progress"><span class="pulse-dot"></span> On Progress</span>';
+                                        }
                                     } else {
                                         echo '<span class="badge-3d-status badge-3d-todo"><span class="pulse-dot"></span> Belum Mulai</span>';
                                     }
@@ -927,9 +1063,17 @@ function format_text($text) {
                             <td><?php echo htmlspecialchars($job['nickname'] ?: $uName); ?></td>
                             <td class="text-end pe-4">
                                 <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <?php if($is_approver && $job['status'] == 'pending_approval'): ?>
+                                    <button class="btn-quick-approve" onclick="approveJob(<?php echo $job['id']; ?>, event)" title="Setujui (Lanjut Kerjakan)">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                    <button class="btn-quick-reject" onclick="openRejectModal(<?php echo $job['id']; ?>, '<?php echo htmlspecialchars(addslashes($job['title'])); ?>', event)" title="Meeting Ulang (Tidak Approve)">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                    <?php endif; ?>
                                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openDetail(<?php echo $job['id']; ?>)">Detail</button>
                                     
-                                    <?php if($job['user_id'] == $current_user_id): ?>
+                                    <?php if($job['user_id'] == $current_user_id || $is_approver): ?>
                                     <div class="dropdown">
                                         <button class="btn btn-light btn-sm rounded-circle border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-three-dots-vertical"></i>
@@ -981,8 +1125,10 @@ function format_text($text) {
                     <label class="small fw-bold text-muted mb-1">STATUS</label>
                     <select name="status" class="form-select bg-light border-0" style="border-radius:12px; padding:10px 14px;">
                         <option value="">Semua Status</option>
+                        <option value="pending_approval" <?php echo $filter_status=='pending_approval'?'selected':''; ?>>🔵 Menunggu Approval</option>
                         <option value="todo" <?php echo $filter_status=='todo'?'selected':''; ?>>⚪ Belum Mulai</option>
                         <option value="in_progress" <?php echo $filter_status=='in_progress'?'selected':''; ?>>🟡 Dalam Proses</option>
+                        <option value="need_meeting" <?php echo $filter_status=='need_meeting'?'selected':''; ?>>🔴 Meeting Ulang</option>
                         <option value="done" <?php echo $filter_status=='done'?'selected':''; ?>>🟢 Selesai</option>
                     </select>
                 </div>
@@ -1002,6 +1148,26 @@ function format_text($text) {
             </div>
             
             <div class="d-flex flex-column gap-2 mb-3">
+                <?php if(($stats['pending_approval']??0) > 0): ?>
+                <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #f0f9ff; border: 1px solid rgba(2, 132, 199, 0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #0284c7; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);"></span>
+                        <span class="fw-bold" style="font-size: 0.82rem; color: #0369a1;">Menunggu Approval</span>
+                    </div>
+                    <b class="fs-6" style="color: #0369a1;"><?php echo $stats['pending_approval']??0; ?></b>
+                </div>
+                <?php endif; ?>
+
+                <?php if(($stats['need_meeting']??0) > 0): ?>
+                <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #fff1f2; border: 1px solid rgba(239, 68, 68, 0.25);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);"></span>
+                        <span class="fw-bold" style="font-size: 0.82rem; color: #b91c1c;">Meeting Ulang</span>
+                    </div>
+                    <b class="fs-6" style="color: #b91c1c;"><?php echo $stats['need_meeting']??0; ?></b>
+                </div>
+                <?php endif; ?>
+
                 <div class="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #f0fdf4; border: 1px solid rgba(16, 185, 129, 0.25);">
                     <div class="d-flex align-items-center gap-2">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);"></span>
@@ -1028,7 +1194,7 @@ function format_text($text) {
             </div>
             
             <?php 
-                $tot = ($stats['done']??0) + ($stats['in_progress']??0) + ($stats['todo']??0);
+                $tot = ($stats['done']??0) + ($stats['in_progress']??0) + ($stats['todo']??0) + ($stats['pending_approval']??0) + ($stats['need_meeting']??0);
                 $pDone = $tot > 0 ? round((($stats['done']??0) / $tot) * 100) : 0;
                 $pProg = $tot > 0 ? round((($stats['in_progress']??0) / $tot) * 100) : 0;
                 $pTodo = $tot > 0 ? round((($stats['todo']??0) / $tot) * 100) : 0;
@@ -1063,8 +1229,9 @@ function format_text($text) {
                                         <small id="d-date" style="color: #64748b; font-size: 0.78rem;"></small>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center gap-2">
                                     <div id="d-status-badge"></div>
+                                    <div id="d-approval-actions" class="d-flex align-items-center gap-1"></div>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                             </div>
@@ -1072,6 +1239,7 @@ function format_text($text) {
                         </div>
                         <!-- Body -->
                         <div class="p-4 overflow-auto custom-scroll flex-grow-1" style="min-height: 0;">
+                            <div id="d-approval-banner"></div>
                             <h3 class="fw-bold mb-3" id="d-title" style="color: #0f172a; letter-spacing: -0.02em; font-size: 1.45rem; line-height: 1.35;"></h3>
                             <div id="d-desc" class="mb-4" style="white-space: pre-wrap; font-size: 0.94rem; line-height: 1.7; color: #334155;"></div>
                             
@@ -1121,7 +1289,13 @@ function format_text($text) {
                     <div class="d-flex gap-2 mb-3 align-items-center">
                         <img src="<?php echo $my_av; ?>" class="rounded-circle shadow-sm" width="38" height="38" style="object-fit: cover; border: 2px solid rgba(245,158,11,0.3);">
                         <div class="fw-bold" style="color: #0f172a; font-size: 0.95rem;"><?php echo $myName; ?></div>
-                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-warning w-auto" style="border-radius: 10px; margin-left: auto;"><option value="todo">Belum Mulai</option><option value="in_progress">On Progress</option><option value="done">Selesai</option></select>
+                        <select name="status" id="inpStatus" class="form-select form-select-sm border-0 bg-light fw-bold text-warning w-auto" style="border-radius: 10px; margin-left: auto;">
+                            <option value="pending_approval">🔵 Menunggu Approval</option>
+                            <option value="todo">⚪ Belum Mulai</option>
+                            <option value="in_progress">🟡 On Progress</option>
+                            <option value="need_meeting">🔴 Meeting Ulang</option>
+                            <option value="done">🟢 Selesai</option>
+                        </select>
                     </div>
                     <input type="text" name="title" id="inpTitle" class="form-control fw-bold fs-4 border-0 px-0 mb-3" placeholder="Judul Pekerjaan..." required style="color: #0f172a; letter-spacing: -0.02em;">
                     <div class="desc-editor">
@@ -1178,8 +1352,10 @@ function format_text($text) {
                     <div class="mb-3" id="p-status-wrap">
                         <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Status Baru</label>
                         <select name="status" id="p-status" class="form-select bg-light border-0 fw-bold" style="border-radius: 12px; padding: 10px 14px; font-size: 0.88rem; color: #1e293b;">
-                            <option value="todo">⚪ Belum Mulai</option>
+                            <option value="pending_approval">🔵 Menunggu Approval (Kirim ke Pimpinan)</option>
                             <option value="in_progress">🟡 Dalam Proses</option>
+                            <option value="need_meeting">🔴 Meeting Ulang</option>
+                            <option value="todo">⚪ Belum Mulai</option>
                             <option value="done">🟢 Selesai</option>
                         </select>
                     </div>
@@ -1197,6 +1373,33 @@ function format_text($text) {
                     </div>
                 </form>
                 <button class="btn btn-3d-primary w-100 rounded-pill py-2 mt-2" onclick="saveProgress()" style="font-size: 0.92rem;"><i class="bi bi-check2-circle me-1"></i> Simpan Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Instruksi Meeting Ulang -->
+<div class="modal fade" id="rejectModal" tabindex="-1" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header border-0 px-4 pt-4 pb-2" style="background: #ffffff;">
+                <div class="d-flex align-items-center gap-2">
+                    <span style="width: 36px; height: 36px; border-radius: 12px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;"><i class="bi bi-arrow-repeat"></i></span>
+                    <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 1.05rem;">Instruksi Meeting Ulang</h6>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4 pt-2" style="background: #ffffff;">
+                <p class="text-muted small mb-3">Tuliskan arahan / catatan hal yang perlu dibahas ulang oleh tim untuk pekerjaan: <br><strong id="reject-job-title" class="text-dark"></strong></p>
+                <input type="hidden" id="reject-job-id">
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Catatan / Alasan Meeting Ulang</label>
+                    <textarea id="reject-notes" class="form-control bg-light border-0" rows="4" placeholder="Contoh: Skema diskon perlu disesuaikan dengan profit margin, jadwalkan meeting ulang hari Senin..." style="border-radius: 14px; padding: 12px 14px; font-size: 0.88rem; color: #1e293b; resize: none;"></textarea>
+                </div>
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" style="font-size: 0.88rem;">Batal</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm" onclick="submitRejectJob()" style="font-size: 0.88rem;"><i class="bi bi-send-fill me-1"></i> Kirim Meeting Ulang</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1282,19 +1485,62 @@ function openDetail(id){
             // 3D Status Badges
             let sc = {
                 todo: {class:'badge-3d-todo', label:'Belum Mulai'},
-                in_progress: {class:'badge-3d-progress', label:'Dalam Proses'},
-                done: {class:'badge-3d-done', label:'Selesai'}
+                in_progress: {class: j.approval_by ? 'badge-3d-done' : 'badge-3d-progress', label: j.approval_by ? 'Lanjut Kerjakan' : 'On Progress'},
+                done: {class:'badge-3d-done', label:'Selesai'},
+                pending_approval: {class:'badge-3d-pending', label:'Menunggu Approval'},
+                need_meeting: {class:'badge-3d-meeting', label:'Meeting Ulang'}
             };
             let s = sc[j.status] || sc.todo;
             $('#d-status-badge').html(`<span class="badge-3d-status ${s.class}"><span class="pulse-dot"></span> ${s.label}</span>`);
+
+            // Approver Quick Actions in Modal Header
+            if (res.is_approver && j.status === 'pending_approval') {
+                let safeTitle = (j.title || '').replace(/'/g, "\\'");
+                $('#d-approval-actions').html(`
+                    <button class="btn-quick-approve" onclick="approveJob(${j.id}, event)" title="Setujui (Lanjut Kerjakan)">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn-quick-reject" onclick="openRejectModal(${j.id}, '${safeTitle}', event)" title="Meeting Ulang (Tidak Approve)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                `).show();
+            } else {
+                $('#d-approval-actions').hide().empty();
+            }
+
+            // Approval Banner above Title
+            let approvalBanner = '';
+            if (j.status === 'need_meeting') {
+                let noteText = j.approval_notes ? formatText(j.approval_notes) : 'Harap jadwalkan pembahasan ulang dengan pimpinan.';
+                approvalBanner = `
+                    <div class="p-3 mb-3 rounded-4 d-flex align-items-start gap-3" style="background:#fff1f2; border:1px solid #fecdd3;">
+                        <span style="width:32px; height:32px; border-radius:10px; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                        <div>
+                            <div class="fw-bold" style="color:#9f1239; font-size:0.9rem;">Instruksi Pimpinan (Perlu Meeting Ulang)</div>
+                            <div class="mt-1" style="color:#881337; font-size:0.86rem; line-height:1.5;">${noteText}</div>
+                        </div>
+                    </div>`;
+            } else if (j.approval_by && j.status === 'in_progress') {
+                approvalBanner = `
+                    <div class="p-2 px-3 mb-3 rounded-4 d-flex align-items-center gap-2" style="background:#ecfdf5; border:1px solid #a7f3d0; font-size:0.83rem; color:#065f46;">
+                        <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                        <span>Disetujui oleh <b>${j.approver_name || 'Pimpinan'}</b> ${j.approval_at_fmt ? 'pada ' + j.approval_at_fmt : ''} &bull; <strong>Lanjut Kerjakan</strong></span>
+                    </div>`;
+            }
+            $('#d-approval-banner').html(approvalBanner);
             
             // 3D Timeline Stepper
             let th=''; 
             if(res.history.length){ 
                 th += '<div class="ps-1">';
                 res.history.forEach((h, i)=>{ 
-                    let sClass = h.status_after === 'done' ? 'badge-3d-done' : (h.status_after === 'in_progress' ? 'badge-3d-progress' : 'badge-3d-todo');
-                    let dotColor = h.status_after === 'done' ? '#10b981' : (h.status_after === 'in_progress' ? '#f59e0b' : '#94a3b8');
+                    let sClass = 'badge-3d-todo';
+                    let dotColor = '#94a3b8';
+                    let sLabel = h.status_after;
+                    if (h.status_after === 'done') { sClass = 'badge-3d-done'; dotColor = '#10b981'; sLabel = 'Selesai'; }
+                    else if (h.status_after === 'in_progress') { sClass = 'badge-3d-progress'; dotColor = '#f59e0b'; sLabel = 'On Progress'; }
+                    else if (h.status_after === 'pending_approval') { sClass = 'badge-3d-pending'; dotColor = '#0284c7'; sLabel = 'Menunggu Approval'; }
+                    else if (h.status_after === 'need_meeting') { sClass = 'badge-3d-meeting'; dotColor = '#ef4444'; sLabel = 'Meeting Ulang'; }
                     
                     // Render progress attachments HTML
                     let pattHtml = '';
@@ -1320,7 +1566,7 @@ function openDetail(id){
                                 <span class="fw-bold" style="font-size:0.88rem; color:#0f172a;">${h.name}</span>
                                 <small style="font-size:0.72rem; color:#94a3b8;">${h.date}</small>
                             </div>
-                            <span class="badge-3d-status ${sClass} my-1" style="font-size:0.65rem; padding:3px 8px;"><span class="pulse-dot" style="width:5px;height:5px;"></span> ${h.status_after}</span>
+                            <span class="badge-3d-status ${sClass} my-1" style="font-size:0.65rem; padding:3px 8px;"><span class="pulse-dot" style="width:5px;height:5px;"></span> ${sLabel}</span>
                             ${h.notes ? `<div class="mt-2 mb-0" style="font-size:0.88rem; color:#334155; line-height:1.6;">${formatText(h.notes)}</div>` : ''}
                             ${pattHtml}
                         </div>
@@ -1500,6 +1746,53 @@ function deleteExistingAttachment(id) {
             }
         }, 'json');
     }
+}
+
+function approveJob(id, e) {
+    if (e) e.stopPropagation();
+    if (!confirm('Apakah Anda yakin menyetujui pekerjaan ini untuk dilanjutkan kerjakan?')) return;
+    toggleLoading(true);
+    $.post('ajax_action.php', {action: 'approve_job', job_id: id}, function(res) {
+        toggleLoading(false);
+        if (res.status === 'success') {
+            location.reload();
+        } else {
+            alert(res.message || 'Gagal menyetujui pekerjaan.');
+        }
+    }, 'json').fail(function() {
+        toggleLoading(false);
+        alert('Terjadi kesalahan koneksi server.');
+    });
+}
+
+function openRejectModal(id, title, e) {
+    if (e) e.stopPropagation();
+    $('#reject-job-id').val(id);
+    $('#reject-job-title').text(title || 'Pekerjaan #' + id);
+    $('#reject-notes').val('');
+    new bootstrap.Modal('#rejectModal').show();
+}
+
+function submitRejectJob() {
+    let id = $('#reject-job-id').val();
+    let notes = $('#reject-notes').val().trim();
+    if (!notes) {
+        alert('Mohon tuliskan instruksi atau alasan meeting ulang terlebih dahulu.');
+        $('#reject-notes').focus();
+        return;
+    }
+    toggleLoading(true);
+    $.post('ajax_action.php', {action: 'reject_job', job_id: id, notes: notes}, function(res) {
+        toggleLoading(false);
+        if (res.status === 'success') {
+            location.reload();
+        } else {
+            alert(res.message || 'Gagal memproses penolakan.');
+        }
+    }, 'json').fail(function() {
+        toggleLoading(false);
+        alert('Terjadi kesalahan koneksi server.');
+    });
 }
 
 function deletePost(id){ if(confirm('Yakin hapus?')) $.post('ajax_action.php', {action:'delete_post', job_id:id}, function(){ location.reload(); }); }
@@ -2040,6 +2333,13 @@ $(document).ready(()=>{
         heroContainer.addEventListener('mouseleave', function() {
             heroCard.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
         });
+    }
+
+    // Auto-open job modal if job_id parameter is present in URL (e.g. from email notification)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetJobId = urlParams.get('job_id');
+    if (targetJobId) {
+        openDetail(parseInt(targetJobId));
     }
 });</script>
 

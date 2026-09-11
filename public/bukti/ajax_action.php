@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/db.php';
+require_once __DIR__ . '/../../src/send_email.php';
 header('Content-Type: application/json');
 
 date_default_timezone_set('Asia/Jakarta');
@@ -10,6 +11,32 @@ $action = $_POST['action'] ?? $_GET['action'] ?? '';
 function write_log($conn, $user_id, $act, $desc) {
     $conn->prepare("INSERT INTO bukti_logs (user_id, action, description, ip_address) VALUES (?, ?, ?, ?)")
          ->execute([$user_id, $act, $desc, $_SERVER['REMOTE_ADDR']]);
+}
+
+function notify_approver_approval_request($conn, $job_id, $job_title, $job_desc, $requester_id) {
+    try {
+        $approver_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE id = 1 LIMIT 1");
+        $approver_stmt->execute();
+        $approver = $approver_stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$approver) {
+            $approver_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE role = 'admin' LIMIT 1");
+            $approver_stmt->execute();
+            $approver = $approver_stmt->fetch(PDO::FETCH_ASSOC);
+        }
+        if ($approver) {
+            // In-app notification
+            $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_request')")
+                 ->execute([$approver['id'], $requester_id, $job_id]);
+                 
+            // Requester name
+            $u = $conn->prepare("SELECT name FROM users WHERE id = ?");
+            $u->execute([$requester_id]);
+            $req_name = $u->fetchColumn() ?: 'Staf';
+
+            // Send Email
+            @sendApprovalRequestEmail($approver['email'], $approver['name'], $req_name, $job_title, $job_desc, $job_id);
+        }
+    } catch (Exception $e) {}
 }
 
 // --- FUNGSI HELPER UPLOAD (FIX MASALAH 1 & 2) ---
@@ -62,6 +89,12 @@ if ($action == 'create_post') {
         }
 
         write_log($conn, $user_id, 'CREATE_JOB', "Membuat pekerjaan: " . $_POST['title']);
+        
+        // Trigger Notifikasi & Email Approval jika status 'pending_approval'
+        if ($_POST['status'] === 'pending_approval') {
+            notify_approver_approval_request($conn, $job_id, $_POST['title'], $_POST['description'], $user_id);
+        }
+
         $conn->commit();
         echo json_encode(['status'=>'success']);
     } catch (Exception $e) {
@@ -83,6 +116,11 @@ if ($action == 'edit_post') {
         // Handle Uploads saat Edit (Fix Masalah 1)
         if (isset($_FILES['files'])) {
             process_uploads($conn, $job_id, $_FILES['files']);
+        }
+
+        // Trigger Notifikasi & Email Approval jika status 'pending_approval'
+        if ($_POST['status'] === 'pending_approval') {
+            notify_approver_approval_request($conn, $job_id, $_POST['title'], $_POST['description'], $user_id);
         }
 
         write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id);
@@ -129,8 +167,102 @@ if ($action == 'update_progress') {
         process_uploads($conn, $job_id, $_FILES['files'], $progress_id);
     }
 
+    // Trigger Notifikasi & Email Approval jika update status ke 'pending_approval'
+    if ($status === 'pending_approval') {
+        $update_desc = $job['description'] . "\n\n[Update Progres]: " . $notes;
+        notify_approver_approval_request($conn, $job_id, $job['title'], $update_desc, $user_id);
+    }
+
     write_log($conn, $user_id, 'UPDATE_PROGRESS', "Update status '{$job['title']}' ke $status");
     echo json_encode(['status' => 'success']);
+    exit;
+}
+
+if ($action == 'approve_job') {
+    $job_id = (int)$_POST['job_id'];
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1);
+    if (!$is_admin) {
+        echo json_encode(['status' => 'error', 'message' => 'Hanya Pimpinan / Admin yang berhak menyetujui pekerjaan']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT j.*, u.name as creator_name, u.email as creator_email FROM bukti_jobs j JOIN users u ON j.user_id = u.id WHERE j.id = ?");
+    $stmt->execute([$job_id]);
+    $job = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$job) {
+        echo json_encode(['status' => 'error', 'message' => 'Pekerjaan tidak ditemukan']);
+        exit;
+    }
+
+    // Update status to in_progress (Lanjut Kerjakan) with approval fields
+    $up = $conn->prepare("UPDATE bukti_jobs SET status = 'in_progress', approval_by = ?, approval_at = NOW(), approval_notes = NULL WHERE id = ?");
+    $up->execute([$user_id, $job_id]);
+
+    // Log to progress timeline
+    $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, 'in_progress', ?)")
+         ->execute([$job_id, $user_id, $job['status'], 'Disetujui oleh Pimpinan (Lanjut Kerjakan)']);
+
+    write_log($conn, $user_id, 'APPROVE_JOB', "Menyetujui pekerjaan '{$job['title']}' (Lanjut Kerjakan)");
+
+    // In-app notification to creator
+    $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_approved')")
+         ->execute([$job['user_id'], $user_id, $job_id]);
+
+    // Send email feedback to creator
+    $approver_name = $_SESSION['name'] ?? 'Pimpinan';
+    if (!empty($job['creator_email'])) {
+        @sendApprovalResultEmail($job['creator_email'], $job['creator_name'], $approver_name, $job['title'], 'approved', '', $job_id);
+    }
+
+    echo json_encode(['status' => 'success', 'message' => 'Pekerjaan berhasil disetujui (Lanjut Kerjakan)']);
+    exit;
+}
+
+if ($action == 'reject_job') {
+    $job_id = (int)$_POST['job_id'];
+    $notes = trim($_POST['notes'] ?? '');
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1);
+    if (!$is_admin) {
+        echo json_encode(['status' => 'error', 'message' => 'Hanya Pimpinan / Admin yang berhak menolak / meminta meeting ulang']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT j.*, u.name as creator_name, u.email as creator_email FROM bukti_jobs j JOIN users u ON j.user_id = u.id WHERE j.id = ?");
+    $stmt->execute([$job_id]);
+    $job = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$job) {
+        echo json_encode(['status' => 'error', 'message' => 'Pekerjaan tidak ditemukan']);
+        exit;
+    }
+
+    // Update status to need_meeting with approval notes
+    $up = $conn->prepare("UPDATE bukti_jobs SET status = 'need_meeting', approval_by = ?, approval_at = NOW(), approval_notes = ? WHERE id = ?");
+    $up->execute([$user_id, $notes, $job_id]);
+
+    $progress_note = "Meeting Ulang (Tidak Approve)" . ($notes ? ": " . $notes : "");
+    $conn->prepare("INSERT INTO bukti_job_progress (job_id, user_id, status_before, status_after, notes) VALUES (?, ?, ?, 'need_meeting', ?)")
+         ->execute([$job_id, $user_id, $job['status'], $progress_note]);
+
+    // Insert into discussion comments so everyone sees the instruction
+    $comm_content = "⚠️ **INSTRUKSI PIMPINAN: PERLU MEETING ULANG**\n" . ($notes ?: "Harap jadwalkan pembahasan ulang dengan pimpinan.");
+    $conn->prepare("INSERT INTO bukti_comments (job_id, user_id, content) VALUES (?, ?, ?)")
+         ->execute([$job_id, $user_id, $comm_content]);
+
+    write_log($conn, $user_id, 'REJECT_JOB', "Meminta meeting ulang untuk '{$job['title']}': $notes");
+
+    // In-app notification to creator
+    $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_rejected')")
+         ->execute([$job['user_id'], $user_id, $job_id]);
+
+    // Send email feedback to creator
+    $approver_name = $_SESSION['name'] ?? 'Pimpinan';
+    if (!empty($job['creator_email'])) {
+        @sendApprovalResultEmail($job['creator_email'], $job['creator_name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
+    }
+
+    echo json_encode(['status' => 'success', 'message' => 'Status berhasil diubah menjadi Meeting Ulang']);
     exit;
 }
 
@@ -250,6 +382,7 @@ if ($action == 'fetch_detail') {
     } catch(Exception $e) {}
     
     $stmt = $conn->prepare("SELECT j.*, u.name, u.avatar, u.jabatan,
+        (SELECT name FROM users WHERE id = j.approval_by) as approver_name,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id) as like_count,
         (SELECT COUNT(*) FROM bukti_reactions WHERE job_id = j.id AND user_id = ?) as is_liked
         FROM bukti_jobs j JOIN users u ON j.user_id = u.id WHERE j.id = ?");
@@ -257,6 +390,7 @@ if ($action == 'fetch_detail') {
     $job = $stmt->fetch(PDO::FETCH_ASSOC);
     $job['avatar_url'] = $job['avatar'] && file_exists("assets/img/avatars/".$job['avatar']) ? "assets/img/avatars/".$job['avatar'] : "https://ui-avatars.com/api/?name=".urlencode($job['name']);
     $job['date_fmt'] = tgl_indo($job['created_at']);
+    $job['approval_at_fmt'] = !empty($job['approval_at']) ? tgl_indo($job['approval_at']) : null;
     
     $prog = $conn->prepare("SELECT p.*, u.name FROM bukti_job_progress p JOIN users u ON p.user_id = u.id WHERE job_id = ? ORDER BY created_at DESC");
     $prog->execute([$job_id]);
@@ -314,6 +448,7 @@ if ($action == 'fetch_detail') {
         'attachments'=> $att->fetchAll(PDO::FETCH_ASSOC),
         'is_owner'   => ($job['user_id'] == $user_id),
         'is_tagged'  => $is_tagged,
+        'is_approver'=> (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1),
         'viewers'    => $viewers,
         'view_count' => (int)$view_count->fetchColumn()
     ]);
