@@ -1,8 +1,8 @@
 <?php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'center_id_giti'); 
-define('DB_USER', 'root'); 
-define('DB_PASS', ''); 
+define('DB_USER', 'center_id_giti'); 
+define('DB_PASS', 'pTxriSwn5ECcRPBN'); 
 
 try {
     $conn = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
