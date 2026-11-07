@@ -1075,7 +1075,16 @@ function format_text($text) {
 
 <div id="loading-overlay" style="display: none;">
     <span class="loader"></span>
-    <p class="mt-3 fw-bold" style="color: #eab308;">Sedang memproses data...</p>
+    <p id="loading-text" class="mt-3 fw-bold mb-2 text-center" style="color: #eab308; font-size: 1.05rem;">Sedang memproses data...</p>
+    <div id="loading-progress-wrap" class="w-100 px-3" style="max-width: 320px; display: none;">
+        <div class="progress" style="height: 10px; border-radius: 999px; background: rgba(245,158,11,0.2); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);">
+            <div id="loading-progress-bar" class="progress-bar bg-warning progress-bar-striped progress-bar-animated" style="width: 0%; transition: width 0.15s ease;"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-2" style="font-size: 0.78rem; color: #64748b;">
+            <span id="loading-progress-bytes">0 MB / 0 MB</span>
+            <span id="loading-progress-percent" class="fw-bold text-warning">0%</span>
+        </div>
+    </div>
 </div>
 
 <div class="main-wrapper">
@@ -1737,18 +1746,50 @@ let curJob = null;
 let selectedFiles = []; 
 let progressFiles = []; 
 
-function toggleLoading(show) { if(show) $('#loading-overlay').css('display', 'flex'); else $('#loading-overlay').hide(); }
+const MAX_FILE_SIZE_MB = 25;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+function filterValidFiles(fileList) {
+    const valid = [];
+    for (let f of fileList) {
+        if (f.size > MAX_FILE_SIZE_BYTES) {
+            alert(`File "${f.name}" terlalu besar (${(f.size / (1024*1024)).toFixed(1)} MB).\nMaksimal ukuran file yang diizinkan adalah ${MAX_FILE_SIZE_MB} MB per file.`);
+        } else {
+            valid.push(f);
+        }
+    }
+    return valid;
+}
+
+function toggleLoading(show, text = 'Sedang memproses data...', showProgress = false) {
+    const overlay = $('#loading-overlay');
+    if(show) {
+        $('#loading-text').text(text);
+        if (showProgress) {
+            $('#loading-progress-bar').css('width', '0%');
+            $('#loading-progress-percent').text('0%');
+            $('#loading-progress-bytes').text('');
+            $('#loading-progress-wrap').show();
+        } else {
+            $('#loading-progress-wrap').hide();
+        }
+        overlay.css('display', 'flex');
+    } else {
+        overlay.hide();
+        $('#loading-progress-wrap').hide();
+    }
+}
 
 // --- UPLOADS ---
 $('#fileInput').on('change', function(e) {
-    const files = Array.from(e.target.files);
+    const files = filterValidFiles(Array.from(e.target.files));
     selectedFiles = selectedFiles.concat(files);
     updatePreviews('file-preview-container', selectedFiles, 'selectedFiles');
     $(this).val('');
 });
 
 $('#progressFileInput').on('change', function(e) {
-    const files = Array.from(e.target.files);
+    const files = filterValidFiles(Array.from(e.target.files));
     progressFiles = progressFiles.concat(files);
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
     $(this).val('');
@@ -2018,18 +2059,126 @@ function editComment(id, old){ let n=prompt("Edit:", old); if(n!==null && n.trim
 
 function saveProgress(){
     let fd = new FormData($('#formProgress')[0]); fd.append('action', 'update_progress');
-    fd.delete('files[]'); progressFiles.forEach((f) => { fd.append('files[]', f); });
-    toggleLoading(true);
-    $.ajax({url:'ajax_action.php', type:'POST', data:fd, contentType:false, processData:false, success:function(){ location.reload(); }, error: function(){ toggleLoading(false); alert('Error'); }});
+    fd.delete('files[]');
+    let hasFiles = progressFiles.length > 0;
+    progressFiles.forEach((f) => { fd.append('files[]', f); });
+    
+    toggleLoading(true, hasFiles ? 'Mengunggah update... 0%' : 'Menyimpan progres...', hasFiles);
+    
+    $.ajax({
+        url: 'ajax_action.php',
+        type: 'POST',
+        data: fd,
+        contentType: false,
+        processData: false,
+        dataType: 'json',
+        timeout: 120000,
+        xhr: function() {
+            let xhr = new window.XMLHttpRequest();
+            if (hasFiles && xhr.upload) {
+                xhr.upload.addEventListener('progress', function(evt) {
+                    if (evt.lengthComputable) {
+                        let percent = Math.round((evt.loaded / evt.total) * 100);
+                        let loadedMb = (evt.loaded / (1024 * 1024)).toFixed(1);
+                        let totalMb = (evt.total / (1024 * 1024)).toFixed(1);
+                        $('#loading-progress-bar').css('width', percent + '%');
+                        $('#loading-progress-percent').text(percent + '%');
+                        $('#loading-progress-bytes').text(loadedMb + ' MB / ' + totalMb + ' MB');
+                        if (percent < 100) {
+                            $('#loading-text').text('Mengunggah file... ' + percent + '%');
+                        } else {
+                            $('#loading-text').text('Menyimpan data di server...');
+                        }
+                    }
+                }, false);
+            }
+            return xhr;
+        },
+        success: function(d) {
+            if (d && d.status === 'success') {
+                location.reload();
+            } else {
+                toggleLoading(false);
+                alert((d && d.message) ? d.message : 'Gagal menyimpan progres.');
+            }
+        },
+        error: function(xhr, status) {
+            toggleLoading(false);
+            if (status === 'timeout') {
+                alert('Waktu unggah habis (Timeout). Koneksi lambat atau ukuran file terlalu besar.');
+            } else {
+                let msg = 'Terjadi kesalahan pada server saat memproses data.';
+                try {
+                    let res = JSON.parse(xhr.responseText);
+                    if (res && res.message) msg = res.message;
+                } catch(e) {}
+                alert(msg);
+            }
+        }
+    });
 }
 
 function submitJob(){
     syncDesc(); // Sync rich editor → hidden textarea
     let form = document.getElementById('formJob'); let fd = new FormData(form);
     if(!fd.get('title')) { alert('Judul wajib diisi!'); return; }
-    fd.delete('files[]'); selectedFiles.forEach((file) => { fd.append('files[]', file); });
-    toggleLoading(true);
-    $.ajax({url:'ajax_action.php', type:'POST', data:fd, contentType:false, processData:false, dataType:'json', success:function(d){ if(d.status=='success') location.reload(); else { toggleLoading(false); alert(d.message); } }, error:function(){ toggleLoading(false); alert('Error server'); }});
+    fd.delete('files[]');
+    let hasFiles = selectedFiles.length > 0;
+    selectedFiles.forEach((file) => { fd.append('files[]', file); });
+    
+    toggleLoading(true, hasFiles ? 'Mengunggah berkas... 0%' : 'Menyimpan pekerjaan...', hasFiles);
+    
+    $.ajax({
+        url: 'ajax_action.php',
+        type: 'POST',
+        data: fd,
+        contentType: false,
+        processData: false,
+        dataType: 'json',
+        timeout: 120000,
+        xhr: function() {
+            let xhr = new window.XMLHttpRequest();
+            if (hasFiles && xhr.upload) {
+                xhr.upload.addEventListener('progress', function(evt) {
+                    if (evt.lengthComputable) {
+                        let percent = Math.round((evt.loaded / evt.total) * 100);
+                        let loadedMb = (evt.loaded / (1024 * 1024)).toFixed(1);
+                        let totalMb = (evt.total / (1024 * 1024)).toFixed(1);
+                        $('#loading-progress-bar').css('width', percent + '%');
+                        $('#loading-progress-percent').text(percent + '%');
+                        $('#loading-progress-bytes').text(loadedMb + ' MB / ' + totalMb + ' MB');
+                        if (percent < 100) {
+                            $('#loading-text').text('Mengunggah file... ' + percent + '%');
+                        } else {
+                            $('#loading-text').text('Menyimpan data di server...');
+                        }
+                    }
+                }, false);
+            }
+            return xhr;
+        },
+        success: function(d) {
+            if(d && d.status === 'success') {
+                location.reload();
+            } else {
+                toggleLoading(false);
+                alert((d && d.message) ? d.message : 'Gagal menyimpan pekerjaan.');
+            }
+        },
+        error: function(xhr, status) {
+            toggleLoading(false);
+            if (status === 'timeout') {
+                alert('Waktu unggah habis (Timeout). Koneksi lambat atau ukuran file terlalu besar.');
+            } else {
+                let msg = 'Terjadi kesalahan server saat memproses pekerjaan.';
+                try {
+                    let res = JSON.parse(xhr.responseText);
+                    if (res && res.message) msg = res.message;
+                } catch(e) {}
+                alert(msg);
+            }
+        }
+    });
 }
 
 function openEditModal(id){
@@ -2491,7 +2640,7 @@ function setupDropZone(zoneId, fileInputId, fileArray, arrayName, containerId) {
     
     zone.addEventListener('drop', function(e) {
         const dt = e.dataTransfer;
-        const files = Array.from(dt.files);
+        const files = filterValidFiles(Array.from(dt.files));
         if (arrayName === 'selectedFiles') {
             selectedFiles = selectedFiles.concat(files);
             updatePreviews(containerId, selectedFiles, 'selectedFiles');

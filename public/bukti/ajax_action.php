@@ -5,8 +5,38 @@ header('Content-Type: application/json');
 
 date_default_timezone_set('Asia/Jakarta');
 
+// Check if request exceeded post_max_size (which wipes $_POST and $_FILES in PHP)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && isset($_SERVER['CONTENT_LENGTH']) && $_SERVER['CONTENT_LENGTH'] > 0) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Ukuran total file melebihi batas maksimal server (post_max_size). Silakan kurangi ukuran atau jumlah file.'
+    ]);
+    exit;
+}
+
 $user_id = $_SESSION['user_id'];
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+// Helper to flush JSON response to browser immediately without waiting for slow operations like SMTP
+function send_instant_success_response($data = ['status' => 'success']) {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    ob_start();
+    echo json_encode($data);
+    $size = ob_get_length();
+    header("Content-Type: application/json");
+    header("Content-Length: $size");
+    header("Connection: close");
+    ob_end_flush();
+    @flush();
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+}
 
 function write_log($conn, $user_id, $act, $desc) {
     $conn->prepare("INSERT INTO bukti_logs (user_id, action, description, ip_address) VALUES (?, ?, ?, ?)")
@@ -148,20 +178,23 @@ if ($action == 'create_post') {
             process_uploads($conn, $job_id, $_FILES['files']);
         }
 
-        // Tagging Notif & Email
-        notify_tagged_users($conn, $user_id, $job_id, $_POST['title'], $_POST['description'], 'job');
-
         write_log($conn, $user_id, 'CREATE_JOB', "Membuat pekerjaan: " . $_POST['title']);
+        $conn->commit();
+
+        // Kirim respon sukses langsung ke browser (modal tertutup/reload seketika tanpa menunggu SMTP)
+        send_instant_success_response(['status' => 'success']);
+
+        // Tagging Notif & Email di background
+        notify_tagged_users($conn, $user_id, $job_id, $_POST['title'], $_POST['description'], 'job');
         
         // Trigger Notifikasi & Email Approval jika status 'pending_approval'
         if ($_POST['status'] === 'pending_approval') {
             notify_approver_approval_request($conn, $job_id, $_POST['title'], $_POST['description'], $user_id);
         }
-
-        $conn->commit();
-        echo json_encode(['status'=>'success']);
     } catch (Exception $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         echo json_encode(['status'=>'error', 'message'=>$e->getMessage()]);
     }
     exit;
@@ -183,16 +216,18 @@ if ($action == 'edit_post') {
             process_uploads($conn, $job_id, $_FILES['files']);
         }
 
-        // Tagging Notif & Email
+        write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id . ($is_admin && $author_id != $user_id ? " (oleh Admin)" : ""));
+
+        // Kirim respon sukses langsung ke browser
+        send_instant_success_response(['status' => 'success']);
+
+        // Tagging Notif & Email di background
         notify_tagged_users($conn, $user_id, $job_id, $_POST['title'], $_POST['description'], 'job');
 
         // Trigger Notifikasi & Email Approval jika status 'pending_approval'
         if ($_POST['status'] === 'pending_approval') {
             notify_approver_approval_request($conn, $job_id, $_POST['title'], $_POST['description'], $user_id);
         }
-
-        write_log($conn, $user_id, 'EDIT_JOB', "Edit pekerjaan ID: " . $job_id . ($is_admin && $author_id != $user_id ? " (oleh Admin)" : ""));
-        echo json_encode(['status' => 'success']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Akses ditolak']);
     }
@@ -236,19 +271,14 @@ if ($action == 'update_progress') {
         process_uploads($conn, $job_id, $_FILES['files'], $progress_id);
     }
 
-    // Trigger Notifikasi & Email Approval jika update status ke 'pending_approval'
-    if ($status === 'pending_approval') {
-        $update_desc = $job['description'] . "\n\n[Update Progres]: " . $notes;
-        notify_approver_approval_request($conn, $job_id, $job['title'], $update_desc, $user_id);
-    }
+    write_log($conn, $user_id, 'UPDATE_PROGRESS', "Update status '{$job['title']}' ke $status");
 
-    // Kirim notifikasi in-app & email update progress ke creator & seluruh user yang di-tag
+    // Kirim notifikasi in-app ke creator & seluruh user yang di-tag
     $recipients = get_job_recipients($conn, $job_id, null);
     $note_tagged = get_tagged_users_from_text($conn, $notes, null);
     foreach ($note_tagged as $nt) {
         $recipients[] = $nt;
     }
-    // Deduplicate by ID
     $unique_recipients = [];
     foreach ($recipients as $r) {
         $unique_recipients[$r['id']] = $r;
@@ -263,14 +293,22 @@ if ($action == 'update_progress') {
             $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'comment')")
                  ->execute([$rec['id'], $user_id, $job_id]);
         } catch (Exception $e) {}
+    }
 
+    // Kirim respon sukses langsung ke browser tanpa menunggu SMTP
+    send_instant_success_response(['status' => 'success']);
+
+    // Trigger Notifikasi & Email Approval jika update status ke 'pending_approval' (background)
+    if ($status === 'pending_approval') {
+        $update_desc = $job['description'] . "\n\n[Update Progres]: " . $notes;
+        notify_approver_approval_request($conn, $job_id, $job['title'], $update_desc, $user_id);
+    }
+
+    foreach ($unique_recipients as $rec) {
         if (!empty($rec['email'])) {
             @sendProgressUpdateEmail($rec['email'], $rec['name'], $actor_name, $job['title'], $job['status'], $status, $notes, $job_id);
         }
     }
-
-    write_log($conn, $user_id, 'UPDATE_PROGRESS', "Update status '{$job['title']}' ke $status");
-    echo json_encode(['status' => 'success']);
     exit;
 }
 
@@ -310,13 +348,16 @@ if ($action == 'approve_job') {
             $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_approved')")
                  ->execute([$rec['id'], $user_id, $job_id]);
         } catch (Exception $e) {}
+    }
 
+    // Kirim respon sukses langsung ke browser tanpa menunggu SMTP
+    send_instant_success_response(['status' => 'success', 'message' => 'Pekerjaan berhasil disetujui (Lanjut Kerjakan)']);
+
+    foreach ($recipients as $rec) {
         if (!empty($rec['email'])) {
             @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'approved', '', $job_id);
         }
     }
-
-    echo json_encode(['status' => 'success', 'message' => 'Pekerjaan berhasil disetujui (Lanjut Kerjakan)']);
     exit;
 }
 
@@ -362,13 +403,16 @@ if ($action == 'reject_job') {
             $conn->prepare("INSERT INTO bukti_notifications (user_id, actor_id, job_id, type) VALUES (?, ?, ?, 'approval_rejected')")
                  ->execute([$rec['id'], $user_id, $job_id]);
         } catch (Exception $e) {}
+    }
 
+    // Kirim respon sukses langsung ke browser tanpa menunggu SMTP
+    send_instant_success_response(['status' => 'success', 'message' => 'Status berhasil diubah menjadi Meeting Ulang']);
+
+    foreach ($recipients as $rec) {
         if (!empty($rec['email'])) {
             @sendApprovalResultEmail($rec['email'], $rec['name'], $approver_name, $job['title'], 'need_meeting', $notes, $job_id);
         }
     }
-
-    echo json_encode(['status' => 'success', 'message' => 'Status berhasil diubah menjadi Meeting Ulang']);
     exit;
 }
 

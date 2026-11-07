@@ -31,7 +31,8 @@ function sendOTP($toEmail, $otpCode, $userName) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
-        $mail->Timeout    = 15;
+        $mail->Timeout    = 5;
+        $mail->Timelimit  = 5;
         $mail->SMTPOptions = [
             'ssl' => [
                 'verify_peer' => false,
@@ -85,7 +86,8 @@ function sendApprovalRequestEmail($toEmail, $approverName, $requesterName, $jobT
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
-        $mail->Timeout    = 15;
+        $mail->Timeout    = 5;
+        $mail->Timelimit  = 5;
         $mail->SMTPOptions = [
             'ssl' => [
                 'verify_peer' => false,
@@ -166,7 +168,8 @@ function sendApprovalResultEmail($toEmail, $recipientName, $approverName, $jobTi
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
-        $mail->Timeout    = 15;
+        $mail->Timeout    = 5;
+        $mail->Timelimit  = 5;
         $mail->SMTPOptions = [
             'ssl' => [
                 'verify_peer' => false,
@@ -262,7 +265,8 @@ function sendTagNotificationEmail($toEmail, $recipientName, $actorName, $jobTitl
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
-        $mail->Timeout    = 15;
+        $mail->Timeout    = 5;
+        $mail->Timelimit  = 5;
         $mail->SMTPOptions = [
             'ssl' => [
                 'verify_peer' => false,
@@ -339,7 +343,8 @@ function sendProgressUpdateEmail($toEmail, $recipientName, $actorName, $jobTitle
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
         $mail->CharSet    = 'UTF-8';
-        $mail->Timeout    = 15;
+        $mail->Timeout    = 5;
+        $mail->Timelimit  = 5;
         $mail->SMTPOptions = [
             'ssl' => [
                 'verify_peer' => false,
