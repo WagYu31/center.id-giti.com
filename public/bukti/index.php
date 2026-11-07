@@ -1567,7 +1567,7 @@ function format_text($text) {
                             <input type="file" id="fileInput" name="files[]" multiple hidden>
                             <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                             <div class="drop-text">Drag & drop file di sini, atau <strong onclick="document.getElementById('fileInput').click()">pilih file</strong></div>
-                            <div class="drop-hint">Foto, Video, PDF, Dokumen (maks. 10MB per file)</div>
+                            <div class="drop-hint">Foto, Video, PDF, Dokumen, APK (maks. 100MB per file)</div>
                         </div>
                         <div id="file-preview-container" class="preview-grid"></div>
                         
@@ -1746,7 +1746,7 @@ let curJob = null;
 let selectedFiles = []; 
 let progressFiles = []; 
 
-const MAX_FILE_SIZE_MB = 25;
+const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 function filterValidFiles(fileList) {
@@ -2072,7 +2072,7 @@ function saveProgress(){
         contentType: false,
         processData: false,
         dataType: 'json',
-        timeout: 120000,
+        timeout: 300000,
         xhr: function() {
             let xhr = new window.XMLHttpRequest();
             if (hasFiles && xhr.upload) {
@@ -2135,7 +2135,7 @@ function submitJob(){
         contentType: false,
         processData: false,
         dataType: 'json',
-        timeout: 120000,
+        timeout: 300000,
         xhr: function() {
             let xhr = new window.XMLHttpRequest();
             if (hasFiles && xhr.upload) {
