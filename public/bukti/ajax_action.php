@@ -312,6 +312,96 @@ if ($action == 'update_progress') {
     exit;
 }
 
+if ($action == 'edit_progress') {
+    $progress_id = (int)$_POST['progress_id'];
+    $job_id = (int)$_POST['job_id'];
+    $status = $_POST['status'];
+    $notes = trim($_POST['notes']);
+
+    $chk = $conn->prepare("SELECT p.*, j.user_id as job_user_id, j.title as job_title FROM bukti_job_progress p JOIN bukti_jobs j ON p.job_id = j.id WHERE p.id = ?");
+    $chk->execute([$progress_id]);
+    $prog = $chk->fetch();
+
+    if (!$prog) {
+        echo json_encode(['status' => 'error', 'message' => 'Data progres tidak ditemukan']);
+        exit;
+    }
+
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
+    $is_author = ($prog['user_id'] == $user_id);
+
+    if (!$is_author && !$is_admin) {
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak: Hanya pembuat catatan progres atau Admin yang dapat mengeditnya']);
+        exit;
+    }
+
+    // Update progress table
+    $conn->prepare("UPDATE bukti_job_progress SET status_after = ?, notes = ? WHERE id = ?")
+         ->execute([$status, $notes, $progress_id]);
+
+    // Check if this progress is the latest one for the job, and update job status accordingly
+    $latest_prog_id = $conn->query("SELECT id FROM bukti_job_progress WHERE job_id = $job_id ORDER BY created_at DESC, id DESC LIMIT 1")->fetchColumn();
+    if ($latest_prog_id == $progress_id) {
+        $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$status, $job_id]);
+    }
+
+    // Handle new uploads for this progress if any
+    if (isset($_FILES['files'])) {
+        process_uploads($conn, $job_id, $_FILES['files'], $progress_id);
+    }
+
+    write_log($conn, $user_id, 'EDIT_PROGRESS', "Edit progress ID {$progress_id} pada pekerjaan: {$prog['job_title']}");
+
+    send_instant_success_response(['status' => 'success']);
+    exit;
+}
+
+if ($action == 'delete_progress') {
+    $progress_id = (int)$_POST['progress_id'];
+
+    $chk = $conn->prepare("SELECT p.*, j.user_id as job_user_id, j.title as job_title FROM bukti_job_progress p JOIN bukti_jobs j ON p.job_id = j.id WHERE p.id = ?");
+    $chk->execute([$progress_id]);
+    $prog = $chk->fetch();
+
+    if (!$prog) {
+        echo json_encode(['status' => 'error', 'message' => 'Data progres tidak ditemukan']);
+        exit;
+    }
+
+    $job_id = $prog['job_id'];
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
+    $is_author = ($prog['user_id'] == $user_id);
+
+    if (!$is_author && !$is_admin) {
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak: Hanya pembuat catatan progres atau Admin yang dapat menghapusnya']);
+        exit;
+    }
+
+    // Delete attached physical files
+    $files_stmt = $conn->prepare("SELECT file_path FROM bukti_job_attachments WHERE progress_id = ?");
+    $files_stmt->execute([$progress_id]);
+    $files = $files_stmt->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($files as $f) {
+        $filepath = 'assets/uploads/bukti/' . $f;
+        if (file_exists($filepath)) {
+            @unlink($filepath);
+        }
+    }
+    $conn->prepare("DELETE FROM bukti_job_attachments WHERE progress_id = ?")->execute([$progress_id]);
+    $conn->prepare("DELETE FROM bukti_job_progress WHERE id = ?")->execute([$progress_id]);
+
+    // Recalculate latest status for the job
+    $latest = $conn->query("SELECT status_after FROM bukti_job_progress WHERE job_id = $job_id ORDER BY created_at DESC, id DESC LIMIT 1")->fetch();
+    if ($latest) {
+        $conn->prepare("UPDATE bukti_jobs SET status = ? WHERE id = ?")->execute([$latest['status_after'], $job_id]);
+    }
+
+    write_log($conn, $user_id, 'DELETE_PROGRESS', "Hapus progress ID {$progress_id} pada pekerjaan: {$prog['job_title']}");
+
+    echo json_encode(['status' => 'success']);
+    exit;
+}
+
 if ($action == 'approve_job') {
     $job_id = (int)$_POST['job_id'];
     $is_admin = (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1);
@@ -518,13 +608,17 @@ if ($action == 'like') {
 if ($action == 'delete_attachment') {
     $att_id = (int)$_POST['attachment_id'];
     
-    // Check ownership of the attachment via job owner
-    $check = $conn->prepare("SELECT a.file_path, j.user_id FROM bukti_job_attachments a JOIN bukti_jobs j ON a.job_id = j.id WHERE a.id = ?");
+    // Check ownership of the attachment via job owner OR progress owner
+    $check = $conn->prepare("SELECT a.file_path, a.progress_id, j.user_id as job_user_id, p.user_id as prog_user_id 
+        FROM bukti_job_attachments a 
+        JOIN bukti_jobs j ON a.job_id = j.id 
+        LEFT JOIN bukti_job_progress p ON a.progress_id = p.id 
+        WHERE a.id = ?");
     $check->execute([$att_id]);
     $data = $check->fetch();
     
     $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
-    if ($data && ($data['user_id'] == $user_id || $is_admin)) {
+    if ($data && ($data['job_user_id'] == $user_id || ($data['prog_user_id'] && $data['prog_user_id'] == $user_id) || $is_admin)) {
         // Physical file removal
         $filepath = 'assets/uploads/bukti/' . $data['file_path'];
         if (file_exists($filepath)) {
@@ -567,8 +661,10 @@ if ($action == 'fetch_detail') {
     $prog = $conn->prepare("SELECT p.*, u.name FROM bukti_job_progress p JOIN users u ON p.user_id = u.id WHERE job_id = ? ORDER BY created_at DESC");
     $prog->execute([$job_id]);
     $history = $prog->fetchAll(PDO::FETCH_ASSOC);
+    $is_admin = (($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || $user_id == 1);
     foreach($history as &$h) {
         $h['date'] = tgl_indo($h['created_at']);
+        $h['can_edit'] = ($h['user_id'] == $user_id || $is_admin);
         
         // Fetch attachments associated with this specific progress update
         $patts = $conn->prepare("SELECT * FROM bukti_job_attachments WHERE progress_id = ?");
@@ -621,6 +717,7 @@ if ($action == 'fetch_detail') {
         'is_owner'   => ($job['user_id'] == $user_id),
         'is_tagged'  => $is_tagged,
         'is_approver'=> (($_SESSION['role'] ?? '') === 'admin' || $user_id == 1),
+        'current_user_id' => $user_id,
         'viewers'    => $viewers,
         'view_count' => (int)$view_count->fetchColumn()
     ]);

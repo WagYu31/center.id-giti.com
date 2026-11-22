@@ -1596,6 +1596,8 @@ function format_text($text) {
             <div class="modal-body px-4 pb-4 pt-2" style="background: #ffffff;">
                 <form id="formProgress">
                     <input type="hidden" name="job_id" id="p-job-id">
+                    <input type="hidden" name="progress_id" id="p-progress-id">
+                    <input type="hidden" name="action_type" id="p-action-type" value="update_progress">
                     <div class="mb-3" id="p-status-wrap">
                         <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Status Baru</label>
                         <select name="status" id="p-status" class="form-select bg-light border-0 fw-bold" style="border-radius: 12px; padding: 10px 14px; font-size: 0.88rem; color: #1e293b;">
@@ -1610,6 +1612,13 @@ function format_text($text) {
                         <label class="small text-muted fw-bold mb-1" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Catatan <span class="fw-normal text-muted">(Ketik @ untuk tag)</span></label>
                         <textarea name="notes" id="p-notes" class="form-control bg-light border-0" rows="3" placeholder="Tuliskan catatan progres atau update..." style="border-radius: 14px; padding: 12px 14px; font-size: 0.88rem; color: #1e293b; resize: none;"></textarea>
                     </div>
+                    
+                    <!-- Lampiran yang sudah terupload (saat edit progres) -->
+                    <div id="progress-existing-files-container" class="mb-3" style="display:none;">
+                        <label class="small text-muted fw-bold mb-2" style="font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase;">Lampiran Yang Sudah Terupload</label>
+                        <div id="progress-existing-files-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    </div>
+
                     <div class="mb-3">
                         <div class="drop-zone" id="progressDropZone" style="padding: 20px 15px;">
                             <input type="file" id="progressFileInput" name="files[]" multiple hidden>
@@ -1619,7 +1628,7 @@ function format_text($text) {
                         <div id="progress-preview-container" class="preview-grid mt-2"></div>
                     </div>
                 </form>
-                <button class="btn btn-3d-primary w-100 rounded-pill py-2 mt-2" onclick="saveProgress()" style="font-size: 0.92rem;"><i class="bi bi-check2-circle me-1"></i> Simpan Update</button>
+                <button class="btn btn-3d-primary w-100 rounded-pill py-2 mt-2" id="p-btn-submit" onclick="saveProgress()" style="font-size: 0.92rem;"><i class="bi bi-check2-circle me-1"></i> Simpan Update</button>
             </div>
         </div>
     </div>
@@ -1913,6 +1922,7 @@ function openDetail(id){
             
             // 3D Timeline Stepper
             let th=''; 
+            window._curHistory = res.history || [];
             if(res.history.length){ 
                 th += '<div class="ps-1">';
                 res.history.forEach((h, i)=>{ 
@@ -1941,12 +1951,29 @@ function openDetail(id){
                         pattHtml += `</div>`;
                     }
 
+                    let progActionBtns = '';
+                    if (h.can_edit || h.user_id == res.current_user_id || res.is_approver) {
+                        progActionBtns = `
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link p-0 text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="line-height:1; font-size:0.9rem; text-decoration:none;" title="Menu Progres">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1" style="font-size:0.8rem; min-width:130px;">
+                                <li><a class="dropdown-item py-1 fw-semibold text-warning d-flex align-items-center gap-2" href="javascript:void(0)" onclick="openEditProgressModal(${h.id}, ${j.id})"><i class="bi bi-pencil-square"></i> Edit Progres</a></li>
+                                <li><a class="dropdown-item py-1 fw-semibold text-danger d-flex align-items-center gap-2" href="javascript:void(0)" onclick="deleteProgressItem(${h.id})"><i class="bi bi-trash3"></i> Hapus Progres</a></li>
+                            </ul>
+                        </div>`;
+                    }
+
                     th+=`<div class="timeline-node">
                         <div class="timeline-icon-dot" style="border-color:${dotColor}; box-shadow: 0 0 0 3px ${dotColor}25;"></div>
                         <div class="chat-bubble-card">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="fw-bold" style="font-size:0.88rem; color:#0f172a;">${h.name}</span>
-                                <small style="font-size:0.72rem; color:#94a3b8;">${h.date}</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small style="font-size:0.72rem; color:#94a3b8;">${h.date}</small>
+                                    ${progActionBtns}
+                                </div>
                             </div>
                             <span class="badge-3d-status ${sClass} my-1" style="font-size:0.65rem; padding:3px 8px;"><span class="pulse-dot" style="width:5px;height:5px;"></span> ${sLabel}</span>
                             ${h.notes ? `<div class="mt-2 mb-0" style="font-size:0.88rem; color:#334155; line-height:1.6;">${formatText(h.notes)}</div>` : ''}
@@ -2058,12 +2085,17 @@ function delComment(id){ if(confirm('Hapus komentar?')) $.post('ajax_action.php'
 function editComment(id, old){ let n=prompt("Edit:", old); if(n!==null && n.trim()!=="") $.post('ajax_action.php', {action:'edit_comment', comment_id:id, content:n}, function(){ openDetail(curJob); }); }
 
 function saveProgress(){
-    let fd = new FormData($('#formProgress')[0]); fd.append('action', 'update_progress');
+    let fd = new FormData($('#formProgress')[0]); 
+    let act = $('#p-action-type').val() || 'update_progress';
+    fd.set('action', act);
     fd.delete('files[]');
     let hasFiles = progressFiles.length > 0;
     progressFiles.forEach((f) => { fd.append('files[]', f); });
     
-    toggleLoading(true, hasFiles ? 'Mengunggah update... 0%' : 'Menyimpan progres...', hasFiles);
+    let loadingMsg = (act === 'edit_progress') 
+        ? (hasFiles ? 'Mengunggah & menyimpan perubahan... 0%' : 'Menyimpan perubahan progres...') 
+        : (hasFiles ? 'Mengunggah update... 0%' : 'Menyimpan progres...');
+    toggleLoading(true, loadingMsg, hasFiles);
     
     $.ajax({
         url: 'ajax_action.php',
@@ -2095,10 +2127,15 @@ function saveProgress(){
             return xhr;
         },
         success: function(d) {
+            toggleLoading(false);
             if (d && d.status === 'success') {
-                location.reload();
+                let modalEl = document.getElementById('progressModal');
+                if (modalEl) {
+                    let inst = bootstrap.Modal.getInstance(modalEl);
+                    if (inst) inst.hide();
+                }
+                openDetail(curJob);
             } else {
-                toggleLoading(false);
                 alert((d && d.message) ? d.message : 'Gagal menyimpan progres.');
             }
         },
@@ -2410,12 +2447,111 @@ function showProgressForm() {
         return; 
     }
     $('#p-job-id').val(curJob); 
+    $('#p-progress-id').val('');
+    $('#p-action-type').val('update_progress');
     progressFiles = []; 
     updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
     $('#progress-modal-title').text('Update Progress Kerja');
+    $('#p-btn-submit').html('<i class="bi bi-check2-circle me-1"></i> Simpan Update');
     $('#p-status-wrap').show();
     $('#p-notes').val('');
+    $('#progress-existing-files-container').hide();
+    $('#progress-existing-files-list').empty();
     new bootstrap.Modal('#progressModal').show(); 
+}
+
+function openEditProgressModal(progId, jobId) {
+    let prog = (window._curHistory || []).find(h => h.id == progId);
+    if (!prog) return;
+
+    $('#p-job-id').val(jobId);
+    $('#p-progress-id').val(prog.id);
+    $('#p-action-type').val('edit_progress');
+    $('#progress-modal-title').text('Edit Catatan Progres');
+    $('#p-btn-submit').html('<i class="bi bi-check2-circle me-1"></i> Simpan Perubahan');
+    $('#p-status-wrap').show();
+    $('#p-status').val(prog.status_after);
+    $('#p-notes').val(prog.notes || '');
+    
+    progressFiles = [];
+    updatePreviews('progress-preview-container', progressFiles, 'progressFiles');
+
+    // Render lampiran yang sudah terupload pada progres ini
+    const extContainer = document.getElementById('progress-existing-files-container');
+    const extList = document.getElementById('progress-existing-files-list');
+    if (prog.attachments && prog.attachments.length > 0) {
+        extContainer.style.display = 'block';
+        let eh = '';
+        prog.attachments.forEach(a => {
+            let p = 'assets/uploads/bukti/' + a.file_path;
+            let safeName = (a.file_name || 'Lampiran').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            let iconHtml = '';
+            if (a.file_type == 'image') {
+                iconHtml = `<div class="preview-thumb-wrap" onclick="openLightbox('${p}','${safeName}', 'image')" title="Cek pratinjau" style="width:100%;height:100%;">
+                    <img src="${p}" style="width:100%;height:100%;object-fit:cover;">
+                    <div class="preview-overlay-hint"><span class="preview-hint-pill"><i class="bi bi-eye-fill"></i> Cek</span></div>
+                </div>`;
+            } else if (a.file_type == 'video') {
+                iconHtml = `<div class="preview-thumb-wrap" onclick="openLightbox('${p}','${safeName}', 'video')" title="Putar video" style="width:100%;height:100%;">
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-dark rounded text-white" style="width:80px;"><i class="bi bi-play-circle-fill" style="font-size:1.5rem;"></i></div>
+                    <div class="preview-overlay-hint"><span class="preview-hint-pill"><i class="bi bi-play-fill"></i> Putar</span></div>
+                </div>`;
+            } else {
+                iconHtml = `<a href="${p}" target="_blank" class="d-flex align-items-center justify-content-center h-100 bg-light rounded text-secondary" style="width:80px; text-decoration:none;" title="Buka dokumen"><i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i></a>`;
+            }
+            eh += `
+            <div id="prog-att-card-${a.id}" style="position:relative; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #e5e7eb;">
+                ${iconHtml}
+                <button type="button" onclick="event.stopPropagation(); deleteProgressAttachment(${a.id}, ${prog.id})" class="btn btn-danger btn-sm p-0 d-flex align-items-center justify-content-center" style="position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; font-size:0.65rem; box-shadow:0 1px 3px rgba(0,0,0,0.3); z-index:10;" title="Hapus lampiran ini">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>`;
+        });
+        extList.innerHTML = eh;
+    } else {
+        extContainer.style.display = 'none';
+        extList.innerHTML = '';
+    }
+
+    new bootstrap.Modal('#progressModal').show();
+}
+
+function deleteProgressAttachment(attId, progId) {
+    if (confirm('Hapus file lampiran ini secara permanen?')) {
+        $.post('ajax_action.php', {action: 'delete_attachment', attachment_id: attId}, function(res) {
+            if (res.status == 'success') {
+                $(`#prog-att-card-${attId}`).remove();
+                if ($('#progress-existing-files-list').children().length === 0) {
+                    $('#progress-existing-files-container').hide();
+                }
+                if (window._curHistory) {
+                    let prog = window._curHistory.find(h => h.id == progId);
+                    if (prog && prog.attachments) {
+                        prog.attachments = prog.attachments.filter(a => a.id != attId);
+                    }
+                }
+            } else {
+                alert(res.message || 'Gagal menghapus lampiran');
+            }
+        }, 'json');
+    }
+}
+
+function deleteProgressItem(progressId) {
+    if (confirm('Yakin ingin menghapus catatan progres ini beserta lampirannya?')) {
+        toggleLoading(true, 'Menghapus progres...');
+        $.post('ajax_action.php', {action: 'delete_progress', progress_id: progressId}, function(res) {
+            toggleLoading(false);
+            if (res.status === 'success') {
+                openDetail(curJob);
+            } else {
+                alert(res.message || 'Gagal menghapus progres');
+            }
+        }, 'json').fail(function() {
+            toggleLoading(false);
+            alert('Terjadi kesalahan koneksi server.');
+        });
+    }
 }
 
 function formatText(t){ 
